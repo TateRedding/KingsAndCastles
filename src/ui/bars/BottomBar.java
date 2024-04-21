@@ -16,44 +16,44 @@ import utils.ImageLoader;
 
 public abstract class BottomBar extends UIBar {
 
-	public final static int BOTTOM_BAR_Y = TOP_BAR_HEIGHT + GAME_AREA_HEIGHT;
-	public final static int BOTTOM_BAR_HEIGHT = 160;
+    public final static int BOTTOM_BAR_Y = TOP_BAR_HEIGHT + GAME_AREA_HEIGHT;
+    public final static int BOTTOM_BAR_HEIGHT = 160;
 
-	protected TextButton menu;
+    protected TextButton menu;
 
-	public BottomBar() {
-		bounds = new Rectangle(X, BOTTOM_BAR_Y, UI_WIDTH, BOTTOM_BAR_HEIGHT);
-		menu = new TextButton(TEXT_SMALL, "Menu", 28f, X + 15, BOTTOM_BAR_Y + 15);
-	}
+    public BottomBar() {
+        bounds = new Rectangle(X, BOTTOM_BAR_Y, UI_WIDTH, BOTTOM_BAR_HEIGHT);
+        menu = new TextButton(TEXT_SMALL, "Menu", 28f, X + 15, BOTTOM_BAR_Y + 15);
+    }
 
-	public void update() {
-		menu.update();
-	}
+    public void update() {
+        menu.update();
+    }
 
-	public void render(Graphics g) {
-		g.drawImage(ImageLoader.terrainTiles.get(GRASS).get(0), X, BOTTOM_BAR_Y, Game.SCREEN_WIDTH, BOTTOM_BAR_HEIGHT,
-				null);
-		g.drawImage(ImageLoader.bottomBar, X, BOTTOM_BAR_Y, null);
-		menu.render(g);
-	}
+    public void render(Graphics g) {
+        g.drawImage(ImageLoader.tiles.get(GRASS).get(0), X, BOTTOM_BAR_Y, Game.SCREEN_WIDTH, BOTTOM_BAR_HEIGHT,
+                null);
+        g.drawImage(ImageLoader.bottomBar, X, BOTTOM_BAR_Y, null);
+        menu.render(g);
+    }
 
-	public void mousePressed(int x, int y, int button) {
-		if (button == MouseEvent.BUTTON1)
-			if (menu.getBounds().contains(x, y))
-				menu.setMousePressed(true);
-	}
+    public void mousePressed(int x, int y, int button) {
+        if (button == MouseEvent.BUTTON1)
+            if (menu.getBounds().contains(x, y))
+                menu.setMousePressed(true);
+    }
 
-	public void mouseReleased(int x, int y, int button) {
-		if (button == MouseEvent.BUTTON1)
-			if (menu.getBounds().contains(x, y) && menu.isMousePressed())
-				GameStates.setGameState(GameStates.MENU);
-		menu.reset();
-	}
+    public void mouseReleased(int x, int y, int button) {
+        if (button == MouseEvent.BUTTON1)
+            if (menu.getBounds().contains(x, y) && menu.isMousePressed())
+                GameStates.setGameState(GameStates.MENU);
+        menu.reset(x, y);
+    }
 
-	public void mouseMoved(int x, int y) {
-		menu.setMouseOver(false);
-		if (menu.getBounds().contains(x, y))
-			menu.setMouseOver(true);
-	}
+    public void mouseMoved(int x, int y) {
+        menu.setMouseOver(false);
+        if (menu.getBounds().contains(x, y))
+            menu.setMouseOver(true);
+    }
 
 }

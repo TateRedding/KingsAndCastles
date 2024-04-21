@@ -3,9 +3,10 @@ package main;
 import static ui.bars.BottomBar.BOTTOM_BAR_HEIGHT;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
-import java.awt.Graphics;
+import java.awt.*;
 
 import javax.swing.JFrame;
+
 import gamestates.Credits;
 import gamestates.Edit;
 import gamestates.EditMapSelect;
@@ -23,168 +24,175 @@ import utils.ImageLoader;
 
 public class Game extends JFrame implements Runnable {
 
-	private GameScreen gameScreen;
-	private Thread gameThread;
+    private GameScreen gameScreen;
+    private Thread gameThread;
 
-	private final double FPS_SET = 120.0;
-	private final double UPS_SET = 60.0;
+    private final double FPS_SET = 120.0;
+    private final double UPS_SET = 60.0;
 
-	public final static int TILE_SIZE = 32;
-	public final static int GAME_AREA_TILE_HEIGHT = 20;
-	public final static int GAME_AREA_TILE_WIDTH = 36;
-	public final static int GAME_AREA_HEIGHT = TILE_SIZE * GAME_AREA_TILE_HEIGHT;
-	public final static int GAME_AREA_WIDTH = TILE_SIZE * GAME_AREA_TILE_WIDTH;
-	public final static int SCREEN_WIDTH = GAME_AREA_WIDTH;
-	public final static int SCREEN_HEIGHT = GAME_AREA_HEIGHT + TOP_BAR_HEIGHT + BOTTOM_BAR_HEIGHT;
+    public final static int TILE_SIZE = 32;
+    public final static int GAME_AREA_TILE_HEIGHT = 20;
+    public final static int GAME_AREA_TILE_WIDTH = 36;
+    public final static int GAME_AREA_HEIGHT = TILE_SIZE * GAME_AREA_TILE_HEIGHT;
+    public final static int GAME_AREA_WIDTH = TILE_SIZE * GAME_AREA_TILE_WIDTH;
+    public final static int SCREEN_WIDTH = GAME_AREA_WIDTH;
+    public final static int SCREEN_HEIGHT = GAME_AREA_HEIGHT + TOP_BAR_HEIGHT + BOTTOM_BAR_HEIGHT;
+    private static Font gameFont;
 
-	private Credits credits;
-	private Edit edit;
-	private EditMapSelect editMapSelect;
-	private LoadGame loadGame;
-	private MapHandler mapHandler;
-	private Menu menu;
-	private Play play;
-	private PlayMapSelect playMapSelect;
-	private TileHandler tileHandler;
+    private Credits credits;
+    private Edit edit;
+    private EditMapSelect editMapSelect;
+    private LoadGame loadGame;
+    private MapHandler mapHandler;
+    private Menu menu;
+    private Play play;
+    private PlayMapSelect playMapSelect;
+    private TileHandler tileHandler;
 
-	public Game() {
-		LoadSave.createFolders();
-		LoadSave.loadFont();
-		ImageLoader.loadImages();
+    public Game() {
+        LoadSave.createFolders();
+        LoadSave.loadFont();
+        gameFont = LoadSave.silverModified.deriveFont(Font.BOLD);
+        ImageLoader.loadImages();
 
-		initHandlers();
-		initStates();
+        initHandlers();
+        initStates();
 
-		gameScreen = new GameScreen(this);
-		new GameFrame(gameScreen);
-		gameScreen.requestFocus();
-	}
+        gameScreen = new GameScreen(this);
+        new GameFrame(gameScreen);
+        gameScreen.requestFocus();
+    }
 
-	public static void main(String[] args) {
-		Game game = new Game();
-		game.start();
-	}
-	
-	private void initHandlers() {
-		mapHandler = new MapHandler();
-		tileHandler = new TileHandler(this);
-	}
+    public static void main(String[] args) {
+        Game game = new Game();
+        game.start();
+    }
 
-	private void initStates() {
-		credits = new Credits(this);
-		editMapSelect = new EditMapSelect(this);
-		loadGame = new LoadGame(this);
-		menu = new Menu(this);
-		playMapSelect = new PlayMapSelect(this);
-	}
+    private void initHandlers() {
+        mapHandler = new MapHandler();
+        tileHandler = new TileHandler(this);
+    }
 
-	private void start() {
-		gameThread = new Thread(this);
-		gameThread.start();
-	}
+    private void initStates() {
+        credits = new Credits(this);
+        editMapSelect = new EditMapSelect(this);
+        loadGame = new LoadGame(this);
+        menu = new Menu(this);
+        playMapSelect = new PlayMapSelect(this);
+    }
 
-	@Override
-	public void run() {
-		double timePerFrame = 1000000000.0 / FPS_SET;
-		double timePerUpdate = 1000000000.0 / UPS_SET;
-		long lastCheck = System.currentTimeMillis();
-		long previousTime = System.nanoTime();
+    private void start() {
+        gameThread = new Thread(this);
+        gameThread.start();
+    }
 
-		int frames = 0;
-		int updates = 0;
+    @Override
+    public void run() {
+        double timePerFrame = 1000000000.0 / FPS_SET;
+        double timePerUpdate = 1000000000.0 / UPS_SET;
+        long lastCheck = System.currentTimeMillis();
+        long previousTime = System.nanoTime();
 
-		double deltaU = 0;
-		double deltaF = 0;
+        int frames = 0;
+        int updates = 0;
 
-		while (true) {
+        double deltaU = 0;
+        double deltaF = 0;
 
-			long currentTime = System.nanoTime();
+        while (true) {
 
-			deltaU += (currentTime - previousTime) / timePerUpdate;
-			deltaF += (currentTime - previousTime) / timePerFrame;
-			previousTime = currentTime;
+            long currentTime = System.nanoTime();
 
-			if (deltaU >= 1) {
-				updateGame();
-				updates++;
-				deltaU--;
-			}
+            deltaU += (currentTime - previousTime) / timePerUpdate;
+            deltaF += (currentTime - previousTime) / timePerFrame;
+            previousTime = currentTime;
 
-			if (deltaF >= 1) {
-				gameScreen.repaint();
-				frames++;
-				deltaF--;
-			}
+            if (deltaU >= 1) {
+                updateGame();
+                updates++;
+                deltaU--;
+            }
 
-			if (System.currentTimeMillis() - lastCheck >= 1000) {
-				lastCheck = System.currentTimeMillis();
-				System.out.println("FPS: " + frames + " | UPS: " + updates);
-				frames = 0;
-				updates = 0;
-			}
-		}
-	}
+            if (deltaF >= 1) {
+                gameScreen.repaint();
+                frames++;
+                deltaF--;
+            }
 
-	public State getCurrentGameState() {
-		State currentState = switch (GameStates.gameState) {
-		case CREDITS -> credits;
-		case EDIT -> edit;
-		case EDIT_MAP_SELECT -> editMapSelect;
-		case LOAD_GAME -> loadGame;
-		case MENU -> menu;
-		case PLAY -> play;
-		case PLAY_MAP_SELECT -> playMapSelect;
-		default -> throw new IllegalArgumentException("Unexpected value for enum GameStates: " + GameStates.gameState);
-		};
-		return currentState;
-	}
+            if (System.currentTimeMillis() - lastCheck >= 1000) {
+                lastCheck = System.currentTimeMillis();
+                System.out.println("FPS: " + frames + " | UPS: " + updates);
+                frames = 0;
+                updates = 0;
+            }
+        }
+    }
 
-	private void updateGame() {
-		getCurrentGameState().update();
-	}
+    public State getCurrentGameState() {
+        State currentState = switch (GameStates.gameState) {
+            case CREDITS -> credits;
+            case EDIT -> edit;
+            case EDIT_MAP_SELECT -> editMapSelect;
+            case LOAD_GAME -> loadGame;
+            case MENU -> menu;
+            case PLAY -> play;
+            case PLAY_MAP_SELECT -> playMapSelect;
+            default ->
+                    throw new IllegalArgumentException("Unexpected value for enum GameStates: " + GameStates.gameState);
+        };
+        return currentState;
+    }
 
-	public void render(Graphics g) {
-		getCurrentGameState().render(g);
-	}
-	
-	public void startNewGame(Map map) {
-		play = new Play(this, map);
-	}
+    private void updateGame() {
+        getCurrentGameState().update();
+    }
 
-	public void editMap(Map map) {
-		edit = new Edit(this, map);
-	}
+    public void render(Graphics g) {
+        getCurrentGameState().render(g);
+    }
 
-	public void windowFocusLost() {
-		// Pause the game
-	}
+    public void startNewGame(Map map) {
+        play = new Play(this, map);
+    }
 
-	public Edit getEdit() {
-		return edit;
-	}
+    public void editMap(Map map) {
+        edit = new Edit(this, map);
+    }
 
-	public EditMapSelect getEditMapSelect() {
-		return editMapSelect;
-	}
+    public void windowFocusLost() {
+        // Pause the game
+    }
 
-	public MapHandler getMapHandler() {
-		return mapHandler;
-	}
+    public Edit getEdit() {
+        return edit;
+    }
 
-	public Menu getMenu() {
-		return menu;
-	}
+    public EditMapSelect getEditMapSelect() {
+        return editMapSelect;
+    }
 
-	public Play getPlay() {
-		return play;
-	}
-	
-	public PlayMapSelect getPlayMapSelect() {
-		return playMapSelect;
-	}
-	
-	public TileHandler getTileHandler() {
-		return tileHandler;
-	}
+    public static Font getGameFont(float size) {
+        return gameFont.deriveFont(size);
+    }
+
+    public MapHandler getMapHandler() {
+        return mapHandler;
+    }
+
+    public Menu getMenu() {
+        return menu;
+    }
+
+    public Play getPlay() {
+        return play;
+    }
+
+    public PlayMapSelect getPlayMapSelect() {
+        return playMapSelect;
+    }
+
+    public TileHandler getTileHandler() {
+        return tileHandler;
+    }
 
 }
