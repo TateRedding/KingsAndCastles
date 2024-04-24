@@ -1,10 +1,5 @@
 package ui;
 
-import static ui.buttons.Button.DD_DOWN;
-import static ui.buttons.Button.DD_UP;
-import static ui.buttons.Button.DROP_DOWN;
-import static ui.buttons.Button.getButtonWidth;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -14,13 +9,18 @@ import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 
 import main.Game;
+import ui.buttons.Button;
 import ui.buttons.DropDownButton;
+import ui.buttons.ExButton;
 import utils.ImageLoader;
 import utils.RenderText;
+
+import static ui.buttons.Button.*;
 
 public class DropDownMenu {
 
     private DropDownButton ddButton;
+    protected ExButton unselect;
     private Rectangle bounds;
 
     private String text;
@@ -47,16 +47,17 @@ public class DropDownMenu {
         this.rowHeight = bodyHeight / numRows;
         this.rowWidth = width - rowXOffset * 2;
         this.rowX = x + rowXOffset;
-
-        int offset = 3;
         this.bounds = new Rectangle(x, y, width, topHeight);
-        this.ddButton = new DropDownButton(DD_DOWN, x + bounds.width - getButtonWidth(DROP_DOWN) - offset, y + offset);
+        this.ddButton = new DropDownButton(DD_DOWN, x + bounds.width - getButtonWidth(DROP_DOWN), y);
+
+        int unselectX = bounds.x + (bounds.height - getButtonWidth(EX)) / 2;
+        int unselectY = bounds.y + (bounds.height - getButtonHeight(EX)) / 2;
+        this.unselect = new ExButton(unselectX, unselectY);
 
         float yStart = y + topHeight;
         int boundsXOffset = 8;
         for (int i = 0; i < 5 && i < options.length; i++) {
-            rowBounds.add(
-                    new Rectangle(rowX - boundsXOffset, (int) yStart, rowWidth + boundsXOffset * 2, (int) rowHeight));
+            rowBounds.add(new Rectangle(rowX - boundsXOffset, (int) yStart, rowWidth + boundsXOffset * 2, (int) rowHeight));
             yStart += rowHeight;
         }
     }
@@ -70,6 +71,8 @@ public class DropDownMenu {
             hoverIndex = -1;
             startIndex = 0;
         }
+        if (selectedIndex != -1)
+            unselect.update();
     }
 
     public void render(Graphics g) {
@@ -83,6 +86,8 @@ public class DropDownMenu {
         }
 
         ddButton.render(g);
+        if (selectedIndex != -1)
+            unselect.render(g);
 
         if (expanded) {
             g.drawImage(ImageLoader.dropDownBody, x, y + topHeight, null);
@@ -152,15 +157,19 @@ public class DropDownMenu {
     }
 
     public void mousePressed(int x, int y, int button) {
-        if (button == MouseEvent.BUTTON1 && ddButton.getBounds().contains(x, y))
-            ddButton.setMousePressed(true);
+        if (button == MouseEvent.BUTTON1)
+            if (ddButton.getBounds().contains(x, y))
+                ddButton.setMousePressed(true);
+            else if (selectedIndex != -1 && unselect.getBounds().contains(x, y))
+                unselect.setMousePressed(true);
     }
 
     public void mouseReleased(int x, int y, int button) {
         if (bounds.contains(x, y) && button == MouseEvent.BUTTON1) {
             if (ddButton.getBounds().contains(x, y) && ddButton.isMousePressed())
                 setExpanded(!expanded);
-
+            else if (selectedIndex != -1 && unselect.getBounds().contains(x, y) && unselect.isMousePressed())
+                selectedIndex = -1;
             for (Rectangle rowBounds : rowBounds)
                 if (rowBounds.contains(x, y) && hoverIndex != -1) {
                     selectedIndex = hoverIndex + startIndex;
@@ -168,13 +177,16 @@ public class DropDownMenu {
                 }
         }
         ddButton.reset(x, y);
-
+        unselect.reset(x, y);
     }
 
     public void mouseMoved(int x, int y) {
         ddButton.setMouseOver(false);
+        unselect.setMouseOver(false);
         if (ddButton.getBounds().contains(x, y))
             ddButton.setMouseOver(true);
+        else if (selectedIndex != -1 && unselect.getBounds().contains(x, y))
+            unselect.setMouseOver(true);
 
         hoverIndex = -1;
         for (int i = 0; i < rowBounds.size(); i++)
@@ -204,10 +216,6 @@ public class DropDownMenu {
     public void setExpanded(boolean expanded) {
         this.expanded = expanded;
         setButtonDirection();
-    }
-
-    public void setOptions(String[] options) {
-        this.options = options;
     }
 
     public int getSelectedIndex() {

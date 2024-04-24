@@ -3,8 +3,7 @@ package utils;
 import static objects.Tile.*;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static ui.TextBox.*;
-import static ui.buttons.Button.getButtonHeight;
-import static ui.buttons.Button.getButtonWidth;
+import static ui.buttons.Button.*;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -67,7 +66,7 @@ public class ImageLoader {
         spriteButton = getVerticalImageArray(SPRITE_BUTTON, 0, getButtonWidth(Button.SPRITE), getButtonHeight(Button.SPRITE),
                 amount);
         exButton = getVerticalImageArray(EX_BUTTON, 0, getButtonWidth(Button.EX), getButtonHeight(Button.EX), amount);
-        dropDownButtons = get2DImageArray(DROP_DOWN_BUTTONS, 42, 42, 2, amount);
+        dropDownButtons = get2DImageArray(DROP_DOWN_BUTTONS, getButtonWidth(DROP_DOWN), getButtonHeight(DROP_DOWN), 2, amount);
     }
 
     private static void loadObjectImages() {

@@ -6,89 +6,51 @@ import static ui.buttons.Button.TEXT_LARGE;
 import static ui.buttons.Button.getButtonHeight;
 import static ui.buttons.Button.getButtonWidth;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-
-import javax.imageio.ImageIO;
 
 import main.Game;
 import objects.Map;
-import objects.Tile;
-import ui.DropDownMenu;
-import ui.NewMapForm;
+import ui.overlays.NewMapForm;
 import ui.buttons.ExButton;
 import ui.buttons.TextButton;
 import utils.ImageLoader;
-import utils.LoadSave;
-import utils.RenderText;
 
 public class EditMapSelect extends MapSelect implements StateMethods {
 
-    private DropDownMenu dropDownMenu;
-    private Map selectedMap;
-    private String[][] selectedMapData;
     private NewMapForm newMapForm;
-    private TextButton newMapButton, startButton;
+    private TextButton newMapButton;
 
-    private int dropDownMenuYOffset = 48;
     private boolean showNewMapForm;
 
     public EditMapSelect(Game game) {
         super(game);
 
-        initDropDownMenu();
-
         int formX = (Game.SCREEN_WIDTH - ImageLoader.overlayBg.getWidth()) / 2;
         int formY = (Game.SCREEN_HEIGHT - ImageLoader.overlayBg.getHeight()) / 2;
         newMapForm = new NewMapForm(formX, formY);
 
-        float fontSize = 46f;
         int xStart = (SCREEN_WIDTH - getButtonWidth(TEXT_LARGE)) / 2;
         int yStart = (SCREEN_HEIGHT - getButtonHeight(TEXT_LARGE)) / 2;
-        newMapButton = new TextButton(TEXT_LARGE, "New Map", fontSize, xStart, yStart);
-
-        int formXEnd = formX + ImageLoader.overlayBg.getWidth();
-        xStart = formXEnd + ((Game.SCREEN_WIDTH - formXEnd) - getButtonWidth(TEXT_LARGE)) / 2;
-        startButton = new TextButton(TEXT_LARGE, "Start", fontSize, xStart, yStart);
-    }
-
-    public void initDropDownMenu() {
-        ArrayList<Map> maps = game.getMapHandler().getMaps();
-        String[] options = new String[maps.size()];
-        for (int i = 0; i < maps.size(); i++)
-            options[i] = maps.get(i).getName();
-
-        if (dropDownMenu == null) {
-            int ddX = (Game.SCREEN_WIDTH - ImageLoader.dropDownTop.getWidth()) / 2;
-            dropDownMenu = new DropDownMenu("Select Saved Map", options, 5, ddX, dropDownMenuYOffset);
-        } else {
-            dropDownMenu.setOptions(options);
-            dropDownMenu.resetIndicies();
-        }
+        newMapButton = new TextButton(TEXT_LARGE, "New Map", 46f, xStart, yStart);
     }
 
     @Override
     public void update() {
-        dropDownMenu.update();
+        super.update();
         if (showNewMapForm) {
             newMapForm.update();
-            startButton.setDisabled(!newMapForm.isValid());
+            start.setDisabled(!newMapForm.isValid());
         } else {
-            startButton.setDisabled(false);
+            start.setDisabled(false);
             if (selectedMap == null)
                 newMapButton.update();
         }
 
-        if (showNewMapForm || selectedMap != null)
-            startButton.update();
+        if (showNewMapForm)
+            start.update();
     }
 
     @Override
@@ -97,59 +59,11 @@ public class EditMapSelect extends MapSelect implements StateMethods {
             newMapForm.render(g);
         else if (selectedMap == null)
             newMapButton.render(g);
-        else
-            renderSelectedMapData(g);
 
-        dropDownMenu.render(g);
+        super.render(g);
 
-        if (showNewMapForm || selectedMap != null)
-            startButton.render(g);
-    }
-
-    private void renderSelectedMapData(Graphics g) {
-        int scale = 2;
-        int previewWidth = Map.MAX_WIDTH * scale;
-        int previewHeight = Map.MAX_HEIGHT * scale;
-        int previewX = (SCREEN_WIDTH - previewWidth) / 2;
-        int previewY = dropDownMenuYOffset * 2 + ImageLoader.dropDownTop.getHeight();
-
-        g.setColor(new Color(0, 0, 0, 75));
-        g.fillRect(previewX, previewY, previewWidth, previewHeight);
-
-        BufferedImage previewImage = null;
-        String path = LoadSave.mapPath + File.separator + selectedMap.getName() + LoadSave.previewImageSuffix;
-        File previewImageFile = new File(path);
-        if (previewImageFile.exists()) {
-            try {
-                previewImage = ImageIO.read(previewImageFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (previewImage != null) {
-            int previewImageWidth = previewImage.getWidth() * scale;
-            int previewImageHeight = previewImage.getHeight() * scale;
-            int previewImageX = previewX + (previewWidth - previewImageWidth) / 2;
-            int previewImageY = previewY + (previewHeight - previewImageHeight) / 2;
-            g.drawImage(previewImage, previewImageX, previewImageY, previewImageWidth, previewImageHeight, null);
-        } else {
-            String[] text = {"No preview", "available"};
-            g.setColor(Color.BLACK);
-            g.setFont(Game.getGameFont(74f));
-            RenderText.renderText(g, text, RenderText.CENTER, RenderText.CENTER, previewX, previewY, previewWidth, previewHeight);
-        }
-
-        if (selectedMapData != null) {
-            int yOffset = 48;
-            int yStart = previewY + previewHeight + yOffset;
-            int areaHeight = (SCREEN_HEIGHT - yStart - yOffset);
-            Font leftFont = Game.getGameFont(46f);
-            Font rightFont = Game.getGameFont(36f);
-            g.setColor(Color.BLACK);
-            RenderText.renderTextBoxed(g, selectedMapData, leftFont, rightFont, previewX, yStart, previewWidth,
-                    areaHeight);
-        }
+        if (showNewMapForm)
+            start.render(g);
     }
 
     private void startNewMap() {
@@ -171,36 +85,19 @@ public class EditMapSelect extends MapSelect implements StateMethods {
 
         Map newMap = new Map(name, tileWidth, tileHeight);
         startMapEditor(newMap);
-        game.getMapHandler().getMaps().add(0, newMap);
     }
 
     private void startMapEditor(Map map) {
         game.editMap(map);
+        game.getMapHandler().getMaps().add(0, map);
         GameStates.setGameState(GameStates.EDIT);
-        reset();
-    }
-
-    private void reset() {
+        super.reset();
         showNewMapForm = false;
-        selectedMap = null;
-        selectedMapData = null;
-        initDropDownMenu();
-    }
-
-    public String[][] getMapData() {
-        if (selectedMap == null)
-            return null;
-        Tile[][] tileData = selectedMap.getTileData();
-        String[][] data = {{"Map Size", tileData[0].length + " x " + tileData[1].length},
-                {"Water Tiles", "Calculate Me"}, {"Gold Mines", "" + selectedMap.getGoldMinePoints().size()},
-                {"Castle Zones", selectedMap.getCastleZones().get(0).size() + " Tiles"}};
-        return data;
     }
 
     @Override
     public void mousePressed(int x, int y, int button) {
-        if (dropDownMenu.getBounds().contains(x, y))
-            dropDownMenu.mousePressed(x, y, button);
+        super.mousePressed(x, y, button);
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y))
                 newMapForm.mousePressed(x, y, button);
@@ -208,25 +105,15 @@ public class EditMapSelect extends MapSelect implements StateMethods {
             if (button == MouseEvent.BUTTON1 && newMapButton.getBounds().contains(x, y))
                 newMapButton.setMousePressed(true);
 
-        if ((showNewMapForm || selectedMap != null) && button == MouseEvent.BUTTON1
-                && startButton.getBounds().contains(x, y))
-            startButton.setMousePressed(true);
+        if (showNewMapForm && button == MouseEvent.BUTTON1 && start.getBounds().contains(x, y))
+            start.setMousePressed(true);
     }
 
     @Override
     public void mouseReleased(int x, int y, int button) {
-        dropDownMenu.mouseReleased(x, y, button);
-        if (dropDownMenu.getBounds().contains(x, y)) {
-            int selectedIndex = dropDownMenu.getSelectedIndex();
-            if (selectedIndex != -1) {
-                selectedMap = game.getMapHandler().getMaps().get(selectedIndex);
-                selectedMapData = getMapData();
-            }
-        }
-
+        super.mouseReleased(x, y, button);
         if (dropDownMenu.isExpanded())
             showNewMapForm = false;
-
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y)) {
                 ExButton exButton = newMapForm.getExButton();
@@ -238,27 +125,26 @@ public class EditMapSelect extends MapSelect implements StateMethods {
                 }
             }
         } else if (selectedMap == null)
-            if (newMapButton.getBounds().contains(x, y) && newMapButton.isMouseOver()) {
+            if (newMapButton.getBounds().contains(x, y) && newMapButton.isMousePressed()) {
                 showNewMapForm = true;
                 newMapForm.resetTextBoxes();
                 dropDownMenu.setExpanded(false);
             }
 
-        if (startButton.getBounds().contains(x, y) && startButton.isMouseOver())
+        if (start.getBounds().contains(x, y) && start.isMousePressed())
             if (showNewMapForm && selectedMap == null)
                 startNewMap();
             else if (!showNewMapForm && selectedMap != null)
                 startMapEditor(selectedMap);
 
         newMapButton.reset(x, y);
-        startButton.reset(x, y);
+        start.reset(x, y);
     }
 
     @Override
     public void mouseMoved(int x, int y) {
+        super.mouseMoved(x, y);
         newMapButton.setMouseOver(false);
-        startButton.setMouseOver(false);
-        dropDownMenu.mouseMoved(x, y);
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y))
                 newMapForm.mouseMoved(x, y);
@@ -266,12 +152,12 @@ public class EditMapSelect extends MapSelect implements StateMethods {
             if (newMapButton.getBounds().contains(x, y))
                 newMapButton.setMouseOver(true);
 
-        if ((showNewMapForm || selectedMap != null) && startButton.getBounds().contains(x, y))
-            startButton.setMouseOver(true);
+        if (showNewMapForm && start.getBounds().contains(x, y))
+            start.setMouseOver(true);
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
-        dropDownMenu.mouseWheelMoved(e);
+        super.mouseWheelMoved(e);
     }
 
     public void keyPressed(KeyEvent e) {

@@ -39,7 +39,7 @@ public class Button {
             case EX:
                 return 24;
             case DROP_DOWN:
-                return 42;
+                return 48;
         }
         return 0;
     }
@@ -54,7 +54,7 @@ public class Button {
             case SPRITE:
                 return 83;
             case DROP_DOWN:
-                return 42;
+                return 48;
         }
         return 0;
     }
@@ -68,7 +68,7 @@ public class Button {
             case SPRITE:
                 return 7;
             case DROP_DOWN:
-                return 5;
+                return 0;
         }
         return 0;
     }

@@ -1,4 +1,4 @@
-package ui;
+package ui.overlays;
 
 import static ui.TextBox.*;
 
@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 import main.Game;
 import objects.Map;
+import ui.TextBox;
 import utils.ImageLoader;
 import utils.RenderText;
 

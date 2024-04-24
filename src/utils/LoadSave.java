@@ -137,4 +137,29 @@ public class LoadSave {
         }
     }
 
+    public static void deleteMapFile(Map map) {
+        String mapFileName = map.getName() + mapFileExtension;
+        String imageName = map.getName() + previewImageSuffix;
+        File mapFile = new File(mapPath + File.separator + mapFileName);
+        if (mapFile.exists()) {
+            boolean deleted = mapFile.delete();
+            if (deleted)
+                System.out.println(mapFileName + " deleted successfully.");
+            else
+                System.out.println("Failed to delete " + mapFileName);
+        } else
+            System.out.println("Could not locate " + mapFileName);
+
+        File imageFile = new File(mapPath + File.separator + imageName);
+        if (imageFile.exists()) {
+            boolean deleted = imageFile.delete();
+            if (deleted)
+                System.out.println(imageName + " deleted successfully.");
+            else
+                System.out.println("Failed to delete " + imageName);
+        } else
+            System.out.println("Could not locate " + imageName);
+
+    }
+
 }

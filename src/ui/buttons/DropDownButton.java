@@ -6,20 +6,20 @@ import utils.ImageLoader;
 
 public class DropDownButton extends Button {
 
-	private int direction;
+    private int direction;
 
-	public DropDownButton(int direction, int x, int y) {
-		super(x, y, getButtonWidth(DROP_DOWN), getButtonHeight(DROP_DOWN));
-		this.direction = direction;
-		this.x = x;
-		this.y = y;
-	}
+    public DropDownButton(int direction, int x, int y) {
+        super(x, y, getButtonWidth(DROP_DOWN), getButtonHeight(DROP_DOWN));
+        this.direction = direction;
+        this.x = x;
+        this.y = y;
+    }
 
-	public void render(Graphics g) {
-		g.drawImage(ImageLoader.dropDownButtons[direction][index], x, y, width, height, null);
-	}
-	
-	public void setDirection(int direction) {
-		this.direction = direction;
-	}
+    public void render(Graphics g) {
+        g.drawImage(ImageLoader.dropDownButtons[direction][index], x, y, null);
+    }
+
+    public void setDirection(int direction) {
+        this.direction = direction;
+    }
 }

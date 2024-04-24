@@ -1,4 +1,4 @@
-package ui;
+package ui.overlays;
 
 import static ui.buttons.Button.EX;
 import static ui.buttons.Button.getButtonWidth;
