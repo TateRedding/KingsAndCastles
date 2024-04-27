@@ -3,13 +3,12 @@ package ui;
 import gamestates.MapState;
 import objects.Map;
 import objects.Tile;
-import ui.bars.UIBar;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.io.Serializable;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static main.Game.GAME_AREA_TILE_HEIGHT;
@@ -18,7 +17,7 @@ import static objects.Tile.*;
 import static ui.bars.UIBar.UI_WIDTH;
 
 
-public class MiniMap {
+public class MiniMap implements Serializable {
 
     private MapState mapState;
     private BufferedImage worldMap;

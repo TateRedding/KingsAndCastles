@@ -17,7 +17,6 @@ import ui.buttons.ExButton;
 import ui.buttons.TextButton;
 import ui.overlays.DeleteConfirm;
 import ui.overlays.Overlay;
-import utils.ImageLoader;
 import utils.LoadSave;
 import utils.RenderText;
 
@@ -172,6 +171,7 @@ public abstract class MapSelect extends State implements StateMethods {
         selectedMapData = null;
         deleting = false;
         deleteConfirm.setDeleteName("");
+        deleteConfirm.resetChoice();
         initDropDownMenu();
     }
 
@@ -233,6 +233,7 @@ public abstract class MapSelect extends State implements StateMethods {
                 }
             }
         }
+        deleteConfirm.resetChoice();
         delete.reset(x, y);
         menu.reset(x, y);
     }

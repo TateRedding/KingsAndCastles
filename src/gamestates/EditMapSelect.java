@@ -17,6 +17,7 @@ import ui.overlays.NewMapForm;
 import ui.buttons.ExButton;
 import ui.buttons.TextButton;
 import ui.overlays.Overlay;
+import utils.LoadSave;
 
 public class EditMapSelect extends MapSelect implements StateMethods {
 
@@ -84,14 +85,15 @@ public class EditMapSelect extends MapSelect implements StateMethods {
             tileWidth = Map.MAX_WIDTH;
 
         Map newMap = new Map(name, tileWidth, tileHeight);
+        LoadSave.saveMap(newMap);
+        game.getSaveFileHandler().getMaps().add(0, newMap);
+        game.getPlayMapSelect().initDropDownMenu();
         startMapEditor(newMap);
     }
 
     private void startMapEditor(Map map) {
         game.editMap(map);
-        game.getSaveFileHandler().getMaps().add(0, map);
-        GameStates.setGameState(GameStates.EDIT);
-        super.reset();
+        reset();
         showNewMapForm = false;
     }
 

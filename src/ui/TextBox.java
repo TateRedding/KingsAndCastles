@@ -17,7 +17,7 @@ public class TextBox {
     public static final int NUMBER = 0;
     public static final int TEXT = 1;
 
-    public static final int HEIGHT = 48;
+    public static final int TEXT_BOX_HEIGHT = 48;
 
     private Font font;
     private String text = "";
@@ -41,10 +41,10 @@ public class TextBox {
         this.font = Game.getGameFont(maxFontSize);
         this.textXOffset = 48;
         this.textXStart = x + textXOffset;
-        this.bounds = new Rectangle(x, y, getWidth(type), HEIGHT);
+        this.bounds = new Rectangle(x, y, getTextBoxWidth(type), TEXT_BOX_HEIGHT);
     }
 
-    public static int getWidth(int type) {
+    public static int getTextBoxWidth(int type) {
         return switch (type) {
             case TEXT -> 384;
             case NUMBER -> 144;

@@ -216,6 +216,7 @@ public class Edit extends MapState implements StateMethods {
     public void saveMap() {
         game.getSaveFileHandler().saveMap(map);
         game.getEditMapSelect().initDropDownMenu();
+        game.getLoadGame().initDropDownMenu();
     }
 
     @Override

@@ -90,6 +90,10 @@ public class DeleteConfirm extends Overlay {
         return choice;
     }
 
+    public void resetChoice() {
+        choice = -1;
+    }
+
     public void setDeleteName(String deleteName) {
         this.deleteName = deleteName;
     }

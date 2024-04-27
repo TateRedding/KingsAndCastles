@@ -28,19 +28,19 @@ public class NewMapForm extends Overlay {
     }
 
     private void initTextBoxes() {
-        int xStart = x + (OVERLAY_WIDTH - TextBox.getWidth(TEXT)) / 2;
-        int yStart = y + (int) (rowHeight * 2);
-        mapName = new TextBox(TEXT, xStart, yStart);
+        int nameX = x + (OVERLAY_WIDTH - TextBox.getTextBoxWidth(TEXT)) / 2;
+        int nameY = y + (int) (rowHeight * 2);
+        mapName = new TextBox(TEXT, nameX, nameY);
         mapName.setFocus(true);
 
-        int numberTextBoxWidth = TextBox.getWidth(NUMBER);
-        xStart = x + (int) columnWidth + ((int) columnWidth - numberTextBoxWidth) / 2;
-        yStart = y + (int) rowHeight * 5;
-        mapWidth = new TextBox(NUMBER, xStart, yStart);
+        int numberTextBoxWidth = TextBox.getTextBoxWidth(NUMBER);
+        int widthX = x + (int) columnWidth + ((int) columnWidth - numberTextBoxWidth) / 2;
+        int numberTextBoxY = y + (int) rowHeight * 5;
+        mapWidth = new TextBox(NUMBER, widthX, numberTextBoxY);
         mapWidth.setCharLimit(3);
 
-        xStart = x + (int) columnWidth * 3 + ((int) columnWidth - numberTextBoxWidth) / 2;
-        mapHeight = new TextBox(NUMBER, xStart, yStart);
+        int heightX = x + (int) columnWidth * 3 + ((int) columnWidth - numberTextBoxWidth) / 2;
+        mapHeight = new TextBox(NUMBER, heightX, numberTextBoxY);
         mapHeight.setCharLimit(3);
 
         textBoxes.addAll(Arrays.asList(mapName, mapWidth, mapHeight));

@@ -3,13 +3,14 @@ package gamestates;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
+import java.io.Serializable;
 
 import main.Game;
 import objects.Map;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 
-public class Play extends MapState implements StateMethods {
+public class Play extends MapState implements StateMethods, Serializable {
 
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
@@ -77,8 +78,24 @@ public class Play extends MapState implements StateMethods {
 
     }
 
+    public ActionBar getActionBar() {
+        return actionBar;
+    }
+
+    public void setActionBar(ActionBar actionBar) {
+        this.actionBar = actionBar;
+    }
+
+    public GameStatBar getGameStatBar() {
+        return gameStatBar;
+    }
+
+    public void setGameStatBar(GameStatBar gameStatBar) {
+        this.gameStatBar = gameStatBar;
+    }
+
     public String getName() {
-        return this.name;
+        return name;
     }
 
 }

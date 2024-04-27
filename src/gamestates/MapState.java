@@ -12,6 +12,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -22,7 +23,7 @@ import ui.MiniMap;
 import ui.bars.TopBar;
 import utils.ImageLoader;
 
-public abstract class MapState extends State implements StateMethods {
+public abstract class MapState extends State implements StateMethods, Serializable {
 
     protected Map map;
     protected MiniMap miniMap;

@@ -17,7 +17,10 @@ import java.io.ObjectOutputStream;
 import javax.imageio.ImageIO;
 
 import gamestates.Play;
+import main.Game;
 import objects.Map;
+import ui.bars.ActionBar;
+import ui.bars.GameStatBar;
 
 public class LoadSave {
 
@@ -189,16 +192,27 @@ public class LoadSave {
         }
     }
 
-    private static void writeGameToFile(Play game, File gameFile) {
+    private static void writeGameToFile(Play play, File gameFile) {
+        Game game = play.getGame();
+        ActionBar actionBar = play.getActionBar();
+        GameStatBar gameStatBar = play.getGameStatBar();
+        play.setGame(null);
+        play.setActionBar(null);
+        play.setGameStatBar(null);
+
         try {
             FileOutputStream fileStream = new FileOutputStream(gameFile);
             ObjectOutputStream objectStream = new ObjectOutputStream(fileStream);
-            objectStream.writeObject(game);
+            objectStream.writeObject(play);
             objectStream.close();
             fileStream.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        play.setGame(game);
+        play.setActionBar(actionBar);
+        play.setGameStatBar(gameStatBar);
     }
 
     public static void createGameFile(Play game, File gameFile) {

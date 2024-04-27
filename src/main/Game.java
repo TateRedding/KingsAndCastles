@@ -129,7 +129,7 @@ public class Game extends JFrame implements Runnable {
     }
 
     public State getCurrentGameState() {
-        State currentState = switch (GameStates.gameState) {
+        return switch (GameStates.gameState) {
             case CREDITS -> credits;
             case EDIT -> edit;
             case EDIT_MAP_SELECT -> editMapSelect;
@@ -137,10 +137,7 @@ public class Game extends JFrame implements Runnable {
             case MENU -> menu;
             case PLAY -> play;
             case PLAY_MAP_SELECT -> playMapSelect;
-            default ->
-                    throw new IllegalArgumentException("Unexpected value for enum GameStates: " + GameStates.gameState);
         };
-        return currentState;
     }
 
     private void updateGame() {
@@ -151,12 +148,14 @@ public class Game extends JFrame implements Runnable {
         getCurrentGameState().render(g);
     }
 
-    public void startNewGame(Map map, String name) {
-        play = new Play(this, map, name);
+    public void startGame(Play play) {
+        this.play = play;
+        GameStates.setGameState(GameStates.PLAY);
     }
 
     public void editMap(Map map) {
         edit = new Edit(this, map);
+        GameStates.setGameState(GameStates.EDIT);
     }
 
     public void windowFocusLost() {
