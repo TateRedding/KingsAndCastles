@@ -214,7 +214,7 @@ public class Edit extends MapState implements StateMethods {
     }
 
     public void saveMap() {
-        game.getMapHandler().saveMap(map);
+        game.getSaveFileHandler().saveMap(map);
         game.getEditMapSelect().initDropDownMenu();
     }
 

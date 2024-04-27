@@ -11,7 +11,6 @@ import java.util.Arrays;
 import main.Game;
 import objects.Map;
 import ui.TextBox;
-import utils.ImageLoader;
 import utils.RenderText;
 
 public class NewMapForm extends Overlay {
@@ -20,8 +19,8 @@ public class NewMapForm extends Overlay {
     private ArrayList<TextBox> textBoxes = new ArrayList<TextBox>();
     private int numRows = 7;
     private int numColumns = 5;
-    private float rowHeight = height / numRows;
-    private float columnWidth = width / numColumns;
+    private float rowHeight = OVERLAY_HEIGHT / numRows;
+    private float columnWidth = OVERLAY_WIDTH / numColumns;
 
     public NewMapForm(int x, int y) {
         super(x, y);
@@ -29,12 +28,12 @@ public class NewMapForm extends Overlay {
     }
 
     private void initTextBoxes() {
-        int xStart = x + (width - ImageLoader.textBoxBg[TEXT].getWidth()) / 2;
+        int xStart = x + (OVERLAY_WIDTH - TextBox.getWidth(TEXT)) / 2;
         int yStart = y + (int) (rowHeight * 2);
         mapName = new TextBox(TEXT, xStart, yStart);
         mapName.setFocus(true);
 
-        int numberTextBoxWidth = ImageLoader.textBoxBg[NUMBER].getWidth();
+        int numberTextBoxWidth = TextBox.getWidth(NUMBER);
         xStart = x + (int) columnWidth + ((int) columnWidth - numberTextBoxWidth) / 2;
         yStart = y + (int) rowHeight * 5;
         mapWidth = new TextBox(NUMBER, xStart, yStart);
@@ -57,10 +56,10 @@ public class NewMapForm extends Overlay {
     public void render(Graphics g) {
         super.render(g);
         g.setFont(Game.getGameFont(40f));
-        String widthBounds = "(" + Integer.toString(Map.MIN_WIDTH) + " - " + Integer.toString(Map.MAX_WIDTH) + ")";
-        String heightBounds = "(" + Integer.toString(Map.MIN_HEIGHT) + " - " + Integer.toString(Map.MAX_HEIGHT) + ")";
+        String widthBounds = "(" + Map.MIN_WIDTH + " - " + Map.MAX_WIDTH + ")";
+        String heightBounds = "(" + Map.MIN_HEIGHT + " - " + Map.MAX_HEIGHT + ")";
 
-        RenderText.renderText(g, "Map Name", RenderText.CENTER, RenderText.CENTER, x, y + (int) rowHeight, width, (int) rowHeight);
+        RenderText.renderText(g, "Map Name", RenderText.CENTER, RenderText.CENTER, x, y + (int) rowHeight, OVERLAY_WIDTH, (int) rowHeight);
         RenderText.renderText(g, "Tile Width", RenderText.CENTER, RenderText.CENTER, x + (int) columnWidth, y + (int) rowHeight * 4, (int) columnWidth, (int) rowHeight);
         RenderText.renderText(g, "Tile Height", RenderText.CENTER, RenderText.CENTER, x + (int) columnWidth * 3, y + (int) rowHeight * 4, (int) columnWidth, (int) rowHeight);
 

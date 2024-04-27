@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 
 import objects.Map;
 import objects.Tile;
+import ui.TextBox;
 import ui.buttons.Button;
 
 public class ImageLoader {
@@ -104,7 +105,7 @@ public class ImageLoader {
         BufferedImage textBoxes = LoadSave.loadImage(TEXT_BOX_BG);
         textBoxBg = new BufferedImage[2];
         textBoxBg[NUMBER] = textBoxes.getSubimage(0, 0, 144, 48);
-        textBoxBg[TEXT] = textBoxes.getSubimage(textBoxBg[NUMBER].getWidth(), 0, 384, 48);
+        textBoxBg[TEXT] = textBoxes.getSubimage(TextBox.getWidth(NUMBER), 0, 384, 48);
 
         dropDownBody = LoadSave.loadImage(DROP_DOWN_BODY);
         dropDownTop = LoadSave.loadImage(DROP_DOWN_TOP);

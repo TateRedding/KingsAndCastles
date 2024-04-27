@@ -16,7 +16,7 @@ import objects.Map;
 import ui.overlays.NewMapForm;
 import ui.buttons.ExButton;
 import ui.buttons.TextButton;
-import utils.ImageLoader;
+import ui.overlays.Overlay;
 
 public class EditMapSelect extends MapSelect implements StateMethods {
 
@@ -28,8 +28,8 @@ public class EditMapSelect extends MapSelect implements StateMethods {
     public EditMapSelect(Game game) {
         super(game);
 
-        int formX = (Game.SCREEN_WIDTH - ImageLoader.overlayBg.getWidth()) / 2;
-        int formY = (Game.SCREEN_HEIGHT - ImageLoader.overlayBg.getHeight()) / 2;
+        int formX = (Game.SCREEN_WIDTH - Overlay.OVERLAY_WIDTH) / 2;
+        int formY = (Game.SCREEN_HEIGHT - Overlay.OVERLAY_HEIGHT) / 2;
         newMapForm = new NewMapForm(formX, formY);
 
         int xStart = (SCREEN_WIDTH - getButtonWidth(TEXT_LARGE)) / 2;
@@ -89,7 +89,7 @@ public class EditMapSelect extends MapSelect implements StateMethods {
 
     private void startMapEditor(Map map) {
         game.editMap(map);
-        game.getMapHandler().getMaps().add(0, map);
+        game.getSaveFileHandler().getMaps().add(0, map);
         GameStates.setGameState(GameStates.EDIT);
         super.reset();
         showNewMapForm = false;
@@ -112,7 +112,7 @@ public class EditMapSelect extends MapSelect implements StateMethods {
     @Override
     public void mouseReleased(int x, int y, int button) {
         super.mouseReleased(x, y, button);
-        if (dropDownMenu.isExpanded())
+        if (mapList.isExpanded())
             showNewMapForm = false;
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y)) {
@@ -128,7 +128,7 @@ public class EditMapSelect extends MapSelect implements StateMethods {
             if (newMapButton.getBounds().contains(x, y) && newMapButton.isMousePressed()) {
                 showNewMapForm = true;
                 newMapForm.resetTextBoxes();
-                dropDownMenu.setExpanded(false);
+                mapList.setExpanded(false);
             }
 
         if (start.getBounds().contains(x, y) && start.isMousePressed())

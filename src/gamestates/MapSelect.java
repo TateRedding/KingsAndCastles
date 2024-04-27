@@ -16,6 +16,7 @@ import ui.buttons.Button;
 import ui.buttons.ExButton;
 import ui.buttons.TextButton;
 import ui.overlays.DeleteConfirm;
+import ui.overlays.Overlay;
 import utils.ImageLoader;
 import utils.LoadSave;
 import utils.RenderText;
@@ -28,11 +29,11 @@ import static ui.buttons.Button.*;
 
 public abstract class MapSelect extends State implements StateMethods {
 
-    protected DropDownMenu dropDownMenu;
+    protected DropDownMenu mapList;
     protected Map selectedMap;
     protected DeleteConfirm deleteConfirm;
     protected String[][] selectedMapData;
-    protected TextButton start, delete;
+    protected TextButton start, delete, menu;
 
 
     protected int dropDownMenuYOffset = 48;
@@ -40,7 +41,7 @@ public abstract class MapSelect extends State implements StateMethods {
     private int previewWidth = Map.MAX_WIDTH * previewScale;
     private int previewX = (SCREEN_WIDTH - previewWidth) / 2;
     private int previewHeight = Map.MAX_HEIGHT * previewScale;
-    private int previewY = dropDownMenuYOffset * 2 + ImageLoader.dropDownTop.getHeight();
+    private int previewY = dropDownMenuYOffset * 2 + DropDownMenu.DD_TOP_HEIGHT;
     protected boolean deleting;
 
     public MapSelect(Game game) {
@@ -48,21 +49,25 @@ public abstract class MapSelect extends State implements StateMethods {
         initDropDownMenu();
         initButtons();
 
-        int dcX = (SCREEN_WIDTH - ImageLoader.overlayBg.getWidth()) / 2;
-        int dcY = (SCREEN_HEIGHT - ImageLoader.overlayBg.getHeight()) / 2;
+        int dcX = (SCREEN_WIDTH - Overlay.OVERLAY_WIDTH) / 2;
+        int dcY = (SCREEN_HEIGHT - Overlay.OVERLAY_HEIGHT) / 2;
         deleteConfirm = new DeleteConfirm("", dcX, dcY);
     }
 
     public void initDropDownMenu() {
-        ArrayList<Map> maps = game.getMapHandler().getMaps();
+        ArrayList<Map> maps = game.getSaveFileHandler().getMaps();
         String[] options = new String[maps.size()];
         for (int i = 0; i < maps.size(); i++)
             options[i] = maps.get(i).getName();
-        int ddX = (Game.SCREEN_WIDTH - ImageLoader.dropDownTop.getWidth()) / 2;
-        dropDownMenu = new DropDownMenu("Select Saved Map", options, 5, ddX, dropDownMenuYOffset);
+        int ddX = (Game.SCREEN_WIDTH - DropDownMenu.DD_WIDTH) / 2;
+        mapList = new DropDownMenu("Select Map", options, 5, ddX, dropDownMenuYOffset);
     }
 
     protected void initButtons() {
+
+        int offset = 48;
+        menu = new TextButton(TEXT_SMALL, "Menu", 28f, offset, offset);
+
         int previewXEnd = previewX + previewWidth;
         int startX = previewXEnd + ((Game.SCREEN_WIDTH - previewXEnd) - getButtonWidth(TEXT_LARGE)) / 2;
         int startY = (Game.SCREEN_HEIGHT - Button.getButtonHeight(TEXT_LARGE)) / 2;
@@ -76,7 +81,8 @@ public abstract class MapSelect extends State implements StateMethods {
 
     @Override
     public void update() {
-        dropDownMenu.update();
+        mapList.update();
+        menu.update();
         if (selectedMap != null) {
             start.update();
             delete.update();
@@ -94,7 +100,8 @@ public abstract class MapSelect extends State implements StateMethods {
             if (deleting)
                 deleteConfirm.render(g);
         }
-        dropDownMenu.render(g);
+        mapList.render(g);
+        menu.render(g);
     }
 
     protected void renderSelectedMapData(Graphics g) {
@@ -139,10 +146,10 @@ public abstract class MapSelect extends State implements StateMethods {
 
     private void deleteSelectedMap() {
         LoadSave.deleteMapFile(selectedMap);
-        for (int i = 0; i < game.getMapHandler().getMaps().size(); i++) {
-            Map currMap = game.getMapHandler().getMaps().get(i);
+        for (int i = 0; i < game.getSaveFileHandler().getMaps().size(); i++) {
+            Map currMap = game.getSaveFileHandler().getMaps().get(i);
             if (currMap.getName().equals(selectedMap.getName())) {
-                game.getMapHandler().getMaps().remove(i);
+                game.getSaveFileHandler().getMaps().remove(i);
                 break;
             }
         }
@@ -170,61 +177,75 @@ public abstract class MapSelect extends State implements StateMethods {
 
     @Override
     public void mousePressed(int x, int y, int button) {
-        if (dropDownMenu.getBounds().contains(x, y))
-            dropDownMenu.mousePressed(x, y, button);
-        if (selectedMap != null && button == MouseEvent.BUTTON1)
-            if (start.getBounds().contains(x, y))
-                start.setMousePressed(true);
-            else if (delete.getBounds().contains(x, y))
-                delete.setMousePressed(true);
+        if (mapList.getBounds().contains(x, y))
+            mapList.mousePressed(x, y, button);
+        if (button == MouseEvent.BUTTON1) {
+            if (menu.getBounds().contains(x, y))
+                menu.setMousePressed(true);
+            if (selectedMap != null)
+                if (start.getBounds().contains(x, y))
+                    start.setMousePressed(true);
+                else if (delete.getBounds().contains(x, y))
+                    delete.setMousePressed(true);
+        }
         if (deleting && deleteConfirm.getBounds().contains(x, y))
             deleteConfirm.mousePressed(x, y, button);
     }
 
     @Override
     public void mouseReleased(int x, int y, int button) {
-        dropDownMenu.mouseReleased(x, y, button);
-        if (deleting)
-            deleteConfirm.mouseReleased(x, y, button);
-        if (dropDownMenu.getBounds().contains(x, y)) {
-            int selectedIndex = dropDownMenu.getSelectedIndex();
+        mapList.mouseReleased(x, y, button);
+        if (mapList.getBounds().contains(x, y)) {
+            int selectedIndex = mapList.getSelectedIndex();
             if (selectedIndex != -1) {
-                selectedMap = game.getMapHandler().getMaps().get(selectedIndex);
+                selectedMap = game.getSaveFileHandler().getMaps().get(selectedIndex);
                 selectedMapData = getMapData();
             } else {
                 selectedMap = null;
-                dropDownMenu.resetIndicies();
+                mapList.resetIndicies();
             }
         }
-        if (deleting && deleteConfirm.getBounds().contains(x, y)) {
-            ExButton exButton = deleteConfirm.getExButton();
-            if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
-                deleting = false;
-                exButton.reset(x, y);
-            } else {
-                deleteConfirm.mouseReleased(x, y, button);
-                int choice = deleteConfirm.getChoice();
-                if (choice != -1) {
-                    deleting = false;
-                    if (choice == DeleteConfirm.YES)
-                        deleteSelectedMap();
-                }
+        if (button == MouseEvent.BUTTON1) {
+            if (menu.getBounds().contains(x, y) && menu.isMousePressed()) {
+                GameStates.setGameState(GameStates.MENU);
+                reset();
             }
-        }
-        if (selectedMap != null && button == MouseEvent.BUTTON1)
-            if (delete.getBounds().contains(x, y) && delete.isMousePressed()) {
+            if (selectedMap != null && delete.getBounds().contains(x, y) && delete.isMousePressed()) {
                 deleting = true;
                 deleteConfirm.setDeleteName(selectedMap.getName());
             }
+        }
+        if (deleting) {
+            deleteConfirm.mouseReleased(x, y, button);
+            if (deleteConfirm.getBounds().contains(x, y)) {
+                ExButton exButton = deleteConfirm.getExButton();
+                if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
+                    deleting = false;
+                    exButton.reset(x, y);
+                } else {
+                    deleteConfirm.mouseReleased(x, y, button);
+                    int choice = deleteConfirm.getChoice();
+                    if (choice != -1) {
+                        deleting = false;
+                        if (choice == DeleteConfirm.YES)
+                            deleteSelectedMap();
+                    }
+                }
+            }
+        }
         delete.reset(x, y);
+        menu.reset(x, y);
     }
 
     @Override
     public void mouseMoved(int x, int y) {
         start.setMouseOver(false);
         delete.setMouseOver(false);
-        dropDownMenu.mouseMoved(x, y);
+        menu.setMouseOver(false);
+        mapList.mouseMoved(x, y);
         deleteConfirm.mouseMoved(x, y);
+        if (menu.getBounds().contains(x, y))
+            menu.setMouseOver(true);
         if (selectedMap != null)
             if (start.getBounds().contains(x, y))
                 start.setMouseOver(true);
@@ -233,7 +254,7 @@ public abstract class MapSelect extends State implements StateMethods {
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
-        dropDownMenu.mouseWheelMoved(e);
+        mapList.mouseWheelMoved(e);
     }
 
 }

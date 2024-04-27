@@ -16,7 +16,7 @@ import gamestates.Menu;
 import gamestates.Play;
 import gamestates.PlayMapSelect;
 import gamestates.State;
-import handlers.MapHandler;
+import handlers.SaveFileHandler;
 import handlers.TileHandler;
 import objects.Map;
 import utils.LoadSave;
@@ -43,7 +43,7 @@ public class Game extends JFrame implements Runnable {
     private Edit edit;
     private EditMapSelect editMapSelect;
     private LoadGame loadGame;
-    private MapHandler mapHandler;
+    private SaveFileHandler saveFileHandler;
     private Menu menu;
     private Play play;
     private PlayMapSelect playMapSelect;
@@ -69,7 +69,7 @@ public class Game extends JFrame implements Runnable {
     }
 
     private void initHandlers() {
-        mapHandler = new MapHandler();
+        saveFileHandler = new SaveFileHandler();
         tileHandler = new TileHandler(this);
     }
 
@@ -151,8 +151,8 @@ public class Game extends JFrame implements Runnable {
         getCurrentGameState().render(g);
     }
 
-    public void startNewGame(Map map) {
-        play = new Play(this, map);
+    public void startNewGame(Map map, String name) {
+        play = new Play(this, map, name);
     }
 
     public void editMap(Map map) {
@@ -175,12 +175,8 @@ public class Game extends JFrame implements Runnable {
         return gameFont.deriveFont(size);
     }
 
-    public MapHandler getMapHandler() {
-        return mapHandler;
-    }
-
-    public Menu getMenu() {
-        return menu;
+    public LoadGame getLoadGame() {
+        return loadGame;
     }
 
     public Play getPlay() {
@@ -189,6 +185,10 @@ public class Game extends JFrame implements Runnable {
 
     public PlayMapSelect getPlayMapSelect() {
         return playMapSelect;
+    }
+
+    public SaveFileHandler getSaveFileHandler() {
+        return saveFileHandler;
     }
 
     public TileHandler getTileHandler() {

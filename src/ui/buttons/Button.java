@@ -29,48 +29,32 @@ public class Button {
     }
 
     public static int getButtonWidth(int buttonType) {
-        switch (buttonType) {
-            case TEXT_SMALL:
-                return 56;
-            case TEXT_LARGE:
-                return 168;
-            case SPRITE:
-                return 76;
-            case EX:
-                return 24;
-            case DROP_DOWN:
-                return 48;
-        }
-        return 0;
+        return switch (buttonType) {
+            case TEXT_SMALL -> 56;
+            case TEXT_LARGE -> 168;
+            case SPRITE -> 76;
+            case EX -> 24;
+            case DROP_DOWN -> 48;
+            default -> 0;
+        };
     }
 
     public static int getButtonHeight(int buttonType) {
-        switch (buttonType) {
-            case TEXT_SMALL:
-            case EX:
-                return 27;
-            case TEXT_LARGE:
-                return 81;
-            case SPRITE:
-                return 83;
-            case DROP_DOWN:
-                return 48;
-        }
-        return 0;
+        return switch (buttonType) {
+            case TEXT_SMALL, EX -> 27;
+            case TEXT_LARGE -> 81;
+            case SPRITE -> 83;
+            case DROP_DOWN -> 48;
+            default -> 0;
+        };
     }
 
     public static int getButtonOffset(int buttonType) {
-        switch (buttonType) {
-            case TEXT_SMALL:
-            case EX:
-                return 3;
-            case TEXT_LARGE:
-            case SPRITE:
-                return 7;
-            case DROP_DOWN:
-                return 0;
-        }
-        return 0;
+        return switch (buttonType) {
+            case TEXT_SMALL, EX -> 3;
+            case TEXT_LARGE, SPRITE -> 7;
+            default -> 0;
+        };
     }
 
     public void update() {
@@ -104,7 +88,7 @@ public class Button {
     }
 
     public void setMouseOver(boolean mouseOver) {
-        if (!mouseOver || (mouseOver && !disabled))
+        if (!mouseOver || !disabled)
             this.mouseOver = mouseOver;
     }
 
@@ -113,7 +97,7 @@ public class Button {
     }
 
     public void setMousePressed(boolean mousePressed) {
-        if (!mousePressed || (mousePressed && !disabled))
+        if (!mousePressed || !disabled)
             this.mousePressed = mousePressed;
     }
 

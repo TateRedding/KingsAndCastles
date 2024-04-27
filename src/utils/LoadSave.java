@@ -16,31 +16,32 @@ import java.io.ObjectOutputStream;
 
 import javax.imageio.ImageIO;
 
+import gamestates.Play;
 import objects.Map;
 
 public class LoadSave {
 
     public static String homePath = System.getProperty("user.home");
-    public static String gameFolder = "Kings and Castles";
+    public static String mainFolder = "Kings and Castles";
     public static String mapFolder = "maps";
     public static String mapFileExtension = ".kacmap";
-    public static String mapPath = homePath + File.separator + gameFolder + File.separator + mapFolder;
+    public static String mapPath = homePath + File.separator + mainFolder + File.separator + mapFolder;
     public static String previewImageSuffix = "_preview.png";
-    public static String saveFolder = "saves";
-    public static String saveFileExtension = ".kacsave";
-    public static String savePath = homePath + File.separator + gameFolder + File.separator + saveFolder;
+    public static String gameFolder = "saves";
+    public static String gameFileExtension = ".kacsave";
+    public static String gamePath = homePath + File.separator + mainFolder + File.separator + gameFolder;
 
     private static String fontName = "SilverModified.ttf";
     public static Font silverModified;
 
     public static void createFolders() {
-        File folder = new File(homePath + File.separator + gameFolder);
+        File folder = new File(homePath + File.separator + mainFolder);
         if (!folder.exists())
             folder.mkdir();
         folder = new File(mapPath);
         if (!folder.exists())
             folder.mkdir();
-        folder = new File(savePath);
+        folder = new File(gamePath);
         if (!folder.exists())
             folder.mkdir();
     }
@@ -159,6 +160,72 @@ public class LoadSave {
                 System.out.println("Failed to delete " + imageName);
         } else
             System.out.println("Could not locate " + imageName);
+
+    }
+
+    public static Play loadGame(File gameFile) {
+        Play game = null;
+        try {
+            FileInputStream fis = new FileInputStream(gameFile);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            game = (Play) ois.readObject();
+            ois.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return game;
+    }
+
+    public static void saveGame(Play game) {
+        File gameFile = new File(gamePath + File.separator + game.getName() + gameFileExtension);
+        if (gameFile.exists()) {
+            System.out.println("Saving game...");
+            writeGameToFile(game, gameFile);
+        } else {
+            System.out.println("Creating new game file");
+            createGameFile(game, gameFile);
+        }
+    }
+
+    private static void writeGameToFile(Play game, File gameFile) {
+        try {
+            FileOutputStream fileStream = new FileOutputStream(gameFile);
+            ObjectOutputStream objectStream = new ObjectOutputStream(fileStream);
+            objectStream.writeObject(game);
+            objectStream.close();
+            fileStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createGameFile(Play game, File gameFile) {
+        if (gameFile.exists()) {
+            System.out.println("File: " + gameFile + " already exists");
+            return;
+        } else {
+            try {
+                gameFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            writeGameToFile(game, gameFile);
+        }
+    }
+
+    public static void deleteGameFile(Play game) {
+        String gameFileName = game.getName() + gameFileExtension;
+        File gameFile = new File(gamePath + File.separator + gameFileName);
+        if (gameFile.exists()) {
+            boolean deleted = gameFile.delete();
+            if (deleted)
+                System.out.println(gameFileName + " deleted successfully.");
+            else
+                System.out.println("Failed to delete " + gameFileName);
+        } else
+            System.out.println("Could not locate " + gameFileName);
 
     }
 

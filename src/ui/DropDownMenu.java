@@ -1,7 +1,6 @@
 package ui;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -9,7 +8,6 @@ import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 
 import main.Game;
-import ui.buttons.Button;
 import ui.buttons.DropDownButton;
 import ui.buttons.ExButton;
 import utils.ImageLoader;
@@ -19,6 +17,10 @@ import static ui.buttons.Button.*;
 
 public class DropDownMenu {
 
+    public static final int DD_TOP_HEIGHT = 48;
+    public static final int DD_BODY_HEIGHT = 240;
+    public static final int DD_WIDTH = 576;
+
     private DropDownButton ddButton;
     protected ExButton unselect;
     private Rectangle bounds;
@@ -27,7 +29,6 @@ public class DropDownMenu {
     private String[] options;
     private ArrayList<Rectangle> rowBounds = new ArrayList<Rectangle>();
     private int x, y;
-    private int topHeight, bodyHeight, width;
     private int selectedIndex = -1, hoverIndex = -1, startIndex = 0;
     private int numRows, maxStartIndex;
     private int rowWidth, rowX, rowXOffset = 48;
@@ -41,20 +42,17 @@ public class DropDownMenu {
         this.maxStartIndex = options.length - numRows;
         this.x = x;
         this.y = y;
-        this.topHeight = ImageLoader.dropDownTop.getHeight();
-        this.bodyHeight = ImageLoader.dropDownBody.getHeight();
-        this.width = ImageLoader.dropDownTop.getWidth();
-        this.rowHeight = bodyHeight / numRows;
-        this.rowWidth = width - rowXOffset * 2;
+        this.rowHeight = DD_BODY_HEIGHT / numRows;
+        this.rowWidth = DD_WIDTH - rowXOffset * 2;
         this.rowX = x + rowXOffset;
-        this.bounds = new Rectangle(x, y, width, topHeight);
+        this.bounds = new Rectangle(x, y, DD_WIDTH, DD_TOP_HEIGHT);
         this.ddButton = new DropDownButton(DD_DOWN, x + bounds.width - getButtonWidth(DROP_DOWN), y);
 
         int unselectX = bounds.x + (bounds.height - getButtonWidth(EX)) / 2;
         int unselectY = bounds.y + (bounds.height - getButtonHeight(EX)) / 2;
         this.unselect = new ExButton(unselectX, unselectY);
 
-        float yStart = y + topHeight;
+        float yStart = y + DD_TOP_HEIGHT;
         int boundsXOffset = 8;
         for (int i = 0; i < 5 && i < options.length; i++) {
             rowBounds.add(new Rectangle(rowX - boundsXOffset, (int) yStart, rowWidth + boundsXOffset * 2, (int) rowHeight));
@@ -64,9 +62,9 @@ public class DropDownMenu {
 
     public void update() {
         ddButton.update();
-        bounds.height = topHeight;
+        bounds.height = DD_TOP_HEIGHT;
         if (expanded)
-            bounds.height += bodyHeight;
+            bounds.height += DD_BODY_HEIGHT;
         else {
             hoverIndex = -1;
             startIndex = 0;
@@ -78,11 +76,11 @@ public class DropDownMenu {
     public void render(Graphics g) {
         g.drawImage(ImageLoader.dropDownTop, x, y, null);
         g.setColor(Color.BLACK);
-        g.setFont(Game.getGameFont(46f));
+        g.setFont(Game.getGameFont(maxFontSize));
         if (selectedIndex != -1) {
-            RenderText.renderText(g, options[selectedIndex], RenderText.CENTER, RenderText.CENTER, x, y, bounds.width, topHeight);
+            RenderText.renderText(g, options[selectedIndex], RenderText.CENTER, RenderText.CENTER, x, y, bounds.width, DD_TOP_HEIGHT);
         } else {
-            RenderText.renderText(g, text, RenderText.CENTER, RenderText.CENTER, x, y, bounds.width, topHeight);
+            RenderText.renderText(g, text, RenderText.CENTER, RenderText.CENTER, x, y, bounds.width, DD_TOP_HEIGHT);
         }
 
         ddButton.render(g);
@@ -90,7 +88,7 @@ public class DropDownMenu {
             unselect.render(g);
 
         if (expanded) {
-            g.drawImage(ImageLoader.dropDownBody, x, y + topHeight, null);
+            g.drawImage(ImageLoader.dropDownBody, x, y + DD_TOP_HEIGHT, null);
             renderOptions(g);
             renderScrollBar(g);
             if (hoverIndex != -1) {
@@ -102,7 +100,7 @@ public class DropDownMenu {
     }
 
     private void renderOptions(Graphics g) {
-        float yStart = y + topHeight;
+        float yStart = y + DD_TOP_HEIGHT;
         for (int i = startIndex; i < startIndex + numRows && i < options.length; i++) {
             float fontSize = 46f;
             while (g.getFontMetrics(Game.getGameFont(fontSize)).stringWidth(options[i]) > rowWidth)
@@ -119,9 +117,9 @@ public class DropDownMenu {
         int yOffset = 16;
         int xOffset = 16;
         int containerWidth = 16;
-        int totalHeight = bodyHeight - yOffset * 2;
-        int yStart = y + topHeight + yOffset;
-        int xStart = x + width - containerWidth - xOffset;
+        int totalHeight = DD_BODY_HEIGHT - yOffset * 2;
+        int yStart = y + DD_TOP_HEIGHT + yOffset;
+        int xStart = x + DD_WIDTH - containerWidth - xOffset;
 
         float scrollHeight = totalHeight;
         if (options.length > 0)

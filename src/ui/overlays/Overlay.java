@@ -12,19 +12,20 @@ import utils.ImageLoader;
 
 public abstract class Overlay {
 
-    protected int x, y, width, height;
+    public static final int OVERLAY_HEIGHT = 288;
+    public static final int OVERLAY_WIDTH = 480;
+
+    protected int x, y;
     protected Rectangle bounds;
     protected ExButton exButton;
 
     public Overlay(int x, int y) {
         this.x = x;
         this.y = y;
-        this.width = ImageLoader.overlayBg.getWidth();
-        this.height = ImageLoader.overlayBg.getHeight();
-        this.bounds = new Rectangle(x, y, width, height);
+        this.bounds = new Rectangle(x, y, OVERLAY_WIDTH, OVERLAY_HEIGHT);
         int offset = 10;
 
-        this.exButton = new ExButton(x + width - getButtonWidth(EX) - offset, y + offset);
+        this.exButton = new ExButton(x + OVERLAY_WIDTH - getButtonWidth(EX) - offset, y + offset);
     }
 
     public void update() {
