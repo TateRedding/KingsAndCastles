@@ -37,45 +37,20 @@ public class MouseInputs implements MouseListener, MouseMotionListener, MouseWhe
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        switch (GameStates.gameState) {
-            case EDIT:
-                game.getEdit().mouseEntered(e.getX(), e.getY());
-                break;
-            case PLAY:
-                game.getPlay().mouseEntered(e.getX(), e.getY());
-                break;
-            default:
-                break;
-        }
-
+        State currState = game.getCurrentGameState();
+        currState.mouseEntered(e.getX(), e.getY());
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        switch (GameStates.gameState) {
-            case EDIT:
-                game.getEdit().mouseExited(e.getX(), e.getY());
-                break;
-            case PLAY:
-                game.getPlay().mouseExited(e.getX(), e.getY());
-                break;
-            default:
-                break;
-        }
+        State currState = game.getCurrentGameState();
+        currState.mouseExited(e.getX(), e.getY());
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        switch (GameStates.gameState) {
-            case EDIT:
-                game.getEdit().mouseDragged(e.getX(), e.getY());
-                break;
-            case PLAY:
-                game.getPlay().mouseDragged(e.getX(), e.getY());
-                break;
-            default:
-                break;
-        }
+        State currState = game.getCurrentGameState();
+        currState.mouseDragged(e.getX(), e.getY());
     }
 
     @Override
@@ -86,26 +61,8 @@ public class MouseInputs implements MouseListener, MouseMotionListener, MouseWhe
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        switch (GameStates.gameState) {
-            case EDIT:
-                game.getEdit().mouseWheelMoved(e);
-                break;
-            case EDIT_MAP_SELECT:
-                game.getEditMapSelect().mouseWheelMoved(e);
-                break;
-            case LOAD_GAME:
-                game.getLoadGame().mouseWheelMoved(e);
-                break;
-            case PLAY:
-                game.getPlay().mouseWheelMoved(e);
-                break;
-            case PLAY_MAP_SELECT:
-                game.getPlayMapSelect().mouseWheelMoved(e);
-                break;
-            default:
-                break;
-        }
-
+        State currState = game.getCurrentGameState();
+        currState.mouseWheelMoved(e.getWheelRotation(), e.getScrollAmount());
     }
 
 }

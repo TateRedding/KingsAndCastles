@@ -193,8 +193,8 @@ public class DropDownMenu {
 
     }
 
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        if (e.getWheelRotation() == -1) {
+    public void mouseWheelMoved(int dir, int amt) {
+        if (dir == -1) {
             if (startIndex > 0) {
                 startIndex--;
             }

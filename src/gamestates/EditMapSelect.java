@@ -19,7 +19,7 @@ import ui.buttons.TextButton;
 import ui.overlays.Overlay;
 import utils.LoadSave;
 
-public class EditMapSelect extends MapSelect implements StateMethods {
+public class EditMapSelect extends MapSelect {
 
     private NewMapForm newMapForm;
     private TextButton newMapButton;
@@ -158,10 +158,7 @@ public class EditMapSelect extends MapSelect implements StateMethods {
             start.setMouseOver(true);
     }
 
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        super.mouseWheelMoved(e);
-    }
-
+    @Override
     public void keyPressed(KeyEvent e) {
         if (showNewMapForm)
             newMapForm.keyPressed(e);

@@ -22,7 +22,7 @@ import ui.bars.EditorBar;
 import ui.bars.MapStatBar;
 import utils.ImageLoader;
 
-public class Edit extends MapState implements StateMethods {
+public class Edit extends MapState {
 
     private static final int CASTLE_ZONE = 5;
     private static final int GOLD_MINE = 6;
@@ -293,9 +293,10 @@ public class Edit extends MapState implements StateMethods {
             mapStatBar.mouseMoved(x, y);
     }
 
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        super.mouseWheelMoved(e);
-        if (e.getWheelRotation() == -1) {
+    @Override
+    public void mouseWheelMoved(int dir, int amt) {
+        super.mouseWheelMoved(dir, amt);
+        if (dir == -1) {
             if (selectedZone < map.getNumPlayers() - 1) {
                 selectedZone++;
             }
@@ -303,14 +304,11 @@ public class Edit extends MapState implements StateMethods {
             selectedZone--;
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         super.keyPressed(e);
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_DELETE)
             selectedType = -1;
-    }
-
-    public Map getMap() {
-        return map;
     }
 
     public void setSelectedType(int type) {

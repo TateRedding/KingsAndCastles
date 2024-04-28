@@ -15,7 +15,7 @@ import main.Game;
 import ui.buttons.TextButton;
 import utils.RenderText;
 
-public class Menu extends State implements StateMethods {
+public class Menu extends State {
 
     private TextButton newGame, loadGame, editMap, quit;
     private ArrayList<TextButton> buttons = new ArrayList<TextButton>();

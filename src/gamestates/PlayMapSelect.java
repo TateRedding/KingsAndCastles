@@ -11,7 +11,7 @@ import ui.overlays.Overlay;
 import utils.LoadSave;
 import utils.RenderText;
 
-public class PlayMapSelect extends MapSelect implements StateMethods {
+public class PlayMapSelect extends MapSelect {
 
     private NameGame nameGame;
 
@@ -100,6 +100,7 @@ public class PlayMapSelect extends MapSelect implements StateMethods {
         }
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         if (naming)
             nameGame.keyPressed(e);

@@ -23,7 +23,7 @@ import ui.MiniMap;
 import ui.bars.TopBar;
 import utils.ImageLoader;
 
-public abstract class MapState extends State implements StateMethods, Serializable {
+public abstract class MapState extends State implements Serializable {
 
     protected Map map;
     protected MiniMap miniMap;
@@ -46,11 +46,6 @@ public abstract class MapState extends State implements StateMethods, Serializab
         this.maxXTileOffset = map.getTileData()[0].length - GAME_AREA_TILE_WIDTH;
         this.maxYTileOffset = map.getTileData().length - GAME_AREA_TILE_HEIGHT;
         this.gameBounds = new Rectangle(0, TopBar.TOP_BAR_HEIGHT, Game.GAME_AREA_WIDTH, Game.GAME_AREA_HEIGHT);
-    }
-
-    @Override
-    public void update() {
-
     }
 
     @Override
@@ -113,20 +108,12 @@ public abstract class MapState extends State implements StateMethods, Serializab
         }
     }
 
-    @Override
-    public void mouseReleased(int x, int y, int button) {
-
-    }
-
     public void mouseEntered(int x, int y) {
         if (y < Game.SCREEN_HEIGHT + TopBar.TOP_BAR_HEIGHT && y > TopBar.TOP_BAR_HEIGHT)
             inGameArea = true;
     }
 
-    public void mouseExited(int x, int y) {
-        inGameArea = false;
-    }
-
+    @Override
     public void mouseDragged(int x, int y) {
         inGameArea = gameBounds.contains(x, y);
         if (inGameArea)
@@ -140,10 +127,7 @@ public abstract class MapState extends State implements StateMethods, Serializab
             updateCoords(x, y);
     }
 
-    public void mouseWheelMoved(MouseWheelEvent e) {
-
-    }
-
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             if (xTileOffset <= 0)
@@ -167,6 +151,10 @@ public abstract class MapState extends State implements StateMethods, Serializab
                 yTileOffset++;
         }
 
+    }
+
+    public Map getMap() {
+        return map;
     }
 
     public void setXTileOffset(int xTileOffset) {

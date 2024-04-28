@@ -10,7 +10,7 @@ import objects.Map;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 
-public class Play extends MapState implements StateMethods, Serializable {
+public class Play extends MapState implements Serializable {
 
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
@@ -57,25 +57,12 @@ public class Play extends MapState implements StateMethods, Serializable {
     }
 
     @Override
-    public void mouseDragged(int x, int y) {
-
-    }
-
-    @Override
     public void mouseMoved(int x, int y) {
         super.mouseMoved(x, y);
         if (actionBar.getBounds().contains(x, y))
             actionBar.mouseMoved(x, y);
         else if (gameStatBar.getBounds().contains(x, y))
             gameStatBar.mouseMoved(x, y);
-    }
-
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        super.mouseWheelMoved(e);
-    }
-
-    public void keyPressed(KeyEvent e) {
-
     }
 
     public ActionBar getActionBar() {

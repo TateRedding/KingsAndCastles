@@ -26,7 +26,7 @@ import static main.Game.SCREEN_HEIGHT;
 import static main.Game.SCREEN_WIDTH;
 import static ui.buttons.Button.*;
 
-public abstract class MapSelect extends State implements StateMethods {
+public abstract class MapSelect extends State {
 
     protected DropDownMenu mapList;
     protected Map selectedMap;
@@ -254,8 +254,8 @@ public abstract class MapSelect extends State implements StateMethods {
                 delete.setMouseOver(true);
     }
 
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        mapList.mouseWheelMoved(e);
+    public void mouseWheelMoved(int dir, int amt) {
+        mapList.mouseWheelMoved(dir, amt);
     }
 
 }

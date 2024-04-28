@@ -13,13 +13,16 @@ import utils.ImageLoader;
 
 import static ui.buttons.Button.TEXT_SMALL;
 
-public class LoadGame extends State implements StateMethods {
+public class LoadGame extends State {
 
     private TextButton menu;
     private DropDownMenu gameList;
 
+    private TextButton start;
+
     public LoadGame(Game game) {
         super(game);
+
         int offset = 48;
         menu = new TextButton(TEXT_SMALL, "Menu", 28f, offset, offset);
         initDropDownMenu();
@@ -78,8 +81,9 @@ public class LoadGame extends State implements StateMethods {
             menu.setMouseOver(true);
     }
 
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        gameList.mouseWheelMoved(e);
+    @Override
+    public void mouseWheelMoved(int dir, int amt) {
+        gameList.mouseWheelMoved(dir, amt);
     }
 
 }
