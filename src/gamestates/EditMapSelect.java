@@ -1,23 +1,21 @@
 package gamestates;
 
-import static main.Game.SCREEN_HEIGHT;
-import static main.Game.SCREEN_WIDTH;
-import static ui.buttons.Button.TEXT_LARGE;
-import static ui.buttons.Button.getButtonHeight;
-import static ui.buttons.Button.getButtonWidth;
-
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-
 import main.Game;
 import objects.Map;
-import ui.overlays.NewMapForm;
 import ui.buttons.ExButton;
 import ui.buttons.TextButton;
+import ui.overlays.NewMapForm;
 import ui.overlays.Overlay;
 import utils.LoadSave;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+
+import static main.Game.SCREEN_HEIGHT;
+import static main.Game.SCREEN_WIDTH;
+import static ui.buttons.Button.*;
+import static ui.buttons.Button.TEXT_LARGE;
 
 public class EditMapSelect extends MapSelect {
 
@@ -33,9 +31,9 @@ public class EditMapSelect extends MapSelect {
         int formY = (Game.SCREEN_HEIGHT - Overlay.OVERLAY_HEIGHT) / 2;
         newMapForm = new NewMapForm(formX, formY);
 
-        int xStart = (SCREEN_WIDTH - getButtonWidth(TEXT_LARGE)) / 2;
-        int yStart = (SCREEN_HEIGHT - getButtonHeight(TEXT_LARGE)) / 2;
-        newMapButton = new TextButton(TEXT_LARGE, "New Map", 46f, xStart, yStart);
+        int buttonX = (SCREEN_WIDTH - getButtonWidth(TEXT_LARGE)) / 2;
+        int buttonY = (SCREEN_HEIGHT - getButtonHeight(TEXT_LARGE)) / 2;
+        newMapButton = new TextButton(TEXT_LARGE, "New Map", 46f, buttonX, buttonY);
     }
 
     @Override
@@ -46,7 +44,7 @@ public class EditMapSelect extends MapSelect {
             start.setDisabled(!newMapForm.isValid());
         } else {
             start.setDisabled(false);
-            if (selectedMap == null)
+            if (selectedFile == null)
                 newMapButton.update();
         }
 
@@ -58,7 +56,7 @@ public class EditMapSelect extends MapSelect {
     public void render(Graphics g) {
         if (showNewMapForm)
             newMapForm.render(g);
-        else if (selectedMap == null)
+        else if (selectedFile == null)
             newMapButton.render(g);
 
         super.render(g);
@@ -87,14 +85,7 @@ public class EditMapSelect extends MapSelect {
         Map newMap = new Map(name, tileWidth, tileHeight);
         LoadSave.saveMap(newMap);
         game.getSaveFileHandler().getMaps().add(0, newMap);
-        game.getPlayMapSelect().initDropDownMenu();
-        startMapEditor(newMap);
-    }
-
-    private void startMapEditor(Map map) {
-        game.editMap(map);
-        reset();
-        showNewMapForm = false;
+        game.editMap(newMap);
     }
 
     @Override
@@ -103,7 +94,7 @@ public class EditMapSelect extends MapSelect {
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y))
                 newMapForm.mousePressed(x, y, button);
-        } else if (selectedMap == null)
+        } else if (selectedFile == null)
             if (button == MouseEvent.BUTTON1 && newMapButton.getBounds().contains(x, y))
                 newMapButton.setMousePressed(true);
 
@@ -114,7 +105,7 @@ public class EditMapSelect extends MapSelect {
     @Override
     public void mouseReleased(int x, int y, int button) {
         super.mouseReleased(x, y, button);
-        if (mapList.isExpanded())
+        if (fileList.isExpanded())
             showNewMapForm = false;
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y)) {
@@ -126,18 +117,20 @@ public class EditMapSelect extends MapSelect {
                     newMapForm.mouseReleased(x, y, button);
                 }
             }
-        } else if (selectedMap == null)
+        } else if (selectedFile == null)
             if (newMapButton.getBounds().contains(x, y) && newMapButton.isMousePressed()) {
                 showNewMapForm = true;
                 newMapForm.resetTextBoxes();
-                mapList.setExpanded(false);
+                fileList.setExpanded(false);
             }
 
         if (start.getBounds().contains(x, y) && start.isMousePressed())
-            if (showNewMapForm && selectedMap == null)
+            if (showNewMapForm && selectedFile == null)
                 startNewMap();
-            else if (!showNewMapForm && selectedMap != null)
-                startMapEditor(selectedMap);
+            else if (!showNewMapForm && selectedFile != null) {
+                if (selectedFile instanceof Map selectedMap)
+                    game.editMap(selectedMap);
+            }
 
         newMapButton.reset(x, y);
         start.reset(x, y);
@@ -150,7 +143,7 @@ public class EditMapSelect extends MapSelect {
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y))
                 newMapForm.mouseMoved(x, y);
-        } else if (selectedMap == null)
+        } else if (selectedFile == null)
             if (newMapButton.getBounds().contains(x, y))
                 newMapButton.setMouseOver(true);
 
@@ -163,5 +156,4 @@ public class EditMapSelect extends MapSelect {
         if (showNewMapForm)
             newMapForm.keyPressed(e);
     }
-
 }

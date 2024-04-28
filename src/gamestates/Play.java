@@ -9,8 +9,9 @@ import main.Game;
 import objects.Map;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
+import utils.Savable;
 
-public class Play extends MapState implements Serializable {
+public class Play extends MapState implements Savable, Serializable {
 
     private ActionBar actionBar;
     private GameStatBar gameStatBar;

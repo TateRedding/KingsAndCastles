@@ -166,8 +166,10 @@ public class DropDownMenu {
         if (bounds.contains(x, y) && button == MouseEvent.BUTTON1) {
             if (ddButton.getBounds().contains(x, y) && ddButton.isMousePressed())
                 setExpanded(!expanded);
-            else if (selectedIndex != -1 && unselect.getBounds().contains(x, y) && unselect.isMousePressed())
+            else if (selectedIndex != -1 && unselect.getBounds().contains(x, y) && unselect.isMousePressed()) {
                 selectedIndex = -1;
+                expanded = false;
+            }
             for (Rectangle rowBounds : rowBounds)
                 if (rowBounds.contains(x, y) && hoverIndex != -1) {
                     selectedIndex = hoverIndex + startIndex;

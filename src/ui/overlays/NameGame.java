@@ -37,6 +37,7 @@ public class NameGame extends Overlay {
         int goX = x + (int) columnWidth + ((int) columnWidth - getButtonWidth(TEXT_LARGE)) / 2;
         int buttonY = y + (int) rowHeight * 5 - getButtonHeight(TEXT_LARGE) / 2;
         go = new TextButton(TEXT_LARGE, "Go", buttonFontSize, goX, buttonY);
+        go.setDisabled(name.getText().isEmpty());
 
         int cancelX = x + (int) columnWidth * 3 + ((int) columnWidth - getButtonWidth(TEXT_LARGE)) / 2;
         cancel = new TextButton(TEXT_LARGE, "Cancel", buttonFontSize, cancelX, buttonY);
@@ -100,6 +101,7 @@ public class NameGame extends Overlay {
     public void keyPressed(KeyEvent e) {
         if (name.getFocus())
             name.keyPressed(e);
+        go.setDisabled(name.getText().isEmpty());
     }
 
     public int getChoice() {

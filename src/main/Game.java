@@ -19,6 +19,8 @@ import gamestates.State;
 import handlers.SaveFileHandler;
 import handlers.TileHandler;
 import objects.Map;
+import ui.bars.ActionBar;
+import ui.bars.GameStatBar;
 import utils.LoadSave;
 import utils.ImageLoader;
 
@@ -55,8 +57,10 @@ public class Game extends JFrame implements Runnable {
         gameFont = LoadSave.silverModified.deriveFont(Font.BOLD);
         ImageLoader.loadImages();
 
-        initHandlers();
-        initStates();
+        credits = new Credits(this);
+        menu = new Menu(this);
+        saveFileHandler = new SaveFileHandler();
+        tileHandler = new TileHandler(this);
 
         gameScreen = new GameScreen(this);
         new GameFrame(gameScreen);
@@ -66,19 +70,6 @@ public class Game extends JFrame implements Runnable {
     public static void main(String[] args) {
         Game game = new Game();
         game.start();
-    }
-
-    private void initHandlers() {
-        saveFileHandler = new SaveFileHandler();
-        tileHandler = new TileHandler(this);
-    }
-
-    private void initStates() {
-        credits = new Credits(this);
-        editMapSelect = new EditMapSelect(this);
-        loadGame = new LoadGame(this);
-        menu = new Menu(this);
-        playMapSelect = new PlayMapSelect(this);
     }
 
     private void start() {
@@ -149,6 +140,12 @@ public class Game extends JFrame implements Runnable {
     }
 
     public void startGame(Play play) {
+        if (play.getActionBar() == null)
+            play.setActionBar(new ActionBar(play));
+        if (play.getGameStatBar() == null)
+            play.setGameStatBar(new GameStatBar(play));
+        if (play.getGame() == null)
+            play.setGame(this);
         this.play = play;
         GameStates.setGameState(GameStates.PLAY);
     }
@@ -170,6 +167,10 @@ public class Game extends JFrame implements Runnable {
         return editMapSelect;
     }
 
+    public void setEditMapSelect(EditMapSelect editMapSelect) {
+        this.editMapSelect = editMapSelect;
+    }
+
     public static Font getGameFont(float size) {
         return gameFont.deriveFont(size);
     }
@@ -178,12 +179,20 @@ public class Game extends JFrame implements Runnable {
         return loadGame;
     }
 
+    public void setLoadGame(LoadGame loadGame) {
+        this.loadGame = loadGame;
+    }
+
     public Play getPlay() {
         return play;
     }
 
     public PlayMapSelect getPlayMapSelect() {
         return playMapSelect;
+    }
+
+    public void setPlayMapSelect(PlayMapSelect playMapSelect) {
+        this.playMapSelect = playMapSelect;
     }
 
     public SaveFileHandler getSaveFileHandler() {

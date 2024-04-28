@@ -215,8 +215,6 @@ public class Edit extends MapState {
 
     public void saveMap() {
         game.getSaveFileHandler().saveMap(map);
-        game.getEditMapSelect().initDropDownMenu();
-        game.getLoadGame().initDropDownMenu();
     }
 
     @Override

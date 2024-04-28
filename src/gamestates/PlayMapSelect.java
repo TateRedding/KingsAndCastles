@@ -1,15 +1,16 @@
 package gamestates;
 
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-
 import main.Game;
+import objects.Map;
 import ui.buttons.ExButton;
 import ui.overlays.NameGame;
 import ui.overlays.Overlay;
 import utils.LoadSave;
 import utils.RenderText;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 public class PlayMapSelect extends MapSelect {
 
@@ -37,8 +38,9 @@ public class PlayMapSelect extends MapSelect {
     @Override
     public void render(Graphics g) {
         super.render(g);
-        if (selectedMap == null) {
+        if (selectedFile == null) {
             g.setFont(Game.getGameFont(72f));
+            g.setColor(Color.BLACK);
             RenderText.renderText(g, "Select a map from the list above.", RenderText.CENTER, RenderText.CENTER, 0, 0, Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
         }
         if (naming)
@@ -46,22 +48,20 @@ public class PlayMapSelect extends MapSelect {
     }
 
     private void startNewGame(String name) {
-        Play newGame = new Play(game, selectedMap, name);
-        LoadSave.saveGame(newGame);
-        game.startGame(newGame);
-        game.getSaveFileHandler().getGames().add(0, newGame);
-        game.getLoadGame().initDropDownMenu();
-        reset();
-        nameGame.resetChoice();
-        nameGame.setName("");
+        if (selectedFile instanceof Map selectedMap) {
+            Play newGame = new Play(game, selectedMap, name);
+            LoadSave.saveGame(newGame);
+            game.startGame(newGame);
+            game.getSaveFileHandler().getGames().add(0, newGame);
+            nameGame.resetChoice();
+        }
     }
 
     @Override
     public void mousePressed(int x, int y, int button) {
         super.mousePressed(x, y, button);
-        if (button == MouseEvent.BUTTON1)
-            if (naming && nameGame.getBounds().contains(x, y))
-                nameGame.mousePressed(x, y, button);
+        if (naming && nameGame.getBounds().contains(x, y))
+            nameGame.mousePressed(x, y, button);
     }
 
     @Override
@@ -72,8 +72,7 @@ public class PlayMapSelect extends MapSelect {
                 deleting = false;
                 naming = true;
                 nameGame.setName("");
-            }
-            if (naming && nameGame.getBounds().contains(x, y)) {
+            } else if (naming && nameGame.getBounds().contains(x, y)) {
                 ExButton exButton = nameGame.getExButton();
                 if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
                     naming = false;
@@ -87,6 +86,7 @@ public class PlayMapSelect extends MapSelect {
                             startNewGame(nameGame.getName());
                     }
                 }
+                nameGame.resetChoice();
             }
         }
         start.reset(x, y);
@@ -105,5 +105,4 @@ public class PlayMapSelect extends MapSelect {
         if (naming)
             nameGame.keyPressed(e);
     }
-
 }

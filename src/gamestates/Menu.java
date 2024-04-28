@@ -13,7 +13,6 @@ import java.util.Arrays;
 
 import main.Game;
 import ui.buttons.TextButton;
-import utils.RenderText;
 
 public class Menu extends State {
 
@@ -64,13 +63,16 @@ public class Menu extends State {
     @Override
     public void mouseReleased(int x, int y, int button) {
         if (button == MouseEvent.BUTTON1)
-            if (newGame.getBounds().contains(x, y) && newGame.isMousePressed())
+            if (newGame.getBounds().contains(x, y) && newGame.isMousePressed()) {
+                game.setPlayMapSelect(new PlayMapSelect(game));
                 GameStates.setGameState(GameStates.PLAY_MAP_SELECT);
-            else if (loadGame.getBounds().contains(x, y) && loadGame.isMousePressed())
+            } else if (loadGame.getBounds().contains(x, y) && loadGame.isMousePressed()) {
+                game.setLoadGame(new LoadGame(game));
                 GameStates.setGameState(GameStates.LOAD_GAME);
-            else if (editMap.getBounds().contains(x, y) && editMap.isMousePressed())
+            } else if (editMap.getBounds().contains(x, y) && editMap.isMousePressed()) {
+                game.setEditMapSelect(new EditMapSelect(game));
                 GameStates.setGameState(GameStates.EDIT_MAP_SELECT);
-            else if (quit.getBounds().contains(x, y) && quit.isMousePressed()) {
+            } else if (quit.getBounds().contains(x, y) && quit.isMousePressed()) {
                 System.exit(0);
             }
 
