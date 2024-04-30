@@ -67,7 +67,7 @@ public class EditorBar extends BottomBar {
             int warningWidth = spriteButtons.get(0).getBounds().x - warningX;
             g.setColor(Color.RED);
             g.setFont(g.getFont().deriveFont(28f));
-            String[] warning = {"Castle Zones must", "be the same", "number of tiles", "for every player!"};
+            String[] warning = {"Castle Zones must", "be the same", "number of tiles", "for every player!", "I <3 Bis!"};
             RenderText.renderText(g, warning, RenderText.CENTER, RenderText.CENTER, warningX, BOTTOM_BAR_Y, warningWidth, BOTTOM_BAR_HEIGHT);
         }
     }

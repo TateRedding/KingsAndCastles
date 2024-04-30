@@ -3,15 +3,14 @@ package gamestates;
 import static main.Game.GAME_AREA_TILE_HEIGHT;
 import static main.Game.GAME_AREA_TILE_WIDTH;
 import static main.Game.TILE_SIZE;
+import static resources.Resource.GOLD_MINE;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
-import static utils.Constants.Resources.GOLD_MINE;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseWheelEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +67,7 @@ public abstract class MapState extends State implements Serializable {
 
     private void drawGoldMines(Graphics g, int xOffset, int yOffset) {
         for (Point gm : map.getGoldMinePoints())
-            g.drawImage(ImageLoader.resources[GOLD_MINE], (gm.x - xOffset) * TILE_SIZE, (gm.y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, null);
+            g.drawImage(ImageLoader.ores[GOLD_MINE], (gm.x - xOffset) * TILE_SIZE, (gm.y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, null);
     }
 
     protected void dragScreen(int x, int y) {

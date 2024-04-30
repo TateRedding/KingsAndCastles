@@ -1,11 +1,11 @@
 package resources;
 
-import static utils.Constants.Resources.GOLD_MINE;
+import java.io.Serializable;
 
-public class GoldMine extends Resource {
-	
-	public GoldMine(int x, int y, int id) {
-		super(id, GOLD_MINE, x, y);
-	}
+public class GoldMine extends Resource implements Serializable {
+
+    public GoldMine(int x, int y, int id) {
+        super(x, y, id, GOLD_MINE);
+    }
 
 }

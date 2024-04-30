@@ -1,22 +1,23 @@
 package objects;
 
 import java.awt.Rectangle;
+import java.io.Serializable;
 
-public abstract class GameObject {
-	
-	protected Rectangle hitbox;
-	protected int id;
+public abstract class GameObject implements Serializable {
 
-	public GameObject(int id) {
-		this.id = id;
-	}
+    protected Rectangle hitbox;
+    protected int id;
 
-	public Rectangle getHitbox() {
-		return hitbox;
-	}
+    public GameObject(int id) {
+        this.id = id;
+    }
 
-	public int getId() {
-		return id;
-	}
+    public Rectangle getHitbox() {
+        return hitbox;
+    }
+
+    public int getId() {
+        return id;
+    }
 
 }

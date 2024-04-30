@@ -1,55 +1,84 @@
 package resources;
 
-import static utils.Constants.Resources.getHitboxHeight;
-import static utils.Constants.Resources.getHitboxWidth;
-import static utils.Constants.Resources.getStartingTotal;
-
 import java.awt.Rectangle;
+import java.io.Serializable;
 
 import objects.GameObject;
+import ui.bars.TopBar;
 
-public abstract class Resource extends GameObject {
-	
-	protected int x, y, resourceType;
-	protected int currentAmount, totalAmount;
+public abstract class Resource extends GameObject implements Serializable {
 
-	public Resource(int id, int resourceType, int x, int y) {
-		super(id);
-		this.resourceType = resourceType;
-		this.x = x;
-		this.y = y;
-		this.totalAmount = getStartingTotal(resourceType);
-		this.currentAmount = totalAmount;
+    public static final int GOLD_MINE = 0;
+    public static final int TREE = 1;
 
-		hitbox = new Rectangle((int) x, (int) y, getHitboxWidth(resourceType), getHitboxHeight(resourceType));
-	}
-	
-	public int getX() {
-		return x;
-	}
+    protected int x, y, resourceType;
+    protected int currentAmount, totalAmount;
 
-	public int getY() {
-		return y;
-	}
+    public Resource(int x, int y, int id, int resourceType) {
+        super(id);
+        this.resourceType = resourceType;
+        this.x = x;
+        this.y = y;
+        this.totalAmount = getStartingTotal(resourceType);
+        this.currentAmount = totalAmount;
 
-	public int getId() {
-		return id;
-	}
+        hitbox = new Rectangle(x, y, getHitboxWidth(resourceType), getHitboxHeight(resourceType));
+    }
 
-	public int getResourceType() {
-		return resourceType;
-	}
+    public static int getHitboxHeight(int resourceType) {
+        return switch (resourceType) {
+            case GOLD_MINE, TREE -> 32;
+            default -> 0;
+        };
 
-	public int getCurrentAmount() {
-		return currentAmount;
-	}
+    }
 
-	public void setCurrentAmount(int currentAmount) {
-		this.currentAmount = currentAmount;
-	}
+    public static int getHitboxWidth(int resourceType) {
+        return switch (resourceType) {
+            case GOLD_MINE, TREE -> 32;
+            default -> 0;
+        };
 
-	public int getTotalAmount() {
-		return totalAmount;
-	}
+    }
+
+    public static int getStartingTotal(int resourceType) {
+        return switch (resourceType) {
+            case GOLD_MINE -> 1000;
+            case TREE -> 20;
+            default -> 0;
+        };
+    }
+
+    public static int getAmountPerAction(int resourceType) {
+        return switch (resourceType) {
+            case GOLD_MINE -> 1;
+            case TREE -> 4;
+            default -> 0;
+        };
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getResourceType() {
+        return resourceType;
+    }
+
+    public int getCurrentAmount() {
+        return currentAmount;
+    }
+
+    public void setCurrentAmount(int currentAmount) {
+        this.currentAmount = currentAmount;
+    }
+
+    public int getTotalAmount() {
+        return totalAmount;
+    }
 
 }

@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.Serializable;
 
+import handlers.ResourceHandler;
 import main.Game;
 import objects.Map;
 import ui.bars.ActionBar;
@@ -16,6 +17,8 @@ public class Play extends MapState implements Savable, Serializable {
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
 
+    private ResourceHandler resourceHandler;
+
     private String name;
 
     public Play(Game game, Map map, String name) {
@@ -23,10 +26,13 @@ public class Play extends MapState implements Savable, Serializable {
         this.actionBar = new ActionBar(this);
         this.gameStatBar = new GameStatBar(this);
         this.name = name;
+        this.resourceHandler = new ResourceHandler(this);
     }
 
     @Override
     public void update() {
+        resourceHandler.update();
+
         actionBar.update();
         gameStatBar.update();
     }
@@ -34,6 +40,8 @@ public class Play extends MapState implements Savable, Serializable {
     @Override
     public void render(Graphics g) {
         super.render(g);
+        resourceHandler.render(g, xTileOffset, yTileOffset);
+
         actionBar.render(g);
         gameStatBar.render(g);
     }
@@ -55,6 +63,13 @@ public class Play extends MapState implements Savable, Serializable {
         else if (gameStatBar.getBounds().contains(x, y))
             gameStatBar.mouseReleased(x, y, button);
 
+    }
+
+    @Override
+    public void mouseDragged(int x, int y) {
+        super.mouseDragged(x, y);
+        if (inGameArea)
+            dragScreen(x, y);
     }
 
     @Override

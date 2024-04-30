@@ -28,7 +28,7 @@ public class ImageLoader {
     private static final String DROP_DOWN_BUTTONS = "drop_down_buttons.png";
     private static final String DROP_DOWN_TOP = "drop_down_top.png";
     private static final String EX_BUTTON = "ex_button.png";
-    private static final String RESOURCES = "resources.png";
+    private static final String ORES = "ores.png";
     private static final String OVERLAY_BG = "overlay_bg.png";
     private static final String SELECT = "select.png";
     private static final String SPRITE_BUTTON = "sprite_button.png";
@@ -37,12 +37,13 @@ public class ImageLoader {
     private static final String TEXT_BUTTON_SMALL = "text_button_small.png";
     private static final String TILE_MAP = "tile_map.png";
     private static final String TOP_BAR = "top_bar.png";
+    private static final String TREES = "trees.png";
     private static final int SPRITE_SIZE = 32;
 
     public static ArrayList<ArrayList<BufferedImage>> tiles;
-    public static ArrayList<BufferedImage> editorBarButtonSprites;
+    public static ArrayList<BufferedImage> editorBarButtonSprites, trees;
     public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, select, topBar;
-    public static BufferedImage[] exButton, largeTextButton, resources, smallTextButton, spriteButton, textBoxBg;
+    public static BufferedImage[] exButton, largeTextButton, ores, smallTextButton, spriteButton, textBoxBg;
     public static BufferedImage[][] dropDownButtons;
 
     public static void loadImages() {
@@ -54,7 +55,7 @@ public class ImageLoader {
 
         editorBarButtonSprites = new ArrayList<BufferedImage>(Arrays.asList(tiles.get(GRASS).get(0),
                 tiles.get(DIRT).get(0), tiles.get(SAND).get(0), tiles.get(WATER_GRASS).get(0),
-                tiles.get(WATER_SAND).get(0), getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0), resources[0]));
+                tiles.get(WATER_SAND).get(0), getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0), ores[0]));
     }
 
     private static void loadButtonImages() {
@@ -71,26 +72,25 @@ public class ImageLoader {
     }
 
     private static void loadObjectImages() {
-        resources = getHorizontalImageArray(RESOURCES, 0, SPRITE_SIZE, SPRITE_SIZE, 1);
+        ores = getHorizontalImageArray(ORES, 0, SPRITE_SIZE, SPRITE_SIZE, 1);
+        trees = getSpriteArray(TREES, 0, 0, 4, 4);
     }
 
     private static void loadTerrainTiles() {
         tiles = new ArrayList<>();
-        BufferedImage atlas = LoadSave.loadImage(TILE_MAP);
-
         ArrayList<BufferedImage> grassTiles = new ArrayList<BufferedImage>();
-        grassTiles.add(getSprite(atlas, 0, 0));
+        grassTiles.add(getSprite(LoadSave.loadImage(TILE_MAP), 0, 0));
 
         int rows = 6;
         int cols = 8;
 
-        ArrayList<BufferedImage> dirtTiles = getSpriteArray(atlas, 1, 0, cols, rows);
+        ArrayList<BufferedImage> dirtTiles = getSpriteArray(TILE_MAP, 1, 0, cols, rows);
         dirtTiles.remove(dirtTiles.size() - 1);
-        ArrayList<BufferedImage> sandTiles = getSpriteArray(atlas, 7, 0, cols, rows);
+        ArrayList<BufferedImage> sandTiles = getSpriteArray(TILE_MAP, 7, 0, cols, rows);
         sandTiles.remove(sandTiles.size() - 1);
-        ArrayList<BufferedImage> waterGrassTiles = getSpriteArray(atlas, 1, 8, cols, rows);
+        ArrayList<BufferedImage> waterGrassTiles = getSpriteArray(TILE_MAP, 1, 8, cols, rows);
         waterGrassTiles.remove(waterGrassTiles.size() - 1);
-        ArrayList<BufferedImage> waterSandTiles = getSpriteArray(atlas, 7, 8, cols, rows);
+        ArrayList<BufferedImage> waterSandTiles = getSpriteArray(TILE_MAP, 7, 8, cols, rows);
         waterSandTiles.remove(waterSandTiles.size() - 1);
 
         tiles.addAll(Arrays.asList(grassTiles, dirtTiles, sandTiles, waterGrassTiles, waterSandTiles));
@@ -139,8 +139,9 @@ public class ImageLoader {
         }
     }
 
-    private static ArrayList<BufferedImage> getSpriteArray(BufferedImage atlas, int rowStart, int colStart, int cols,
+    private static ArrayList<BufferedImage> getSpriteArray(String fileName, int rowStart, int colStart, int cols,
                                                            int rows) {
+        BufferedImage atlas = LoadSave.loadImage(fileName);
         ArrayList<BufferedImage> sprites = new ArrayList<>();
         for (int i = rowStart; i < rowStart + rows; i++)
             for (int j = colStart; j < colStart + cols; j++)
