@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class GoldMine extends Resource implements Serializable {
 
-    public GoldMine(int x, int y, int id) {
-        super(x, y, id, GOLD_MINE);
+    public GoldMine(int tileX, int tileY, int id) {
+        super(tileX, tileY, id, GOLD_MINE);
     }
 
 }

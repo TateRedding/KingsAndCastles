@@ -131,6 +131,7 @@ public class Edit extends MapState {
             acceptedTypes.addAll(Arrays.asList(WATER_GRASS, WATER_SAND));
         else
             acceptedTypes.add(tileType);
+
         for (int y = point.y - 1; y < point.y + 2; y++)
             for (int x = point.x - 1; x < point.x + 2; x++) {
                 if (x == point.x && y == point.y)

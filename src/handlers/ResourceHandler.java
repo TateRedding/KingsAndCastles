@@ -31,7 +31,7 @@ public class ResourceHandler implements Serializable {
 
         int goldMineId = 0;
         for (Point p : play.getMap().getGoldMinePoints())
-            goldMines.add(new GoldMine(p.x * Game.TILE_SIZE, p.y * Game.TILE_SIZE + TopBar.TOP_BAR_HEIGHT, goldMineId++));
+            goldMines.add(new GoldMine(p.x, p.y, goldMineId++));
 
         generateTrees();
     }
@@ -42,7 +42,7 @@ public class ResourceHandler implements Serializable {
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Tree t : trees)
-            g.drawImage(ImageLoader.trees.get(t.getBitmaskId()), t.getX() - xOffset * Game.TILE_SIZE, t.getY() - yOffset * Game.TILE_SIZE, null);
+            g.drawImage(ImageLoader.trees.get(t.getBitmaskId()), t.getHitbox().x - (xOffset * Game.TILE_SIZE), t.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
 
         drawTreeMap(g);
     }
@@ -70,7 +70,8 @@ public class ResourceHandler implements Serializable {
         int xOffset = random.nextInt(101);
         int yOffset = random.nextInt(101);
         noiseMap = new double[height][width];
-        int treeId = 0;
+
+        ArrayList<Point> treePoints = new ArrayList<>();
         for (int y = 0; y < height; y++)
             for (int x = 0; x < width; x++) {
                 double xCoord = (double) (x + xOffset) / width;
@@ -79,10 +80,31 @@ public class ResourceHandler implements Serializable {
                 if (noiseMap[y][x] > .5
                         && (tileData[y][x].getTileType() == Tile.GRASS || tileData[y][x].getTileType() == Tile.DIRT)
                         && !play.getMap().getGoldMinePoints().contains(new Point(x, y)))
-                    trees.add(new Tree(x * Game.TILE_SIZE, y * Game.TILE_SIZE + TopBar.TOP_BAR_HEIGHT, treeId++, 0));
+                    treePoints.add(new Point(x, y));
             }
 
+        int treeId = 0;
+        for (Point treePoint : treePoints) {
+            int bitmaskId = getBitmaskId(treePoint, treePoints);
+            trees.add(new Tree(treePoint.x, treePoint.y, treeId++, bitmaskId));
+        }
+    }
 
+    private int getBitmaskId(Point treePoint, ArrayList<Point> treePoints) {
+        int bitmaskId = 0;
+        Point northPoint = new Point(treePoint.x, treePoint.y - 1);
+        Point eastPoint = new Point(treePoint.x + 1, treePoint.y);
+        Point southPoint = new Point(treePoint.x, treePoint.y + 1);
+        Point westPoint = new Point(treePoint.x - 1, treePoint.y);
+        if (treePoints.contains(northPoint))
+            bitmaskId += 1;
+        if (treePoints.contains(westPoint))
+            bitmaskId += 2;
+        if (treePoints.contains(eastPoint))
+            bitmaskId += 4;
+        if (treePoints.contains(southPoint))
+            bitmaskId += 8;
+        return bitmaskId;
     }
 
 }
