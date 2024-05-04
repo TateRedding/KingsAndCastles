@@ -66,6 +66,17 @@ public class SaveFileHandler {
         maps.add(0, map);
     }
 
+    public void saveGame(Play play) {
+        LoadSave.saveGame(play);
+        for (int i = 0; i < games.size(); i++) {
+            if (games.get(i).getName().equals(play.getName())) {
+                games.remove(i);
+                break;
+            }
+        }
+        games.add(0, play);
+    }
+
     public ArrayList<Map> getMaps() {
         return maps;
     }

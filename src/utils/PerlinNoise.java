@@ -36,10 +36,7 @@ public class PerlinNoise {
         return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 
-    public static double noise(double x, double y, double frequency) {
-        x *= frequency;
-        y *= frequency;
-
+    public static double noise(double x, double y) {
         int X = (int) Math.floor(x) & 255;
         int Y = (int) Math.floor(y) & 255;
         x -= Math.floor(x);
@@ -53,10 +50,10 @@ public class PerlinNoise {
         int BA = permutation[B];
         int BB = permutation[B + 1];
 
-        return (lerp(v, lerp(u, grad(permutation[AA], x, y),
+        return lerp(v, lerp(u, grad(permutation[AA], x, y),
                         grad(permutation[BA], x - 1, y)),
                 lerp(u, grad(permutation[AB], x, y - 1),
-                        grad(permutation[BB], x - 1, y - 1))) + 1) / 2;
+                        grad(permutation[BB], x - 1, y - 1)));
     }
 
 }

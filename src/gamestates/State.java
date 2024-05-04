@@ -55,7 +55,7 @@ public abstract class State implements StateMethods, Serializable {
     }
 
     public void keyPressed(KeyEvent e) {
-    
+
     }
 
     public Game getGame() {

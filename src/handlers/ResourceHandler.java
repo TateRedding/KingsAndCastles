@@ -48,40 +48,50 @@ public class ResourceHandler implements Serializable {
     }
 
     private void drawTreeMap(Graphics g) {
-        BufferedImage noiseImg = new BufferedImage(noiseMap[0].length, noiseMap.length, TYPE_INT_ARGB);
-        Graphics imgG = noiseImg.getGraphics();
+        BufferedImage treeImg = new BufferedImage(noiseMap[0].length, noiseMap.length, TYPE_INT_ARGB);
+        Graphics imgG = treeImg.getGraphics();
         for (int y = 0; y < noiseMap.length; y++)
             for (int x = 0; x < noiseMap[y].length; x++) {
-                if (noiseMap[y][x] > 0.5)
-                    imgG.setColor(Color.BLACK);
+                if (noiseMap[y][x] > 0)
+                    imgG.setColor(Color.GREEN);
                 else
-                    imgG.setColor(Color.WHITE);
+                    imgG.setColor(Color.BLUE);
                 imgG.fillRect(x, y, 1, 1);
             }
 
-        g.drawImage(noiseImg, 32, 232, null);
+        BufferedImage noiseImg = new BufferedImage(noiseMap[0].length, noiseMap.length, TYPE_INT_ARGB);
+        imgG = noiseImg.getGraphics();
+        for (int y = 0; y < noiseMap.length; y++)
+            for (int x = 0; x < noiseMap[y].length; x++) {
+                int greyValue = (int) ((noiseMap[y][x] + 1) / 2 * 255);
+                imgG.setColor(new Color(greyValue, greyValue, greyValue));
+                imgG.fillRect(x, y, 1, 1);
+            }
+
+        g.drawImage(treeImg, 0, 160, null);
+        g.drawImage(noiseImg, 0, 160 + treeImg.getHeight(), null);
     }
 
     private void generateTrees() {
         int width = tileData[0].length;
         int height = tileData.length;
-        double frequency = 5;
-        Random random = new Random(); // Create a Random object
-        int xOffset = random.nextInt(101);
-        int yOffset = random.nextInt(101);
+        double inc = 0.065;
         noiseMap = new double[height][width];
 
         ArrayList<Point> treePoints = new ArrayList<>();
-        for (int y = 0; y < height; y++)
+        double yOff = 0;
+        for (int y = 0; y < height; y++) {
+            double xOff = 0.0;
             for (int x = 0; x < width; x++) {
-                double xCoord = (double) (x + xOffset) / width;
-                double yCoord = (double) (y + yOffset) / height;
-                noiseMap[y][x] = PerlinNoise.noise(xCoord, yCoord, frequency);
-                if (noiseMap[y][x] > .5
+                noiseMap[y][x] = PerlinNoise.noise(xOff, yOff);
+                if (noiseMap[y][x] > 0
                         && (tileData[y][x].getTileType() == Tile.GRASS || tileData[y][x].getTileType() == Tile.DIRT)
                         && !play.getMap().getGoldMinePoints().contains(new Point(x, y)))
                     treePoints.add(new Point(x, y));
+                xOff += inc;
             }
+            yOff += inc;
+        }
 
         int treeId = 0;
         for (Point treePoint : treePoints) {

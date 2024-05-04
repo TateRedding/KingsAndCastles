@@ -1,6 +1,7 @@
 package ui.bars;
 
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
 
 import gamestates.Play;
 
@@ -30,6 +31,10 @@ public class ActionBar extends BottomBar {
     @Override
     public void mouseReleased(int x, int y, int button) {
         super.mouseReleased(x, y, button);
+        if (button == MouseEvent.BUTTON1)
+            if (save.getBounds().contains(x, y) && save.isMousePressed())
+                play.saveGame();
+        save.reset(x, y);
     }
 
     @Override

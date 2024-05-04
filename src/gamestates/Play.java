@@ -1,8 +1,6 @@
 package gamestates;
 
 import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseWheelEvent;
 import java.io.Serializable;
 
 import handlers.ResourceHandler;
@@ -12,7 +10,7 @@ import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 import utils.Savable;
 
-public class Play extends MapState implements Savable, Serializable {
+public class Play extends MapState implements Savable, Serializable, Cloneable {
 
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
@@ -20,6 +18,8 @@ public class Play extends MapState implements Savable, Serializable {
     private ResourceHandler resourceHandler;
 
     private String name;
+
+    private boolean paused;
 
     public Play(Game game, Map map, String name) {
         super(game, map);
@@ -32,9 +32,10 @@ public class Play extends MapState implements Savable, Serializable {
     @Override
     public void update() {
         resourceHandler.update();
-
-        actionBar.update();
-        gameStatBar.update();
+        if (actionBar != null)
+            actionBar.update();
+        if (gameStatBar != null)
+            gameStatBar.update();
     }
 
     @Override
@@ -44,6 +45,10 @@ public class Play extends MapState implements Savable, Serializable {
 
         actionBar.render(g);
         gameStatBar.render(g);
+    }
+
+    public void saveGame() {
+        game.getSaveFileHandler().saveGame(this);
     }
 
     @Override

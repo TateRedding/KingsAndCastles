@@ -130,7 +130,6 @@ public class LoadSave {
     public static void createMapFile(Map map, File mapFile) {
         if (mapFile.exists()) {
             System.out.println("File: " + mapFile + " already exists");
-            return;
         } else {
             try {
                 mapFile.createNewFile();
@@ -218,7 +217,6 @@ public class LoadSave {
     public static void createGameFile(Play game, File gameFile) {
         if (gameFile.exists()) {
             System.out.println("File: " + gameFile + " already exists");
-            return;
         } else {
             try {
                 gameFile.createNewFile();
