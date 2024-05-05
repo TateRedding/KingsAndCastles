@@ -215,6 +215,7 @@ public class Edit extends MapState {
     }
 
     public void saveMap() {
+        map.recalculateResourceSpawnablePoints();
         game.getSaveFileHandler().saveMap(map);
     }
 

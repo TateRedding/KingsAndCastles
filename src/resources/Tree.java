@@ -2,7 +2,7 @@ package resources;
 
 import java.io.Serializable;
 
-public class Tree extends Resource implements Serializable {
+public class Tree extends ResourceObjects implements Serializable {
 
     private int bitmaskId;
 

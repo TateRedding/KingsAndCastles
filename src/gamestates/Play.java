@@ -3,7 +3,7 @@ package gamestates;
 import java.awt.Graphics;
 import java.io.Serializable;
 
-import handlers.ResourceHandler;
+import handlers.ResourceObjectHandler;
 import main.Game;
 import objects.Map;
 import ui.bars.ActionBar;
@@ -15,7 +15,7 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
 
-    private ResourceHandler resourceHandler;
+    private ResourceObjectHandler resourceHandler;
 
     private String name;
 
@@ -26,7 +26,7 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
         this.actionBar = new ActionBar(this);
         this.gameStatBar = new GameStatBar(this);
         this.name = name;
-        this.resourceHandler = new ResourceHandler(this);
+        this.resourceHandler = new ResourceObjectHandler(this);
     }
 
     @Override

@@ -30,6 +30,7 @@ public class ImageLoader {
     private static final String EX_BUTTON = "ex_button.png";
     private static final String ORES = "ores.png";
     private static final String OVERLAY_BG = "overlay_bg.png";
+    private static final String ROCKS = "rocks.png";
     private static final String SELECT = "select.png";
     private static final String SPRITE_BUTTON = "sprite_button.png";
     private static final String TEXT_BOX_BG = "text_box_bg.png";
@@ -41,15 +42,15 @@ public class ImageLoader {
     private static final int SPRITE_SIZE = 32;
 
     public static ArrayList<ArrayList<BufferedImage>> tiles;
-    public static ArrayList<BufferedImage> editorBarButtonSprites, trees;
+    public static ArrayList<BufferedImage> editorBarButtonSprites;
     public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, select, topBar;
-    public static BufferedImage[] exButton, largeTextButton, ores, smallTextButton, spriteButton, textBoxBg;
-    public static BufferedImage[][] dropDownButtons;
+    public static BufferedImage[] exButton, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
+    public static BufferedImage[][] dropDownButtons, resourceObjects;
 
     public static void loadImages() {
 
         loadButtonImages();
-        loadObjectImages();
+        loadResourceImages();
         loadTerrainTiles();
         loadUIImages();
 
@@ -71,9 +72,18 @@ public class ImageLoader {
         dropDownButtons = get2DImageArray(DROP_DOWN_BUTTONS, getButtonWidth(DROP_DOWN), getButtonHeight(DROP_DOWN), 2, amount);
     }
 
-    private static void loadObjectImages() {
-        ores = getHorizontalImageArray(ORES, 0, SPRITE_SIZE, SPRITE_SIZE, 1);
-        trees = getSpriteArray(TREES, 0, 0, 4, 4);
+    private static void loadResourceImages() {
+        ores = getHorizontalImageArray(ORES, 0, SPRITE_SIZE, SPRITE_SIZE, 3);
+        rocks = getHorizontalImageArray(ROCKS, 0, SPRITE_SIZE, SPRITE_SIZE, 3);
+        trees = getSpriteArray(TREES, 0, 0, 4, 4, 16);
+
+        resourceObjects = new BufferedImage[][]{
+                {ores[0]},
+                trees,
+                rocks,
+                {ores[1]},
+                {ores[2]}
+        };
     }
 
     private static void loadTerrainTiles() {
@@ -146,6 +156,19 @@ public class ImageLoader {
         for (int i = rowStart; i < rowStart + rows; i++)
             for (int j = colStart; j < colStart + cols; j++)
                 sprites.add(getSprite(atlas, j, i));
+        return sprites;
+    }
+
+    private static BufferedImage[] getSpriteArray(String fileName, int rowStart, int colStart, int cols,
+                                                  int rows, int amount) {
+        BufferedImage atlas = LoadSave.loadImage(fileName);
+        BufferedImage[] sprites = new BufferedImage[amount];
+        for (int i = rowStart; i < rowStart + rows; i++)
+            for (int j = colStart; j < colStart + cols; j++) {
+                if ((j + rows * i) >= amount)
+                    break;
+                sprites[j + rows * i] = (getSprite(atlas, j, i));
+            }
         return sprites;
     }
 

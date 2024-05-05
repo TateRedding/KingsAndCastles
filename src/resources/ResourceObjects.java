@@ -7,15 +7,18 @@ import main.Game;
 import objects.GameObject;
 import ui.bars.TopBar;
 
-public abstract class Resource extends GameObject implements Serializable {
+public abstract class ResourceObjects extends GameObject implements Serializable {
 
     public static final int GOLD_MINE = 0;
     public static final int TREE = 1;
+    public static final int ROCK = 2;
+    public static final int COAL_MINE = 3;
+    public static final int IRON_MINE = 4;
 
     protected int tileX, tileY, resourceType;
     protected int currentAmount, totalAmount;
 
-    public Resource(int tileX, int tileY, int id, int resourceType) {
+    public ResourceObjects(int tileX, int tileY, int id, int resourceType) {
         super(id);
         this.resourceType = resourceType;
         this.tileX = tileX;
@@ -23,21 +26,7 @@ public abstract class Resource extends GameObject implements Serializable {
         this.totalAmount = getStartingTotal(resourceType);
         this.currentAmount = totalAmount;
 
-        hitbox = new Rectangle(tileX * Game.TILE_SIZE, tileY * Game.TILE_SIZE + TopBar.TOP_BAR_HEIGHT, getHitboxWidth(resourceType), getHitboxHeight(resourceType));
-    }
-
-    public static int getHitboxHeight(int resourceType) {
-        return switch (resourceType) {
-            case GOLD_MINE, TREE -> 32;
-            default -> 0;
-        };
-    }
-
-    public static int getHitboxWidth(int resourceType) {
-        return switch (resourceType) {
-            case GOLD_MINE, TREE -> 32;
-            default -> 0;
-        };
+        hitbox = new Rectangle(tileX * Game.TILE_SIZE, tileY * Game.TILE_SIZE + TopBar.TOP_BAR_HEIGHT, Game.TILE_SIZE, Game.TILE_SIZE);
     }
 
     public static int getStartingTotal(int resourceType) {
@@ -52,6 +41,14 @@ public abstract class Resource extends GameObject implements Serializable {
         return switch (resourceType) {
             case GOLD_MINE -> 1;
             case TREE -> 4;
+            default -> 0;
+        };
+    }
+
+    public static int getMaxVeinSize(int resourceType) {
+        return switch (resourceType) {
+            case COAL_MINE -> 5;
+            case IRON_MINE -> 16;
             default -> 0;
         };
     }
