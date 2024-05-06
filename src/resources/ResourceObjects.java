@@ -48,7 +48,7 @@ public abstract class ResourceObjects extends GameObject implements Serializable
     public static int getMaxVeinSize(int resourceType) {
         return switch (resourceType) {
             case COAL_MINE -> 5;
-            case IRON_MINE -> 16;
+            case IRON_MINE -> 24;
             default -> 0;
         };
     }

@@ -6,6 +6,7 @@ import objects.Chunk;
 import objects.Tile;
 import resources.CoalMine;
 import resources.GoldMine;
+import resources.IronMine;
 import resources.Tree;
 import utils.ImageLoader;
 import utils.PerlinNoise;
@@ -13,6 +14,7 @@ import utils.PerlinNoise;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -26,6 +28,7 @@ public class ResourceObjectHandler implements Serializable {
     private ArrayList<GoldMine> goldMines = new ArrayList<>();
     private ArrayList<Tree> trees = new ArrayList<>();
     private ArrayList<CoalMine> coalMines = new ArrayList<>();
+    private ArrayList<IronMine> ironMines = new ArrayList<>();
     private Tile[][] tileData;
     double[][] noiseMap;
 
@@ -50,6 +53,9 @@ public class ResourceObjectHandler implements Serializable {
 
         for (CoalMine cm : coalMines)
             g.drawImage(ImageLoader.resourceObjects[COAL_MINE][0], cm.getHitbox().x - (xOffset * Game.TILE_SIZE), cm.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
+
+        for (IronMine im : ironMines)
+            g.drawImage(ImageLoader.resourceObjects[IRON_MINE][0], im.getHitbox().x - (xOffset * Game.TILE_SIZE), im.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
 
         // drawTreeMap(g);
     }
@@ -82,12 +88,20 @@ public class ResourceObjectHandler implements Serializable {
 
     private void generateResourceObjects() {
         ArrayList<Point> coalPoints = generateCoalPoints();
+        ArrayList<Point> ironPoints = generateIronPoints();
         ArrayList<Point> treePoints = generateTreePoints();
 
         int coalId = 0;
         for (Point coalPoint : coalPoints) {
             coalMines.add(new CoalMine(coalPoint.x, coalPoint.y, coalId++));
+            ironPoints.removeIf(ironPoint -> ironPoint.equals(coalPoint));
             treePoints.removeIf(treePoint -> treePoint.equals(coalPoint));
+        }
+
+        int ironId = 0;
+        for (Point ironPoint : ironPoints) {
+            ironMines.add(new IronMine(ironPoint.x, ironPoint.y, ironId++));
+            treePoints.removeIf(treePoint -> treePoint.equals(ironPoint));
         }
 
         int treeId = 0;
@@ -162,6 +176,64 @@ public class ResourceObjectHandler implements Serializable {
         return coalPoints;
     }
 
+    private ArrayList<Point> generateIronPoints() {
+        Random r = new Random();
+        Chunk[][] chunks = play.getMap().getChunks();
+        ArrayList<Point> ironPoints = new ArrayList<>();
+        for (Chunk[] row : chunks)
+            for (Chunk c : row) {
+                ArrayList<Point> spawnPoints = c.getResourceSpawnablePoints();
+                double chunkSize = c.getWidth() * c.getHeight();
+                double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
+                double percentage = chunkSize / maxSize;
+                int max = (int) Math.max(Math.round(getMaxVeinSize(IRON_MINE) * percentage), 1);
+                int count = 0;
+
+                if (!spawnPoints.isEmpty()) {
+                    Point veinSource = spawnPoints.get(r.nextInt(spawnPoints.size()));
+                    ironPoints.add(veinSource);
+                    count++;
+                    ArrayList<Point> possibleBranchPoints = getSurroundingSpawnablePoints(veinSource, spawnPoints);
+                    int numBranches = Math.min(Math.min(possibleBranchPoints.size(), 4), max - 1);
+                    ArrayList<Point> branchStartPoints = new ArrayList<>();
+
+                    if (numBranches == possibleBranchPoints.size())
+                        branchStartPoints.addAll(possibleBranchPoints);
+                    else
+                        for (int i = 0; i < numBranches; i++) {
+                            int idx = r.nextInt(possibleBranchPoints.size());
+                            branchStartPoints.add(possibleBranchPoints.get(idx));
+                            possibleBranchPoints.remove(idx);
+                        }
+
+                    for (int i = 0; i < numBranches; i++) {
+                        int idx = r.nextInt(branchStartPoints.size());
+                        Point branchStart = branchStartPoints.get(idx);
+                        int numNodesInBranch = Math.round((float) (max - count) / (float) branchStartPoints.size());
+                        branchStartPoints.remove(idx);
+                        ArrayList<Point> currBranchPoints = new ArrayList<>();
+                        currBranchPoints.add(veinSource);
+                        currBranchPoints.add(branchStart);
+                        ArrayList<Point> currBranchNextPoints = getSurroundingSpawnablePointsInVector(veinSource, branchStart, spawnPoints);
+                        currBranchNextPoints.removeAll(ironPoints);
+                        while (currBranchPoints.size() <= numNodesInBranch && !currBranchNextPoints.isEmpty()) {
+                            Point next = currBranchNextPoints.get(r.nextInt(currBranchNextPoints.size()));
+                            currBranchPoints.add(next);
+                            currBranchNextPoints = getSurroundingSpawnablePointsInVector(
+                                    currBranchPoints.get(currBranchPoints.size() - 2),
+                                    currBranchPoints.get(currBranchPoints.size() - 1),
+                                    spawnPoints
+                            );
+                            currBranchNextPoints.removeAll(currBranchPoints);
+                        }
+                        ironPoints.addAll(currBranchPoints);
+                        count += currBranchPoints.size() - 1;
+                    }
+                }
+            }
+        return ironPoints;
+    }
+
     private ArrayList<Point> getSurroundingSpawnablePoints(Point start, ArrayList<Point> spawnPoints) {
         ArrayList<Point> surroundingPoints = new ArrayList<>();
         for (int y = start.y - 1; y < start.y + 2; y++)
@@ -173,6 +245,34 @@ public class ResourceObjectHandler implements Serializable {
                     surroundingPoints.add(currPoint);
             }
         return surroundingPoints;
+    }
+
+    private ArrayList<Point> getSurroundingSpawnablePointsInVector(Point start, Point next, ArrayList<Point> spawnPoints) {
+        int dx = next.x - start.x;
+        int dy = next.y - start.y;
+        ArrayList<Point> surroundingPointsInVector = new ArrayList<>();
+        if (dx == 0) {
+            for (int x = next.x - 1; x < next.x + 2; x++) {
+                Point currPoint = new Point(x, next.y + dy);
+                if (spawnPoints.contains(currPoint))
+                    surroundingPointsInVector.add(currPoint);
+            }
+        } else if (dy == 0) {
+            for (int y = next.y - 1; y < next.y + 2; y++) {
+                Point currPoint = new Point(next.x + dx, y);
+                if (spawnPoints.contains(currPoint))
+                    surroundingPointsInVector.add(currPoint);
+            }
+        } else {
+            ArrayList<Point> temp = new ArrayList<>();
+            temp.add(new Point(next.x + dx, next.y + dy));
+            temp.add(new Point(next.x, next.y + dy));
+            temp.add(new Point(next.x + dx, next.y));
+            for (Point p : temp)
+                if (spawnPoints.contains(p))
+                    surroundingPointsInVector.add(p);
+        }
+        return surroundingPointsInVector;
     }
 
     private int getBitmaskId(Point treePoint, ArrayList<Point> treePoints) {
