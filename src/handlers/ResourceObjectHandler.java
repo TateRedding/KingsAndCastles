@@ -11,7 +11,6 @@ import utils.PerlinNoise;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
-import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -260,7 +259,7 @@ public class ResourceObjectHandler implements Serializable {
             double xOff = 0.0;
             for (int x = 0; x < width; x++) {
                 noiseMap[y][x] = PerlinNoise.noise(xOff, yOff);
-                if (noiseMap[y][x] > 0 && play.getMap().isLand(x, y) && play.getMap().getTileData()[y][x].getTileType() != Tile.SAND && resourceData[y][x] == null)
+                if (noiseMap[y][x] > 0 && play.getMap().isFreeLand(x, y) && play.getMap().getTileData()[y][x].getTileType() != Tile.SAND && resourceData[y][x] == null)
                     resourceData[y][x] = TREE;
                 xOff += inc;
             }
@@ -274,7 +273,7 @@ public class ResourceObjectHandler implements Serializable {
         int startX = chunk.getStartX();
         for (int y = startY; y < startY + chunk.getHeight(); y++)
             for (int x = startX; x < startX + chunk.getWidth(); x++)
-                if (chunk.getMap().isLand(x, y) && resourceData[y][x] == null)
+                if (chunk.getMap().isFreeLand(x, y) && resourceData[y][x] == null)
                     resourceSpawnablePoints.add(new Point(x, y));
         return resourceSpawnablePoints;
     }

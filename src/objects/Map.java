@@ -88,7 +88,11 @@ public class Map implements Savable, Serializable {
         }
     }
 
-    public boolean isLand(int tileX, int tileY) {
+    public boolean isFreeLand(int tileX, int tileY) {
+        for (ArrayList<Point> zone : castleZones) {
+            if (zone.contains(new Point(tileX, tileY)))
+                return false;
+        }
         return (tileData[tileY][tileX].getTileType() != Tile.WATER_GRASS && tileData[tileY][tileX].getTileType() != WATER_SAND);
     }
 
