@@ -33,6 +33,9 @@ public abstract class ResourceObjects extends GameObject implements Serializable
         return switch (resourceType) {
             case GOLD_MINE -> 1000;
             case TREE -> 20;
+            case ROCK -> 45;
+            case COAL_MINE -> 200;
+            case IRON_MINE -> 60;
             default -> 0;
         };
     }
@@ -40,13 +43,16 @@ public abstract class ResourceObjects extends GameObject implements Serializable
     public static int getAmountPerAction(int resourceType) {
         return switch (resourceType) {
             case GOLD_MINE -> 1;
-            case TREE -> 4;
+            case TREE, IRON_MINE -> 4;
+            case ROCK -> 5;
+            case COAL_MINE -> 2;
             default -> 0;
         };
     }
 
-    public static int getMaxVeinSize(int resourceType) {
+    public static int getMaxPerChunk(int resourceType) {
         return switch (resourceType) {
+            case ROCK -> 32;
             case COAL_MINE -> 5;
             case IRON_MINE -> 24;
             default -> 0;

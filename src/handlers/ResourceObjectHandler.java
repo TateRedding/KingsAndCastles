@@ -4,17 +4,13 @@ import gamestates.Play;
 import main.Game;
 import objects.Chunk;
 import objects.Tile;
-import resources.CoalMine;
-import resources.GoldMine;
-import resources.IronMine;
-import resources.Tree;
+import resources.*;
 import utils.ImageLoader;
 import utils.PerlinNoise;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
-import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -25,8 +21,10 @@ import static resources.ResourceObjects.*;
 public class ResourceObjectHandler implements Serializable {
 
     private Play play;
+    private Random random = new Random();
     private ArrayList<GoldMine> goldMines = new ArrayList<>();
     private ArrayList<Tree> trees = new ArrayList<>();
+    private ArrayList<Rock> rocks = new ArrayList<>();
     private ArrayList<CoalMine> coalMines = new ArrayList<>();
     private ArrayList<IronMine> ironMines = new ArrayList<>();
     private Tile[][] tileData;
@@ -50,6 +48,9 @@ public class ResourceObjectHandler implements Serializable {
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Tree t : trees)
             g.drawImage(ImageLoader.resourceObjects[TREE][t.getBitmaskId()], t.getHitbox().x - (xOffset * Game.TILE_SIZE), t.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
+
+        for (Rock r : rocks)
+            g.drawImage(ImageLoader.resourceObjects[ROCK][r.getSpriteId()], r.getHitbox().x - (xOffset * Game.TILE_SIZE), r.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
 
         for (CoalMine cm : coalMines)
             g.drawImage(ImageLoader.resourceObjects[COAL_MINE][0], cm.getHitbox().x - (xOffset * Game.TILE_SIZE), cm.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
@@ -87,21 +88,31 @@ public class ResourceObjectHandler implements Serializable {
     }
 
     private void generateResourceObjects() {
+        ArrayList<Point> treePoints = generateTreePoints();
+        ArrayList<Point> rockPoints = generateRockPoints();
         ArrayList<Point> coalPoints = generateCoalPoints();
         ArrayList<Point> ironPoints = generateIronPoints();
-        ArrayList<Point> treePoints = generateTreePoints();
 
         int coalId = 0;
         for (Point coalPoint : coalPoints) {
             coalMines.add(new CoalMine(coalPoint.x, coalPoint.y, coalId++));
-            ironPoints.removeIf(ironPoint -> ironPoint.equals(coalPoint));
             treePoints.removeIf(treePoint -> treePoint.equals(coalPoint));
+            rockPoints.removeIf(rockPoint -> rockPoint.equals(coalPoint));
+            ironPoints.removeIf(ironPoint -> ironPoint.equals(coalPoint));
         }
 
         int ironId = 0;
         for (Point ironPoint : ironPoints) {
             ironMines.add(new IronMine(ironPoint.x, ironPoint.y, ironId++));
+            rockPoints.removeIf(rockPoint -> rockPoint.equals(ironPoint));
             treePoints.removeIf(treePoint -> treePoint.equals(ironPoint));
+        }
+
+        int rockId = 0;
+        for (Point rockPoint : rockPoints) {
+            int spriteId = random.nextInt(ImageLoader.rocks.length);
+            rocks.add(new Rock(rockPoint.x, rockPoint.y, rockId++, spriteId));
+            treePoints.removeIf(treePoint -> treePoint.equals(rockPoint));
         }
 
         int treeId = 0;
@@ -133,8 +144,28 @@ public class ResourceObjectHandler implements Serializable {
         return treePoints;
     }
 
+    private ArrayList<Point> generateRockPoints() {
+        Chunk[][] chunks = play.getMap().getChunks();
+        ArrayList<Point> rockPoints = new ArrayList<>();
+        for (Chunk[] row : chunks)
+            for (Chunk c : row) {
+                ArrayList<Point> spawnPoints = c.getResourceSpawnablePoints();
+                double chunkSize = c.getWidth() * c.getHeight();
+                double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
+                double percentage = chunkSize / maxSize;
+                int max = (int) Math.min(Math.max(Math.round(getMaxPerChunk(ROCK) * percentage), 1), spawnPoints.size());
+                if (!spawnPoints.isEmpty())
+                    if (spawnPoints.size() == max)
+                        rockPoints.addAll(spawnPoints);
+                    else
+                        for (int i = 0; i < max; i++)
+                            rockPoints.add(spawnPoints.get(random.nextInt(spawnPoints.size())));
+
+            }
+        return rockPoints;
+    }
+
     private ArrayList<Point> generateCoalPoints() {
-        Random r = new Random();
         Chunk[][] chunks = play.getMap().getChunks();
         ArrayList<Point> coalPoints = new ArrayList<>();
         for (Chunk[] row : chunks)
@@ -143,10 +174,10 @@ public class ResourceObjectHandler implements Serializable {
                 double chunkSize = c.getWidth() * c.getHeight();
                 double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
                 double percentage = chunkSize / maxSize;
-                int max = (int) Math.max(Math.round(getMaxVeinSize(COAL_MINE) * percentage), 1);
+                int max = (int) Math.max(Math.round(getMaxPerChunk(COAL_MINE) * percentage), 1);
 
                 if (!spawnPoints.isEmpty()) {
-                    Point start = spawnPoints.get(r.nextInt(spawnPoints.size()));
+                    Point start = spawnPoints.get(random.nextInt(spawnPoints.size()));
                     coalPoints.add(start);
                     int count = 1;
                     ArrayList<Point> nextPoints = getSurroundingSpawnablePoints(start, spawnPoints);
@@ -165,7 +196,7 @@ public class ResourceObjectHandler implements Serializable {
                                 nextPoints = newNextPoints;
                             }
                         } else {
-                            int idx = r.nextInt(nextPoints.size());
+                            int idx = random.nextInt(nextPoints.size());
                             coalPoints.add(nextPoints.get(idx));
                             nextPoints.remove(idx);
                             count++;
@@ -177,7 +208,6 @@ public class ResourceObjectHandler implements Serializable {
     }
 
     private ArrayList<Point> generateIronPoints() {
-        Random r = new Random();
         Chunk[][] chunks = play.getMap().getChunks();
         ArrayList<Point> ironPoints = new ArrayList<>();
         for (Chunk[] row : chunks)
@@ -186,11 +216,11 @@ public class ResourceObjectHandler implements Serializable {
                 double chunkSize = c.getWidth() * c.getHeight();
                 double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
                 double percentage = chunkSize / maxSize;
-                int max = (int) Math.max(Math.round(getMaxVeinSize(IRON_MINE) * percentage), 1);
+                int max = (int) Math.max(Math.round(getMaxPerChunk(IRON_MINE) * percentage), 1);
                 int count = 0;
 
                 if (!spawnPoints.isEmpty()) {
-                    Point veinSource = spawnPoints.get(r.nextInt(spawnPoints.size()));
+                    Point veinSource = spawnPoints.get(random.nextInt(spawnPoints.size()));
                     ironPoints.add(veinSource);
                     count++;
                     ArrayList<Point> possibleBranchPoints = getSurroundingSpawnablePoints(veinSource, spawnPoints);
@@ -201,13 +231,13 @@ public class ResourceObjectHandler implements Serializable {
                         branchStartPoints.addAll(possibleBranchPoints);
                     else
                         for (int i = 0; i < numBranches; i++) {
-                            int idx = r.nextInt(possibleBranchPoints.size());
+                            int idx = random.nextInt(possibleBranchPoints.size());
                             branchStartPoints.add(possibleBranchPoints.get(idx));
                             possibleBranchPoints.remove(idx);
                         }
 
                     for (int i = 0; i < numBranches; i++) {
-                        int idx = r.nextInt(branchStartPoints.size());
+                        int idx = random.nextInt(branchStartPoints.size());
                         Point branchStart = branchStartPoints.get(idx);
                         int numNodesInBranch = Math.round((float) (max - count) / (float) branchStartPoints.size());
                         branchStartPoints.remove(idx);
@@ -217,7 +247,7 @@ public class ResourceObjectHandler implements Serializable {
                         ArrayList<Point> currBranchNextPoints = getSurroundingSpawnablePointsInVector(veinSource, branchStart, spawnPoints);
                         currBranchNextPoints.removeAll(ironPoints);
                         while (currBranchPoints.size() <= numNodesInBranch && !currBranchNextPoints.isEmpty()) {
-                            Point next = currBranchNextPoints.get(r.nextInt(currBranchNextPoints.size()));
+                            Point next = currBranchNextPoints.get(random.nextInt(currBranchNextPoints.size()));
                             currBranchPoints.add(next);
                             currBranchNextPoints = getSurroundingSpawnablePointsInVector(
                                     currBranchPoints.get(currBranchPoints.size() - 2),

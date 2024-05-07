@@ -6,8 +6,10 @@ import static objects.Tile.*;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import utils.LoadSave;
+import utils.PerlinNoise;
 import utils.Savable;
 
 public class Map implements Savable, Serializable {
