@@ -29,9 +29,10 @@ public class Edit extends MapState {
 
     private EditorBar editorBar;
     private MapStatBar mapStatBar;
+    // private int brushSize = 5;
     private int selectedZone = 0;
     private int selectedType = -1;
-    private int lastTileX, lastTileY, lastTileType;
+    private int lastTileX, lastTileY;
     private boolean leftMouseDown, rightMouseDown;
 
     public Edit(Game game, Map map) {
@@ -75,19 +76,36 @@ public class Edit extends MapState {
         g.drawString(indicator, x, y);
     }
 
-    private void changeTile() {
-        if ((lastTileX == tileX && lastTileY == tileY && lastTileType == selectedType)
-                || selectedType == tileData[tileY][tileX].getTileType())
+    private void changeTile(int mouseEvent) {
+        if (mouseEvent == MouseEvent.MOUSE_DRAGGED && lastTileX == tileX && lastTileY == tileY)
             return;
         lastTileX = tileX;
         lastTileY = tileY;
-        lastTileType = selectedType;
 
         updateTiles(selectedType, tileX, tileY);
+
+        /*
+        Brush Size P.O.C.
+        if (brushSize > 1) {
+            int nRadius = (brushSize - 1) / 2;
+            int pRadius = brushSize - 1 - nRadius;
+
+            for (int y = tileY - nRadius; y < tileY + pRadius + 1; y++)
+                for (int x = tileX - nRadius; x < tileX + pRadius + 1; x++) {
+                    if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length)
+                        updateTiles(selectedType, x, y);
+                }
+        } else
+            updateTiles(selectedType, tileX, tileY);
+         */
+
     }
 
     private void updateTiles(int tileType, int tileX, int tileY) {
         int prevTileType = map.getTileData()[tileY][tileX].getTileType();
+        if (prevTileType == tileType)
+            return;
+
         map.getTileData()[tileY][tileX] = new Tile(tileType, 0);
         map.getTileCounts()[prevTileType]--;
         map.getTileCounts()[tileType]++;
@@ -121,7 +139,7 @@ public class Edit extends MapState {
     }
 
     private int calculateBitmaskId(Point point) {
-        String binString = "";
+        StringBuilder binaryStringBuilder = new StringBuilder();
         Tile[][] tileData = map.getTileData();
         ArrayList<Integer> acceptedTypes = new ArrayList<Integer>();
         int tileType = tileData[point.y][point.x].getTileType();
@@ -137,7 +155,7 @@ public class Edit extends MapState {
                 if (x == point.x && y == point.y)
                     continue;
                 if (y < 0 || y > tileData.length || x < 0 || x > tileData[0].length) {
-                    binString = "0" + binString;
+                    binaryStringBuilder.insert(0, "0");
                     continue;
                 }
                 int currTileType = tileData[y][x].getTileType();
@@ -149,15 +167,15 @@ public class Edit extends MapState {
                         int yDiff = y - point.y;
                         if (acceptedTypes.contains(tileData[point.y][point.x + xDiff].getTileType())
                                 && acceptedTypes.contains(tileData[point.y + yDiff][point.x].getTileType()))
-                            binString = "1" + binString;
+                            binaryStringBuilder.insert(0, "1");
                         else
-                            binString = "0" + binString;
+                            binaryStringBuilder.insert(0, "0");
                     } else
-                        binString = "1" + binString;
+                        binaryStringBuilder.insert(0, "1");
                 } else
-                    binString = "0" + binString;
+                    binaryStringBuilder.insert(0, "0");
             }
-        return Integer.parseInt(binString, 2);
+        return Integer.parseInt(binaryStringBuilder.toString(), 2);
     }
 
     private void setCastleZone() {
@@ -215,7 +233,6 @@ public class Edit extends MapState {
     }
 
     public void saveMap() {
-        map.recalculateResourceSpawnablePoints();
         game.getSaveFileHandler().saveMap(map);
     }
 
@@ -250,7 +267,7 @@ public class Edit extends MapState {
                         placeGoldMine();
                         break;
                     default:
-                        changeTile();
+                        changeTile(MouseEvent.MOUSE_RELEASED);
                 }
             else if (rightMouseDown)
                 if (selectedType == CASTLE_ZONE)
@@ -275,10 +292,9 @@ public class Edit extends MapState {
                             unsetCastleZone();
                         break;
                     case GOLD_MINE:
-                        // place gold mine, or maybe not for dragging and just break here
                         break;
                     default:
-                        changeTile();
+                        changeTile(MouseEvent.MOUSE_DRAGGED);
                 }
             else
                 dragScreen(x, y);

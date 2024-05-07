@@ -89,7 +89,7 @@ public class TextBox {
         if (type == NUMBER)
             pattern = "\\d";
         else if (type == TEXT)
-            pattern = "[a-zA-Z\\d\\p{Punct} ]";
+            pattern = "[a-zA-Z\\d.?!_'\" ]";
         return String.valueOf(e.getKeyChar()).matches(pattern);
     }
 

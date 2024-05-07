@@ -6,10 +6,8 @@ import static objects.Tile.*;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import utils.LoadSave;
-import utils.PerlinNoise;
 import utils.Savable;
 
 public class Map implements Savable, Serializable {
@@ -90,16 +88,8 @@ public class Map implements Savable, Serializable {
         }
     }
 
-    public void recalculateResourceSpawnablePoints() {
-        for (Chunk[] row : chunks)
-            for (Chunk c : row)
-                c.calculateResourceSpawnablePoints();
-
-    }
-
-    public boolean isPointResourceSpawnable(int tileX, int tileY) {
-        return (tileData[tileY][tileX].getTileType() != Tile.WATER_GRASS && tileData[tileY][tileX].getTileType() != WATER_SAND)
-                && !goldMinePoints.contains(new Point(tileX, tileY));
+    public boolean isLand(int tileX, int tileY) {
+        return (tileData[tileY][tileX].getTileType() != Tile.WATER_GRASS && tileData[tileY][tileX].getTileType() != WATER_SAND);
     }
 
     public ArrayList<ArrayList<Point>> getCastleZones() {

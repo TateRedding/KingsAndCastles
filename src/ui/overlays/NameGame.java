@@ -32,6 +32,7 @@ public class NameGame extends Overlay {
         int nameX = x + (bounds.width - getTextBoxWidth(TEXT)) / 2;
         int nameY = y + (int) (rowHeight * 3) - TEXT_BOX_HEIGHT / 2;
         name = new TextBox(TEXT, nameX, nameY);
+        name.setFocus(true);
 
         float buttonFontSize = 48f;
         int goX = x + (int) columnWidth + ((int) columnWidth - getButtonWidth(TEXT_LARGE)) / 2;

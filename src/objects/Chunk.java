@@ -1,8 +1,6 @@
 package objects;
 
-import java.awt.*;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 public class Chunk implements Serializable {
 
@@ -10,7 +8,6 @@ public class Chunk implements Serializable {
 
     private Map map;
     private int startX, startY, width, height;
-    private ArrayList<Point> resourceSpawnablePoints = new ArrayList<>();
 
     public Chunk(Map map, int startX, int startY, int width, int height) {
         this.map = map;
@@ -18,15 +15,10 @@ public class Chunk implements Serializable {
         this.startY = startY;
         this.width = width;
         this.height = height;
-        calculateResourceSpawnablePoints();
     }
 
-    public void calculateResourceSpawnablePoints() {
-        resourceSpawnablePoints.clear();
-        for (int y = startY; y < startY + height; y++)
-            for (int x = startX; x < startX + width; x++)
-                if (map.isPointResourceSpawnable(x, y))
-                    resourceSpawnablePoints.add(new Point(x, y));
+    public Map getMap() {
+        return map;
     }
 
     public int getStartX() {
@@ -45,7 +37,4 @@ public class Chunk implements Serializable {
         return height;
     }
 
-    public ArrayList<Point> getResourceSpawnablePoints() {
-        return resourceSpawnablePoints;
-    }
 }
