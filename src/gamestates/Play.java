@@ -15,23 +15,34 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
 
-    private ResourceObjectHandler resourceHandler;
+    private ResourceObjectHandler resourceObjectHandler;
 
     private String name;
+    private long seed;
 
     private boolean paused;
 
     public Play(Game game, Map map, String name) {
         super(game, map);
+        this.name = name;
+        this.seed = System.currentTimeMillis();
         this.actionBar = new ActionBar(this);
         this.gameStatBar = new GameStatBar(this);
+        this.resourceObjectHandler = new ResourceObjectHandler(this);
+    }
+
+    public Play(Game game, Map map, String name, long seed) {
+        super(game, map);
         this.name = name;
-        this.resourceHandler = new ResourceObjectHandler(this);
+        this.seed = seed;
+        this.actionBar = new ActionBar(this);
+        this.gameStatBar = new GameStatBar(this);
+        this.resourceObjectHandler = new ResourceObjectHandler(this);
     }
 
     @Override
     public void update() {
-        resourceHandler.update();
+        resourceObjectHandler.update();
         if (actionBar != null)
             actionBar.update();
         if (gameStatBar != null)
@@ -41,7 +52,7 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
     @Override
     public void render(Graphics g) {
         super.render(g);
-        resourceHandler.render(g, xTileOffset, yTileOffset);
+        resourceObjectHandler.render(g, xTileOffset, yTileOffset);
 
         actionBar.render(g);
         gameStatBar.render(g);
@@ -106,4 +117,7 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
         return name;
     }
 
+    public long getSeed() {
+        return seed;
+    }
 }

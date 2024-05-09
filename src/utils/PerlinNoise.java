@@ -3,11 +3,12 @@ package utils;
 import java.util.Random;
 
 public class PerlinNoise {
-    private static final int P = 256;
-    private static final int[] permutation = new int[P * 2];
-    private static final Random random = new Random();
+    private final int P = 256;
+    private final int[] permutation = new int[P * 2];
+    private Random random;
 
-    static {
+    public PerlinNoise(long seed) {
+        this.random = new Random(seed);
         for (int i = 0; i < P; i++) {
             permutation[i] = i;
         }
@@ -21,22 +22,22 @@ public class PerlinNoise {
         }
     }
 
-    private static double fade(double t) {
+    private double fade(double t) {
         return t * t * t * (t * (t * 6 - 15) + 10);
     }
 
-    private static double lerp(double t, double a, double b) {
+    private double lerp(double t, double a, double b) {
         return a + t * (b - a);
     }
 
-    private static double grad(int hash, double x, double y) {
+    private double grad(int hash, double x, double y) {
         int h = hash & 15;
         double u = h < 8 ? x : y;
         double v = h < 4 ? y : h == 12 || h == 14 ? x : 0;
         return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 
-    public static double noise(double x, double y) {
+    public double noise(double x, double y) {
         int X = (int) Math.floor(x) & 255;
         int Y = (int) Math.floor(y) & 255;
         x -= Math.floor(x);

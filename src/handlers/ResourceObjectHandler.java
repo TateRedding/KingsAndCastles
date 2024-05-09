@@ -21,19 +21,19 @@ import static resources.ResourceObjects.*;
 public class ResourceObjectHandler implements Serializable {
 
     private Play play;
-    private Random random = new Random();
+    private Random random;
     private ArrayList<GoldMine> goldMines = new ArrayList<>();
     private ArrayList<Tree> trees = new ArrayList<>();
     private ArrayList<Rock> rocks = new ArrayList<>();
     private ArrayList<CoalMine> coalMines = new ArrayList<>();
     private ArrayList<IronMine> ironMines = new ArrayList<>();
     private Tile[][] tileData;
-    double[][] noiseMap;
+    private double[][] noiseMap;
 
     public ResourceObjectHandler(Play play) {
         this.play = play;
         this.tileData = play.getMap().getTileData();
-
+        this.random = new Random(play.getSeed());
         generateResourceObjects();
     }
 
@@ -253,12 +253,13 @@ public class ResourceObjectHandler implements Serializable {
         int width = resourceData[0].length;
         int height = resourceData.length;
         double inc = 0.065;
+        PerlinNoise pn = new PerlinNoise(play.getSeed());
         noiseMap = new double[height][width];
         double yOff = 0;
         for (int y = 0; y < height; y++) {
             double xOff = 0.0;
             for (int x = 0; x < width; x++) {
-                noiseMap[y][x] = PerlinNoise.noise(xOff, yOff);
+                noiseMap[y][x] = pn.noise(xOff, yOff);
                 if (noiseMap[y][x] > 0 && play.getMap().isFreeLand(x, y) && play.getMap().getTileData()[y][x].getTileType() != Tile.SAND && resourceData[y][x] == null)
                     resourceData[y][x] = TREE;
                 xOff += inc;
