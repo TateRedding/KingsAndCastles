@@ -1,5 +1,7 @@
 package utils;
 
+import main.Game;
+
 import java.awt.Font;
 import java.awt.Graphics;
 
@@ -40,6 +42,7 @@ public class RenderText {
     public static void renderText(Graphics g, String[] lines, int alignment, int justification, int x, int y, int width, int height) {
         int lineHeight = g.getFontMetrics().getHeight();
         int totalHeight = lineHeight * lines.length;
+        float maxFontSize = g.getFont().getSize();
         int yStart = switch (justification) {
             case TOP:
             default:
@@ -50,6 +53,10 @@ public class RenderText {
                 yield y + height - totalHeight;
         };
         for (String line : lines) {
+            float fontSize = maxFontSize;
+            while (g.getFontMetrics(Game.getGameFont(fontSize)).stringWidth(line) > width && fontSize > 0)
+                fontSize -= 2;
+            g.setFont(Game.getGameFont(fontSize));
             renderText(g, line, alignment, CENTER, x, yStart, width, lineHeight);
             yStart += lineHeight;
         }

@@ -79,6 +79,7 @@ public class Edit extends MapState {
     private void changeTile(int mouseEvent) {
         if (mouseEvent == MouseEvent.MOUSE_DRAGGED && lastTileX == tileX && lastTileY == tileY)
             return;
+        System.out.println("here");
         lastTileX = tileX;
         lastTileY = tileY;
 
@@ -104,6 +105,8 @@ public class Edit extends MapState {
     private void updateTiles(int tileType, int tileX, int tileY) {
         int prevTileType = map.getTileData()[tileY][tileX].getTileType();
         if (prevTileType == tileType)
+            return;
+        if ((tileType == WATER_GRASS || tileType == WATER_SAND) && map.getGoldMinePoints().contains(new Point(tileX, tileY)))
             return;
 
         map.getTileData()[tileY][tileX] = new Tile(tileType, 0);
@@ -216,6 +219,9 @@ public class Edit extends MapState {
     }
 
     private void placeGoldMine() {
+        int tileType = tileData[tileY][tileX].getTileType();
+        if (tileType == WATER_GRASS || tileType == WATER_SAND)
+            return;
         for (Point gm : map.getGoldMinePoints())
             if (gm.x == tileX && gm.y == tileY)
                 return;
@@ -283,20 +289,16 @@ public class Edit extends MapState {
     public void mouseDragged(int x, int y) {
         super.mouseDragged(x, y);
         if (inGameArea)
-            if (selectedType != -1)
-                switch (selectedType) {
-                    case CASTLE_ZONE:
-                        if (leftMouseDown)
-                            setCastleZone();
-                        else if (rightMouseDown)
-                            unsetCastleZone();
-                        break;
-                    case GOLD_MINE:
-                        break;
-                    default:
+            if (selectedType != -1) {
+                if (leftMouseDown) {
+                    if (selectedType == CASTLE_ZONE)
+                        setCastleZone();
+                    else if (selectedType != GOLD_MINE)
                         changeTile(MouseEvent.MOUSE_DRAGGED);
-                }
-            else
+                } else if (rightMouseDown)
+                    if (selectedType == CASTLE_ZONE)
+                        unsetCastleZone();
+            } else
                 dragScreen(x, y);
     }
 

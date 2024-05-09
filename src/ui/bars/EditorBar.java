@@ -7,12 +7,14 @@ import java.util.Arrays;
 
 import static main.Game.SCREEN_WIDTH;
 import static main.Game.getGameFont;
+import static objects.Tile.WATER_SAND;
 import static ui.buttons.Button.TEXT_SMALL;
 import static ui.buttons.Button.SPRITE;
 import static ui.buttons.Button.getButtonHeight;
 import static ui.buttons.Button.getButtonWidth;
 
 import gamestates.Edit;
+import main.Game;
 import ui.buttons.TextButton;
 import ui.buttons.SpriteButton;
 import utils.ImageLoader;
@@ -59,6 +61,15 @@ public class EditorBar extends BottomBar {
         super.render(g);
         g.setColor(Color.BLACK);
         g.setFont(getGameFont(24f));
+
+        renderSpriteButtons(g);
+        if (showCastleZoneWarning)
+            renderCastleZoneWarning(g);
+        if (edit.getSelectedType() == WATER_SAND)
+            renderWaterSandFinePrint(g);
+    }
+
+    private void renderSpriteButtons(Graphics g) {
         for (int i = 0; i < spriteButtons.size(); i++) {
             SpriteButton button = spriteButtons.get(i);
             String label = buttonLabels.get(i);
@@ -67,16 +78,28 @@ public class EditorBar extends BottomBar {
             int startY = button.getBounds().y - 8;
             g.drawString(label, startX, startY);
         }
-
-        if (showCastleZoneWarning) {
-            int warningX = save.getBounds().x + save.getBounds().width;
-            int warningWidth = spriteButtons.get(0).getBounds().x - warningX;
-            g.setColor(Color.RED);
-            g.setFont(g.getFont().deriveFont(28f));
-            String[] warning = {"Castle Zones must", "be the same", "number of tiles", "for every player!"};
-            RenderText.renderText(g, warning, RenderText.CENTER, RenderText.CENTER, warningX, BOTTOM_BAR_Y, warningWidth, BOTTOM_BAR_HEIGHT);
-        }
     }
+
+    private void renderCastleZoneWarning(Graphics g) {
+        int warningX = save.getBounds().x + save.getBounds().width;
+        int warningWidth = spriteButtons.get(0).getBounds().x - warningX;
+        g.setColor(Color.RED);
+        g.setFont(g.getFont().deriveFont(28f));
+        String[] warning = {"Castle Zones must", "be the same", "number of tiles", "for every player!"};
+        RenderText.renderText(g, warning, RenderText.CENTER, RenderText.CENTER, warningX, BOTTOM_BAR_Y, warningWidth, BOTTOM_BAR_HEIGHT);
+    }
+
+    private void renderWaterSandFinePrint(Graphics g) {
+        String[] finePrint = new String[]{
+                "Watery sand tiles will always be surrounded by sand tiles which can not be replaced.",
+                "Due to tile set limitations, watery sand tiles are best not placed adjacent to dirt tiles or map edges."
+        };
+        int startY = spriteButtons.get(0).getBounds().y + spriteButtons.get(0).getBounds().height;
+        int height = BOTTOM_BAR_Y + BOTTOM_BAR_HEIGHT - startY;
+        g.setFont(Game.getGameFont(24f));
+        RenderText.renderText(g, finePrint, RenderText.CENTER, RenderText.CENTER, 0, startY, UI_WIDTH, height);
+    }
+
 
     @Override
     public void mousePressed(int x, int y, int button) {

@@ -76,10 +76,15 @@ public class DropDownMenu {
     public void render(Graphics g) {
         g.drawImage(ImageLoader.dropDownTop, x, y, null);
         g.setColor(Color.BLACK);
-        g.setFont(Game.getGameFont(maxFontSize));
         if (selectedIndex != -1) {
-            RenderText.renderText(g, options[selectedIndex], RenderText.CENTER, RenderText.CENTER, x, y, bounds.width, DD_TOP_HEIGHT);
+            String option = options[selectedIndex];
+            float fontSize = maxFontSize;
+            while (g.getFontMetrics(Game.getGameFont(fontSize)).stringWidth(option) > rowWidth && fontSize > 0)
+                fontSize -= 2;
+            g.setFont(Game.getGameFont(fontSize));
+            RenderText.renderText(g, option, RenderText.CENTER, RenderText.CENTER, x, y, bounds.width, DD_TOP_HEIGHT);
         } else {
+            g.setFont(Game.getGameFont(maxFontSize));
             RenderText.renderText(g, text, RenderText.CENTER, RenderText.CENTER, x, y, bounds.width, DD_TOP_HEIGHT);
         }
 
@@ -103,8 +108,8 @@ public class DropDownMenu {
         float yStart = y + DD_TOP_HEIGHT;
         for (int i = startIndex; i < startIndex + numRows && i < options.length; i++) {
             float fontSize = 46f;
-            while (g.getFontMetrics(Game.getGameFont(fontSize)).stringWidth(options[i]) > rowWidth)
-                fontSize--;
+            while (g.getFontMetrics(Game.getGameFont(fontSize)).stringWidth(options[i]) > rowWidth && fontSize > 0)
+                fontSize -= 2;
             g.setFont(Game.getGameFont(fontSize));
             RenderText.renderText(g, options[i], RenderText.LEFT, RenderText.CENTER, rowX, (int) yStart, rowWidth, (int) rowHeight);
             yStart += rowHeight;

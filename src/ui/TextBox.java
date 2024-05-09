@@ -99,16 +99,17 @@ public class TextBox {
         int maxTextWidth = bounds.width - textXOffset * 2;
         int textWidth = fm.stringWidth(text);
         float currFontSize = font.getSize();
+        int inc = 2;
 
         if (textWidth > maxTextWidth) {
             while (temp.getFontMetrics(font).stringWidth(text) > maxTextWidth) {
-                currFontSize--;
+                currFontSize -= inc;
                 font = font.deriveFont(currFontSize);
             }
         } else if (textWidth < maxTextWidth) {
-            while (temp.getFontMetrics(font.deriveFont(currFontSize + 1f)).stringWidth(text) < maxTextWidth
+            while (temp.getFontMetrics(font.deriveFont(currFontSize + inc)).stringWidth(text) < maxTextWidth
                     && currFontSize < maxFontSize) {
-                currFontSize++;
+                currFontSize += inc;
                 font = font.deriveFont(currFontSize);
             }
         }
