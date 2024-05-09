@@ -3,8 +3,10 @@ package ui.bars;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static main.Game.SCREEN_WIDTH;
+import static main.Game.getGameFont;
 import static ui.buttons.Button.TEXT_SMALL;
 import static ui.buttons.Button.SPRITE;
 import static ui.buttons.Button.getButtonHeight;
@@ -19,7 +21,8 @@ import utils.RenderText;
 public class EditorBar extends BottomBar {
 
     private Edit edit;
-    private ArrayList<SpriteButton> spriteButtons = new ArrayList<SpriteButton>();
+    private ArrayList<SpriteButton> spriteButtons = new ArrayList<>();
+    private ArrayList<String> buttonLabels = new ArrayList<>();
 
     private boolean showCastleZoneWarning;
 
@@ -30,7 +33,7 @@ public class EditorBar extends BottomBar {
 
     private void initTileButtons() {
         int numButtons = ImageLoader.editorBarButtonSprites.size();
-        int xOffset = 15;
+        int xOffset = 24;
         int buttonWidth = getButtonWidth(SPRITE);
         int buttonHeight = getButtonHeight(SPRITE);
         int x = (SCREEN_WIDTH - (buttonWidth * numButtons + xOffset * (numButtons - 1))) / 2;
@@ -40,6 +43,7 @@ public class EditorBar extends BottomBar {
             spriteButtons.add(new SpriteButton(ImageLoader.editorBarButtonSprites.get(i), x, y));
             x += buttonWidth + xOffset;
         }
+        buttonLabels.addAll(Arrays.asList("Grass", "Dirt", "Sand", "Watery Grass", "Watery Sand", "Castle Zones", "Gold Mine"));
     }
 
     @Override
@@ -53,8 +57,15 @@ public class EditorBar extends BottomBar {
     @Override
     public void render(Graphics g) {
         super.render(g);
-        for (SpriteButton sb : spriteButtons) {
-            sb.render(g);
+        g.setColor(Color.BLACK);
+        g.setFont(getGameFont(24f));
+        for (int i = 0; i < spriteButtons.size(); i++) {
+            SpriteButton button = spriteButtons.get(i);
+            String label = buttonLabels.get(i);
+            button.render(g);
+            int startX = button.getBounds().x + (button.getBounds().width - g.getFontMetrics().stringWidth(label)) / 2;
+            int startY = button.getBounds().y - 8;
+            g.drawString(label, startX, startY);
         }
 
         if (showCastleZoneWarning) {
@@ -62,7 +73,7 @@ public class EditorBar extends BottomBar {
             int warningWidth = spriteButtons.get(0).getBounds().x - warningX;
             g.setColor(Color.RED);
             g.setFont(g.getFont().deriveFont(28f));
-            String[] warning = {"Castle Zones must", "be the same", "number of tiles", "for every player!", "I <3 Bis!"};
+            String[] warning = {"Castle Zones must", "be the same", "number of tiles", "for every player!"};
             RenderText.renderText(g, warning, RenderText.CENTER, RenderText.CENTER, warningX, BOTTOM_BAR_Y, warningWidth, BOTTOM_BAR_HEIGHT);
         }
     }

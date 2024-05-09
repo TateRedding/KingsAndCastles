@@ -154,7 +154,7 @@ public class Edit extends MapState {
             for (int x = point.x - 1; x < point.x + 2; x++) {
                 if (x == point.x && y == point.y)
                     continue;
-                if (y < 0 || y > tileData.length || x < 0 || x > tileData[0].length) {
+                if (y < 0 || y >= tileData.length || x < 0 || x >= tileData[0].length) {
                     binaryStringBuilder.insert(0, "0");
                     continue;
                 }
@@ -325,6 +325,10 @@ public class Edit extends MapState {
         super.keyPressed(e);
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_DELETE)
             selectedType = -1;
+    }
+
+    public int getSelectedType() {
+        return selectedType;
     }
 
     public void setSelectedType(int type) {

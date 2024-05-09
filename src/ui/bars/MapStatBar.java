@@ -16,6 +16,8 @@ public class MapStatBar extends TopBar {
     private Edit edit;
     private Map map;
 
+    private String[][] toolTips;
+    private String defaultToolTip;
     private int numCols = 6;
     private int offset = 8;
     private float colWidth = (UI_WIDTH - offset * 2) / numCols;
@@ -28,6 +30,17 @@ public class MapStatBar extends TopBar {
     public MapStatBar(Edit edit) {
         this.edit = edit;
         this.map = edit.getMap();
+
+        this.defaultToolTip = "Drag/ Arrow Keys: Move map";
+        this.toolTips = new String[][]{
+                {"Left-click: Place tile", "Esc: Unselect"},
+                {"Left-click: Place tile", "Esc: Unselect"},
+                {"Left-click: Place tile", "Esc: Unselect"},
+                {"Left-click: Place tile", "Esc: Unselect"},
+                {"Left-click: Place tile", "Esc: Unselect"},
+                {"Left-click: Place zone", "Right-click: Delete zone", "Scroll: Switch player", "Esc: Unselect"},
+                {"Left-click: Place mine", "Right-click: Delete mine", "Esc: Unselect"}
+        };
     }
 
     public void update() {
@@ -41,6 +54,7 @@ public class MapStatBar extends TopBar {
         renderTileStats(g);
         renderCastleZoneStats(g);
         renderResourceStats(g);
+        renderToolTips(g);
     }
 
     private void renderTileStats(Graphics g) {
@@ -80,6 +94,19 @@ public class MapStatBar extends TopBar {
         String resourceStats = "Gold Mines: " + map.getGoldMinePoints().size();
         g.setFont(Game.getGameFont(statFontSize));
         RenderText.renderText(g, resourceStats, RenderText.CENTER, RenderText.TOP, xStart, headerY + headerHeight, (int) colWidth, statHeight);
+    }
+
+    private void renderToolTips(Graphics g) {
+        g.setFont(Game.getGameFont(headerFontSize));
+        int xStart = X + offset + (int) (colWidth * 3);
+        RenderText.renderText(g, "Controls", RenderText.CENTER, RenderText.CENTER, xStart, headerY, (int) colWidth, headerHeight);
+
+        int selectedType = edit.getSelectedType();
+        g.setFont(Game.getGameFont(statFontSize));
+        if (selectedType == -1)
+            RenderText.renderText(g, defaultToolTip, RenderText.CENTER, RenderText.TOP, xStart, headerY + headerHeight, (int) colWidth, statHeight);
+        else
+            RenderText.renderText(g, toolTips[selectedType], RenderText.CENTER, RenderText.TOP, xStart, headerY + headerHeight, (int) colWidth, statHeight);
     }
 
     public void mousePressed(int x, int y, int button) {
