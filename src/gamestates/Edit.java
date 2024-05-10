@@ -6,16 +6,15 @@ import static objects.Tile.SAND;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import main.Game;
+import objects.BrushPoint;
 import objects.Map;
 import objects.Tile;
 import ui.bars.EditorBar;
@@ -24,12 +23,19 @@ import utils.ImageLoader;
 
 public class Edit extends MapState {
 
+    private static final int SQUARE = 0;
+    private static final int CIRCLE = 1;
+
     private static final int CASTLE_ZONE = 5;
     private static final int GOLD_MINE = 6;
 
     private EditorBar editorBar;
     private MapStatBar mapStatBar;
-    // private int brushSize = 5;
+    private ArrayList<ArrayList<ArrayList<BrushPoint>>> brushPoints = new ArrayList<>();
+
+    private int maxBrushSize = 10;
+    private int brushSize = 8;
+    private int brushShape = 1;
     private int selectedZone = 0;
     private int selectedType = -1;
     private int lastTileX, lastTileY;
@@ -39,6 +45,42 @@ public class Edit extends MapState {
         super(game, map);
         this.editorBar = new EditorBar(this);
         this.mapStatBar = new MapStatBar(this);
+        initBrushPoints();
+    }
+
+    private void initBrushPoints() {
+        ArrayList<ArrayList<BrushPoint>> allSquarePoints = new ArrayList<>();
+        ArrayList<ArrayList<BrushPoint>> allCirclePoints = new ArrayList<>();
+
+        for (int size = 1; size <= maxBrushSize; size++) {
+            ArrayList<BrushPoint> squareBrushPoints = new ArrayList<>();
+            ArrayList<BrushPoint> circleBrushPoints = new ArrayList<>();
+            int negDist = (brushSize - 1) / 2 * -1;
+            int posDist = brushSize + negDist;
+            int startPos = negDist * TILE_SIZE;
+            int diameter = size * TILE_SIZE;
+            Rectangle squareBounds = new Rectangle(startPos, startPos, diameter, diameter);
+            Ellipse2D circleBounds = new Ellipse2D.Float(startPos, startPos, diameter, diameter);
+
+            int yMax = squareBounds.y + squareBounds.height;
+            int xMax = squareBounds.x + squareBounds.width;
+            for (int y = squareBounds.y; y < yMax; y += TILE_SIZE)
+                for (int x = squareBounds.x; x < xMax; x += TILE_SIZE) {
+                    int pY = (int) Math.floor((float) y / TILE_SIZE);
+                    int pX = (int) Math.floor((float) x / TILE_SIZE);
+                    boolean isSquareEdge = (pY == negDist || pY == posDist || pX == negDist || pX == posDist);
+                    squareBrushPoints.add(new BrushPoint(pX, pY, isSquareEdge));
+                    if (circleBounds.contains(y + TILE_SIZE / 2, x + TILE_SIZE / 2)) {
+                        boolean isCircleEdge = (circleBounds.intersects(x, y, TILE_SIZE, TILE_SIZE));
+                        circleBrushPoints.add(new BrushPoint(pX, pY, isCircleEdge));
+                    }
+
+                }
+            allSquarePoints.add(squareBrushPoints);
+            allCirclePoints.add(circleBrushPoints);
+        }
+        brushPoints.add(allSquarePoints);
+        brushPoints.add(allCirclePoints);
     }
 
     @Override
@@ -79,27 +121,16 @@ public class Edit extends MapState {
     private void changeTile(int mouseEvent) {
         if (mouseEvent == MouseEvent.MOUSE_DRAGGED && lastTileX == tileX && lastTileY == tileY)
             return;
-        System.out.println("here");
         lastTileX = tileX;
         lastTileY = tileY;
 
-        updateTiles(selectedType, tileX, tileY);
-
-        /*
-        Brush Size P.O.C.
-        if (brushSize > 1) {
-            int nRadius = (brushSize - 1) / 2;
-            int pRadius = brushSize - 1 - nRadius;
-
-            for (int y = tileY - nRadius; y < tileY + pRadius + 1; y++)
-                for (int x = tileX - nRadius; x < tileX + pRadius + 1; x++) {
-                    if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length)
-                        updateTiles(selectedType, x, y);
-                }
-        } else
-            updateTiles(selectedType, tileX, tileY);
-         */
-
+        // Still needs to account for isEdge
+        // Still needs to check if tile is in bounds as well
+        for (BrushPoint bp : brushPoints.get(brushShape).get(brushSize - 1)) {
+            int x = tileX + bp.x;
+            int y = tileY + bp.y;
+            updateTiles(selectedType, x, y);
+        }
     }
 
     private void updateTiles(int tileType, int tileX, int tileY) {
