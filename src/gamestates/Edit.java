@@ -1,10 +1,7 @@
 package gamestates;
 
 import static main.Game.TILE_SIZE;
-import static objects.Tile.GRASS;
-import static objects.Tile.SAND;
-import static objects.Tile.WATER_GRASS;
-import static objects.Tile.WATER_SAND;
+import static objects.Tile.*;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -14,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import main.Game;
-import objects.BrushPoint;
 import objects.Map;
 import objects.Tile;
 import ui.bars.EditorBar;
@@ -31,11 +27,11 @@ public class Edit extends MapState {
 
     private EditorBar editorBar;
     private MapStatBar mapStatBar;
-    private ArrayList<ArrayList<ArrayList<BrushPoint>>> brushPoints = new ArrayList<>();
+    private ArrayList<ArrayList<ArrayList<Point>>> brushPoints = new ArrayList<>();
 
     private int maxBrushSize = 10;
-    private int brushSize = 8;
-    private int brushShape = 1;
+    private int brushSize = 1;
+    private int brushShape = SQUARE;
     private int selectedZone = 0;
     private int selectedType = -1;
     private int lastTileX, lastTileY;
@@ -49,14 +45,13 @@ public class Edit extends MapState {
     }
 
     private void initBrushPoints() {
-        ArrayList<ArrayList<BrushPoint>> allSquarePoints = new ArrayList<>();
-        ArrayList<ArrayList<BrushPoint>> allCirclePoints = new ArrayList<>();
+        ArrayList<ArrayList<Point>> allSquarePoints = new ArrayList<>();
+        ArrayList<ArrayList<Point>> allCirclePoints = new ArrayList<>();
 
         for (int size = 1; size <= maxBrushSize; size++) {
-            ArrayList<BrushPoint> squareBrushPoints = new ArrayList<>();
-            ArrayList<BrushPoint> circleBrushPoints = new ArrayList<>();
+            ArrayList<Point> squareBrushPoints = new ArrayList<>();
+            ArrayList<Point> circleBrushPoints = new ArrayList<>();
             int negDist = (brushSize - 1) / 2 * -1;
-            int posDist = brushSize + negDist;
             int startPos = negDist * TILE_SIZE;
             int diameter = size * TILE_SIZE;
             Rectangle squareBounds = new Rectangle(startPos, startPos, diameter, diameter);
@@ -68,12 +63,9 @@ public class Edit extends MapState {
                 for (int x = squareBounds.x; x < xMax; x += TILE_SIZE) {
                     int pY = (int) Math.floor((float) y / TILE_SIZE);
                     int pX = (int) Math.floor((float) x / TILE_SIZE);
-                    boolean isSquareEdge = (pY == negDist || pY == posDist || pX == negDist || pX == posDist);
-                    squareBrushPoints.add(new BrushPoint(pX, pY, isSquareEdge));
-                    if (circleBounds.contains(y + TILE_SIZE / 2, x + TILE_SIZE / 2)) {
-                        boolean isCircleEdge = (circleBounds.intersects(x, y, TILE_SIZE, TILE_SIZE));
-                        circleBrushPoints.add(new BrushPoint(pX, pY, isCircleEdge));
-                    }
+                    squareBrushPoints.add(new Point(pX, pY));
+                    if (circleBounds.contains(y + TILE_SIZE / 2, x + TILE_SIZE / 2))
+                        circleBrushPoints.add(new Point(pX, pY));
 
                 }
             allSquarePoints.add(squareBrushPoints);
@@ -92,20 +84,27 @@ public class Edit extends MapState {
     @Override
     public void render(Graphics g) {
         super.render(g);
-        editorBar.render(g);
-        mapStatBar.render(g);
-        miniMap.render(g, xTileOffset, yTileOffset);
-
         if (inGameArea) {
             drawSelectedType(g);
             if (selectedType == CASTLE_ZONE)
                 drawPlayerIndicator(g);
         }
+
+        editorBar.render(g);
+        mapStatBar.render(g);
+        miniMap.render(g, xTileOffset, yTileOffset);
     }
 
     private void drawSelectedType(Graphics g) {
-        if (selectedType != -1)
-            g.drawImage(ImageLoader.editorBarButtonSprites.get(selectedType), mouseX, mouseY, null);
+        if (selectedType >= 0)
+            if (selectedType < CASTLE_ZONE)
+                for (Point p : brushPoints.get(brushShape).get(brushSize - 1)) {
+                    int x = mouseX + (p.x * TILE_SIZE);
+                    int y = mouseY + (p.y * TILE_SIZE);
+                    g.drawImage(ImageLoader.tiles.get(selectedType).get(ImageLoader.tiles.get(selectedType).size() - 1), x, y, null);
+                }
+            else
+                g.drawImage(ImageLoader.editorBarButtonSprites.get(selectedType), mouseX, mouseY, null);
         g.drawImage(ImageLoader.select, mouseX, mouseY, null);
     }
 
@@ -123,41 +122,57 @@ public class Edit extends MapState {
             return;
         lastTileX = tileX;
         lastTileY = tileY;
-
-        // Still needs to account for isEdge
-        // Still needs to check if tile is in bounds as well
-        for (BrushPoint bp : brushPoints.get(brushShape).get(brushSize - 1)) {
-            int x = tileX + bp.x;
-            int y = tileY + bp.y;
-            updateTiles(selectedType, x, y);
-        }
+        updateTiles(selectedType, tileX, tileY);
     }
 
     private void updateTiles(int tileType, int tileX, int tileY) {
-        int prevTileType = map.getTileData()[tileY][tileX].getTileType();
-        if (prevTileType == tileType)
-            return;
-        if ((tileType == WATER_GRASS || tileType == WATER_SAND) && map.getGoldMinePoints().contains(new Point(tileX, tileY)))
-            return;
+        ArrayList<Point> changedTiles = new ArrayList<>();
+        for (Point p : brushPoints.get(brushShape).get(brushSize - 1)) {
+            int currTileX = tileX + p.x;
+            int currTileY = tileY + p.y;
+            if (isTileInRange(currTileX, currTileY)) {
+                int prevTileType = map.getTileData()[currTileY][currTileX].getTileType();
+                if (prevTileType == tileType || ((tileType == WATER_GRASS || tileType == WATER_SAND) && map.getGoldMinePoints().contains(new Point(currTileX, currTileY))))
+                    continue;
+                map.getTileData()[currTileY][currTileX] = new Tile(tileType, 0);
+                map.getTileCounts()[prevTileType]--;
+                map.getTileCounts()[tileType]++;
+                changedTiles.add(new Point(currTileX, currTileY));
+            }
+        }
 
-        map.getTileData()[tileY][tileX] = new Tile(tileType, 0);
-        map.getTileCounts()[prevTileType]--;
-        map.getTileCounts()[tileType]++;
+        ArrayList<Point> tilesToUpdate = new ArrayList<>();
+        for (Point changedPoint : changedTiles) {
+            if (!tilesToUpdate.contains(changedPoint) && tileType != GRASS)
+                tilesToUpdate.add(new Point(changedPoint.x, changedPoint.y));
 
-        ArrayList<Point> points = new ArrayList<Point>();
-        if (tileType != GRASS)
-            points.add(new Point(tileX, tileY));
+            ArrayList<Point> surroundingPoints = getSurroundingPoints(changedPoint.x, changedPoint.y);
+            for (Point sp : surroundingPoints) {
+                int spTileType = map.getTileData()[sp.y][sp.x].getTileType();
+                if (!tilesToUpdate.contains(sp) && spTileType != GRASS)
+                    tilesToUpdate.add(sp);
 
-        ArrayList<Point> surroundingPoints = getSurroundingPoints(tileX, tileY);
-        for (Point point : surroundingPoints)
-            if (map.getTileData()[point.y][point.x].getTileType() != GRASS)
-                points.add(point);
-
-        for (int i = 0; i < points.size(); i++) {
-            Point currentPoint = points.get(i);
+                if (tileType == WATER_SAND && (spTileType == GRASS || spTileType == DIRT) && !changedTiles.contains(sp)) {
+                    map.getTileData()[sp.y][sp.x] = new Tile(SAND, 0);
+                    map.getTileCounts()[spTileType]--;
+                    map.getTileCounts()[SAND]++;
+                    if (!tilesToUpdate.contains(sp))
+                        tilesToUpdate.add(sp);
+                    ArrayList<Point> sandSurroundingPoints = getSurroundingPoints(sp.x, sp.y);
+                    for (Point sandSP : sandSurroundingPoints)
+                        if (!tilesToUpdate.contains(sandSP) && map.getTileData()[sandSP.y][sandSP.x].getTileType() != GRASS)
+                            tilesToUpdate.add(sandSP);
+                }
+            }
+        }
+        for (Point currentPoint : tilesToUpdate) {
             int bitmaskId = calculateBitmaskId(currentPoint);
             tileData[currentPoint.y][currentPoint.x].setBitmaskId(bitmaskId);
         }
+    }
+
+    private boolean isTileInRange(int tileX, int tileY) {
+        return !(tileX < 0 || tileX >= map.getTileData()[0].length || tileY < 0 || tileY >= map.getTileData().length);
     }
 
     private ArrayList<Point> getSurroundingPoints(int tileX, int tileY) {
@@ -166,7 +181,7 @@ public class Edit extends MapState {
             for (int x = tileX - 1; x < tileX + 2; x++) {
                 if (x == tileX && y == tileY)
                     continue;
-                if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length)
+                if (isTileInRange(x, y))
                     points.add(new Point(x, y));
             }
         return points;
@@ -188,13 +203,11 @@ public class Edit extends MapState {
             for (int x = point.x - 1; x < point.x + 2; x++) {
                 if (x == point.x && y == point.y)
                     continue;
-                if (y < 0 || y >= tileData.length || x < 0 || x >= tileData[0].length) {
+                if (!isTileInRange(x, y)) {
                     binaryStringBuilder.insert(0, "0");
                     continue;
                 }
                 int currTileType = tileData[y][x].getTileType();
-                if (tileType == WATER_SAND && currTileType == GRASS)
-                    updateTiles(SAND, x, y);
                 if (acceptedTypes.contains(currTileType)) {
                     if (y != point.y && x != point.x) {
                         int xDiff = x - point.x;

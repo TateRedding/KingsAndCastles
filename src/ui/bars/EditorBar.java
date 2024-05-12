@@ -90,13 +90,10 @@ public class EditorBar extends BottomBar {
     }
 
     private void renderWaterSandFinePrint(Graphics g) {
-        String[] finePrint = new String[]{
-                "Watery sand tiles will always be surrounded by sand tiles which can not be replaced.",
-                "Due to tile set limitations, watery sand tiles are best not placed adjacent to dirt tiles or map edges."
-        };
+        String finePrint = "Due to tile set limitations, watery sand tiles are best not placed adjacent to dirt tiles or map edges.";
         int startY = spriteButtons.get(0).getBounds().y + spriteButtons.get(0).getBounds().height;
         int height = BOTTOM_BAR_Y + BOTTOM_BAR_HEIGHT - startY;
-        g.setFont(Game.getGameFont(24f));
+        g.setFont(Game.getGameFont(26f));
         RenderText.renderText(g, finePrint, RenderText.CENTER, RenderText.CENTER, 0, startY, UI_WIDTH, height);
     }
 
