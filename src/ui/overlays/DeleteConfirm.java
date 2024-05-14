@@ -30,10 +30,10 @@ public class DeleteConfirm extends Overlay {
         int buttonWidth = Button.getButtonWidth(TEXT_LARGE);
         int buttonOffset = (bounds.width - buttonWidth * 2) / 3;
         int yesX = bounds.x + buttonOffset;
-        yes = new TextButton(TEXT_LARGE, "Delete", buttonFontSize, yesX, buttonY);
+        yes = new TextButton(TEXT_LARGE, yesX, buttonY, buttonFontSize, "Delete");
 
         int noX = bounds.x + bounds.width - buttonWidth - buttonOffset;
-        no = new TextButton(TEXT_LARGE, "No", buttonFontSize, noX, buttonY);
+        no = new TextButton(TEXT_LARGE, noX, buttonY, buttonFontSize, "No");
     }
 
     @Override

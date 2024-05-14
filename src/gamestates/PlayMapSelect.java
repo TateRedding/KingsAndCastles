@@ -2,7 +2,7 @@ package gamestates;
 
 import main.Game;
 import objects.Map;
-import ui.buttons.ExButton;
+import ui.buttons.Button;
 import ui.overlays.NameGame;
 import ui.overlays.Overlay;
 import utils.LoadSave;
@@ -73,7 +73,7 @@ public class PlayMapSelect extends MapSelect {
                 naming = true;
                 nameGame.setName("");
             } else if (naming && nameGame.getBounds().contains(x, y)) {
-                ExButton exButton = nameGame.getExButton();
+                Button exButton = nameGame.getExButton();
                 if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
                     naming = false;
                     exButton.reset(x, y);

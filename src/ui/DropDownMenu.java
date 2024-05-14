@@ -1,15 +1,13 @@
 package ui;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.Color;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 
 import main.Game;
-import ui.buttons.DropDownButton;
-import ui.buttons.ExButton;
+import ui.buttons.Button;
 import utils.ImageLoader;
 import utils.RenderText;
 
@@ -21,8 +19,8 @@ public class DropDownMenu {
     public static final int DD_BODY_HEIGHT = 240;
     public static final int DD_WIDTH = 576;
 
-    private DropDownButton ddButton;
-    protected ExButton unselect;
+    private Button ddButton;
+    protected Button unselect;
     private Rectangle bounds;
 
     private String text;
@@ -46,11 +44,11 @@ public class DropDownMenu {
         this.rowWidth = DD_WIDTH - rowXOffset * 2;
         this.rowX = x + rowXOffset;
         this.bounds = new Rectangle(x, y, DD_WIDTH, DD_TOP_HEIGHT);
-        this.ddButton = new DropDownButton(DD_DOWN, x + bounds.width - getButtonWidth(DROP_DOWN), y);
+        this.ddButton = new Button(DD_DOWN, x + bounds.width - getButtonWidth(DD_DOWN), y);
 
         int unselectX = bounds.x + (bounds.height - getButtonWidth(EX)) / 2;
         int unselectY = bounds.y + (bounds.height - getButtonHeight(EX)) / 2;
-        this.unselect = new ExButton(unselectX, unselectY);
+        this.unselect = new Button(EX, unselectX, unselectY);
 
         float yStart = y + DD_TOP_HEIGHT;
         int boundsXOffset = 8;
@@ -148,9 +146,9 @@ public class DropDownMenu {
 
     private void setButtonDirection() {
         if (expanded)
-            ddButton.setDirection(DD_UP);
+            ddButton.setButtonType(DD_UP);
         else
-            ddButton.setDirection(DD_DOWN);
+            ddButton.setButtonType(DD_DOWN);
     }
 
     public void resetIndicies() {

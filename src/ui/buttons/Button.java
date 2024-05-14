@@ -1,6 +1,9 @@
 package ui.buttons;
 
-import java.awt.Rectangle;
+import utils.ImageLoader;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class Button {
 
@@ -8,24 +11,44 @@ public class Button {
     public static final int TEXT_LARGE = 1;
     public static final int SPRITE = 2;
     public static final int EX = 3;
-    public static final int DROP_DOWN = 4;
+    public static final int DD_DOWN = 4;
+    public static final int DD_UP = 5;
 
-    public static final int DD_DOWN = 0;
-    public static final int DD_UP = 1;
-
+    protected BufferedImage[] buttonImages;
     protected Rectangle bounds;
 
+    protected int buttonType;
     protected int index;
     protected int x, y, width, height;
 
     protected boolean mouseOver, mousePressed, disabled;
 
-    public Button(int x, int y, int width, int height) {
+    public Button(int buttonType, int x, int y) {
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
-        bounds = new Rectangle(x, y, width, height);
+        this.buttonType = buttonType;
+        initImagesAndBounds();
+    }
+
+    private void initImagesAndBounds() {
+        buttonImages = getButtonImages(buttonType);
+        if (buttonImages != null) {
+            this.width = buttonImages[0].getWidth();
+            this.height = buttonImages[0].getHeight();
+            bounds = new Rectangle(x, y, width, height);
+        }
+    }
+
+    private static BufferedImage[] getButtonImages(int buttonType) {
+        return switch (buttonType) {
+            case TEXT_SMALL -> ImageLoader.smallTextButton;
+            case TEXT_LARGE -> ImageLoader.largeTextButton;
+            case SPRITE -> ImageLoader.spriteButton;
+            case EX -> ImageLoader.exButton;
+            case DD_DOWN -> ImageLoader.ddDownButton;
+            case DD_UP -> ImageLoader.ddUpButton;
+            default -> null;
+        };
     }
 
     public static int getButtonWidth(int buttonType) {
@@ -34,7 +57,7 @@ public class Button {
             case TEXT_LARGE -> 168;
             case SPRITE -> 76;
             case EX -> 24;
-            case DROP_DOWN -> 48;
+            case DD_DOWN, DD_UP -> 48;
             default -> 0;
         };
     }
@@ -44,12 +67,12 @@ public class Button {
             case TEXT_SMALL, EX -> 27;
             case TEXT_LARGE -> 81;
             case SPRITE -> 83;
-            case DROP_DOWN -> 48;
+            case DD_DOWN, DD_UP -> 48;
             default -> 0;
         };
     }
 
-    public static int getButtonOffset(int buttonType) {
+    protected int getButtonOffset(int buttonType) {
         return switch (buttonType) {
             case TEXT_SMALL, EX -> 3;
             case TEXT_LARGE, SPRITE -> 7;
@@ -67,6 +90,10 @@ public class Button {
             if (mousePressed)
                 index = 2;
         }
+    }
+
+    public void render(Graphics g) {
+        g.drawImage(buttonImages[index], x, y, null);
     }
 
     public void reset(int x, int y) {
@@ -105,4 +132,8 @@ public class Button {
         return bounds;
     }
 
+    public void setButtonType(int buttonType) {
+        this.buttonType = buttonType;
+        initImagesAndBounds();
+    }
 }

@@ -23,8 +23,10 @@ public abstract class BottomBar extends UIBar {
 
     public BottomBar() {
         bounds = new Rectangle(X, BOTTOM_BAR_Y, UI_WIDTH, BOTTOM_BAR_HEIGHT);
-        menu = new TextButton(TEXT_SMALL, "Menu", 28f, X + 15, BOTTOM_BAR_Y + 15);
-        save = new TextButton(TEXT_SMALL, "Save", 28f, menu.getBounds().x, menu.getBounds().y + menu.getBounds().height + 5);
+        int offset = 16;
+        float fontSize = 28f;
+        menu = new TextButton(TEXT_SMALL, X + offset, BOTTOM_BAR_Y + offset, fontSize, "Menu");
+        save = new TextButton(TEXT_SMALL, menu.getBounds().x, menu.getBounds().y + menu.getBounds().height + offset / 2, fontSize, "Save");
 
     }
 

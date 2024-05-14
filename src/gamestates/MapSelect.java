@@ -2,9 +2,8 @@ package gamestates;
 
 import main.Game;
 import objects.Map;
-import objects.Tile;
 import ui.DropDownMenu;
-import ui.buttons.ExButton;
+import ui.buttons.Button;
 import ui.overlays.DeleteConfirm;
 import utils.LoadSave;
 import utils.RenderText;
@@ -113,7 +112,7 @@ public abstract class MapSelect extends FileSelect {
                 fileList.resetIndicies();
             }
         } else if (deleteConfirm.getBounds().contains(x, y)) {
-            ExButton exButton = deleteConfirm.getExButton();
+            Button exButton = deleteConfirm.getExButton();
             if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
                 deleting = false;
                 exButton.reset(x, y);

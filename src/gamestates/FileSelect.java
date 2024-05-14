@@ -46,16 +46,16 @@ public abstract class FileSelect extends State {
 
     protected void initButtons() {
         int offset = 48;
-        menu = new TextButton(TEXT_SMALL, "Menu", 28f, offset, offset);
+        menu = new TextButton(TEXT_SMALL, offset, offset, 28f, "Menu");
 
         int previewXEnd = previewX + previewWidth;
         int startX = previewXEnd + ((Game.SCREEN_WIDTH - previewXEnd) - getButtonWidth(TEXT_LARGE)) / 2;
         int startY = (Game.SCREEN_HEIGHT - Button.getButtonHeight(TEXT_LARGE)) / 2;
-        start = new TextButton(TEXT_LARGE, "Start", 46f, startX, startY);
+        start = new TextButton(TEXT_LARGE, startX, startY, 46f, "Start");
 
         int deleteX = previewXEnd + ((Game.SCREEN_WIDTH - previewXEnd) - getButtonWidth(TEXT_SMALL)) / 2;
         int deleteY = previewY + previewHeight - getButtonHeight(TEXT_SMALL);
-        delete = new TextButton(TEXT_SMALL, "Delete", 24f, deleteX, deleteY);
+        delete = new TextButton(TEXT_SMALL, deleteX, deleteY, 24f, "Delete");
     }
 
     @Override

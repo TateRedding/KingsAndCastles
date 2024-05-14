@@ -1,14 +1,13 @@
 package ui.overlays;
 
-import static ui.buttons.Button.EX;
-import static ui.buttons.Button.getButtonWidth;
-
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
-import ui.buttons.ExButton;
+import ui.buttons.Button;
 import utils.ImageLoader;
+
+import static ui.buttons.Button.*;
 
 public abstract class Overlay {
 
@@ -17,15 +16,14 @@ public abstract class Overlay {
 
     protected int x, y;
     protected Rectangle bounds;
-    protected ExButton exButton;
+    protected Button exButton;
 
     public Overlay(int x, int y) {
         this.x = x;
         this.y = y;
         this.bounds = new Rectangle(x, y, OVERLAY_WIDTH, OVERLAY_HEIGHT);
         int offset = 10;
-
-        this.exButton = new ExButton(x + OVERLAY_WIDTH - getButtonWidth(EX) - offset, y + offset);
+        this.exButton = new Button(EX, x + OVERLAY_WIDTH - getButtonWidth(EX) - offset, y + offset);
     }
 
     public void update() {
@@ -53,7 +51,7 @@ public abstract class Overlay {
         return bounds;
     }
 
-    public ExButton getExButton() {
+    public Button getExButton() {
         return exButton;
     }
 

@@ -2,7 +2,7 @@ package gamestates;
 
 import main.Game;
 import objects.Map;
-import ui.buttons.ExButton;
+import ui.buttons.Button;
 import ui.buttons.TextButton;
 import ui.overlays.NewMapForm;
 import ui.overlays.Overlay;
@@ -15,7 +15,6 @@ import java.awt.event.MouseEvent;
 import static main.Game.SCREEN_HEIGHT;
 import static main.Game.SCREEN_WIDTH;
 import static ui.buttons.Button.*;
-import static ui.buttons.Button.TEXT_LARGE;
 
 public class EditMapSelect extends MapSelect {
 
@@ -33,7 +32,7 @@ public class EditMapSelect extends MapSelect {
 
         int buttonX = (SCREEN_WIDTH - getButtonWidth(TEXT_LARGE)) / 2;
         int buttonY = (SCREEN_HEIGHT - getButtonHeight(TEXT_LARGE)) / 2;
-        newMapButton = new TextButton(TEXT_LARGE, "New Map", 46f, buttonX, buttonY);
+        newMapButton = new TextButton(TEXT_LARGE, buttonX, buttonY, 46f, "New Map");
     }
 
     @Override
@@ -109,7 +108,7 @@ public class EditMapSelect extends MapSelect {
             showNewMapForm = false;
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y)) {
-                ExButton exButton = newMapForm.getExButton();
+                Button exButton = newMapForm.getExButton();
                 if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
                     showNewMapForm = false;
                     exButton.reset(x, y);

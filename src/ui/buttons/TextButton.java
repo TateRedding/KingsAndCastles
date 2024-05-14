@@ -2,43 +2,28 @@ package ui.buttons;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Image;
 
 import main.Game;
 import utils.RenderText;
-import utils.ImageLoader;
 
 public class TextButton extends Button {
 
     private String text;
-    private int buttonSize;
     private float fontSize;
 
-    public TextButton(int buttonSize, String text, float fontSize, int x, int y) {
-        super(x, y, getButtonWidth(buttonSize), getButtonHeight(buttonSize));
-        this.buttonSize = buttonSize;
-        this.text = text;
+    public TextButton(int buttonType, int x, int y, float fontSize, String text) {
+        super(buttonType, x, y);
         this.fontSize = fontSize;
+        this.text = text;
     }
 
     public void render(Graphics g) {
-        drawBackground(g);
+        super.render(g);
         drawText(g);
     }
 
-    private void drawBackground(Graphics g) {
-        Image bg = switch (buttonSize) {
-            case TEXT_SMALL -> ImageLoader.smallTextButton[index];
-            case TEXT_LARGE -> ImageLoader.largeTextButton[index];
-            default -> null;
-        };
-
-        if (bg != null)
-            g.drawImage(bg, x, y, width, height, null);
-    }
-
     private void drawText(Graphics g) {
-        int offset = getButtonOffset(buttonSize);
+        int offset = getButtonOffset(buttonType);
         int textAreaHeight = height - offset;
         int yStart = y;
         if (mousePressed) {

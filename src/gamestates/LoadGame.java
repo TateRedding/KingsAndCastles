@@ -1,18 +1,14 @@
 package gamestates;
 
 import main.Game;
-import objects.Map;
 import ui.DropDownMenu;
-import ui.buttons.ExButton;
+import ui.buttons.Button;
 import ui.overlays.DeleteConfirm;
 import utils.LoadSave;
 import utils.RenderText;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import static main.Game.SCREEN_HEIGHT;
@@ -114,7 +110,7 @@ public class LoadGame extends FileSelect {
                 fileList.resetIndicies();
             }
         } else if (deleteConfirm.getBounds().contains(x, y)) {
-            ExButton exButton = deleteConfirm.getExButton();
+            Button exButton = deleteConfirm.getExButton();
             if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
                 deleting = false;
                 exButton.reset(x, y);

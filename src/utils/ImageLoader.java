@@ -5,8 +5,7 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static ui.TextBox.*;
 import static ui.buttons.Button.*;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +24,7 @@ public class ImageLoader {
     private static final String BOTTOM_BAR = "bottom_bar.png";
     private static final String CASTLE_ZONE = "castle_zone.png";
     private static final String DROP_DOWN_BODY = "drop_down_body.png";
-    private static final String DROP_DOWN_BUTTONS = "drop_down_buttons.png";
+    private static final String DROP_DOWN_BUTTON = "drop_down_button.png";
     private static final String DROP_DOWN_TOP = "drop_down_top.png";
     private static final String EX_BUTTON = "ex_button.png";
     private static final String ORES = "ores.png";
@@ -44,8 +43,8 @@ public class ImageLoader {
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
     public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, select, topBar;
-    public static BufferedImage[] exButton, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
-    public static BufferedImage[][] dropDownButtons, resourceObjects;
+    public static BufferedImage[] exButton, ddDownButton, ddUpButton, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
+    public static BufferedImage[][] resourceObjects;
 
     public static void loadImages() {
 
@@ -69,7 +68,10 @@ public class ImageLoader {
         spriteButton = getVerticalImageArray(SPRITE_BUTTON, 0, getButtonWidth(Button.SPRITE), getButtonHeight(Button.SPRITE),
                 amount);
         exButton = getVerticalImageArray(EX_BUTTON, 0, getButtonWidth(Button.EX), getButtonHeight(Button.EX), amount);
-        dropDownButtons = get2DImageArray(DROP_DOWN_BUTTONS, getButtonWidth(DROP_DOWN), getButtonHeight(DROP_DOWN), 2, amount);
+        ddDownButton = getVerticalImageArray(DROP_DOWN_BUTTON, 0, getButtonWidth(Button.DD_DOWN), getButtonHeight(Button.DD_DOWN), amount);
+        ddUpButton = new BufferedImage[ddDownButton.length];
+        for (int i = 0; i < ddDownButton.length; i++)
+            ddUpButton[i] = flipVertically(ddDownButton[i]);
     }
 
     private static void loadResourceImages() {
@@ -206,6 +208,18 @@ public class ImageLoader {
 
     private static BufferedImage getSprite(BufferedImage atlas, int x, int y) {
         return atlas.getSubimage(x * SPRITE_SIZE, y * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE);
+    }
+
+    private static BufferedImage flipVertically(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage flippedImage = new BufferedImage(width, height, image.getType());
+        Graphics2D g = flippedImage.createGraphics();
+        g.drawImage(image, 0, 0, width, height, 0, height, width, 0, null);
+        g.dispose();
+
+        return flippedImage;
     }
 
 }

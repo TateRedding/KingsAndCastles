@@ -8,22 +8,20 @@ import java.util.Arrays;
 import static main.Game.SCREEN_WIDTH;
 import static main.Game.getGameFont;
 import static objects.Tile.WATER_SAND;
-import static ui.buttons.Button.TEXT_SMALL;
 import static ui.buttons.Button.SPRITE;
 import static ui.buttons.Button.getButtonHeight;
 import static ui.buttons.Button.getButtonWidth;
 
 import gamestates.Edit;
 import main.Game;
-import ui.buttons.TextButton;
-import ui.buttons.SpriteButton;
+import ui.buttons.ImageButton;
 import utils.ImageLoader;
 import utils.RenderText;
 
 public class EditorBar extends BottomBar {
 
     private Edit edit;
-    private ArrayList<SpriteButton> spriteButtons = new ArrayList<>();
+    private ArrayList<ImageButton> spriteButtons = new ArrayList<>();
     private ArrayList<String> buttonLabels = new ArrayList<>();
 
     private boolean showCastleZoneWarning;
@@ -40,9 +38,10 @@ public class EditorBar extends BottomBar {
         int buttonHeight = getButtonHeight(SPRITE);
         int x = (SCREEN_WIDTH - (buttonWidth * numButtons + xOffset * (numButtons - 1))) / 2;
         int y = BOTTOM_BAR_Y + ((BOTTOM_BAR_HEIGHT - buttonHeight) / 2);
+        float scale = 2.0f;
 
         for (int i = 0; i < ImageLoader.editorBarButtonSprites.size(); i++) {
-            spriteButtons.add(new SpriteButton(ImageLoader.editorBarButtonSprites.get(i), x, y));
+            spriteButtons.add(new ImageButton(SPRITE, x, y, ImageLoader.editorBarButtonSprites.get(i), scale));
             x += buttonWidth + xOffset;
         }
         buttonLabels.addAll(Arrays.asList("Grass", "Dirt", "Sand", "Watery Grass", "Watery Sand", "Castle Zones", "Gold Mine"));
@@ -51,7 +50,7 @@ public class EditorBar extends BottomBar {
     @Override
     public void update() {
         super.update();
-        for (SpriteButton sb : spriteButtons) {
+        for (ImageButton sb : spriteButtons) {
             sb.update();
         }
     }
@@ -71,7 +70,7 @@ public class EditorBar extends BottomBar {
 
     private void renderSpriteButtons(Graphics g) {
         for (int i = 0; i < spriteButtons.size(); i++) {
-            SpriteButton button = spriteButtons.get(i);
+            ImageButton button = spriteButtons.get(i);
             String label = buttonLabels.get(i);
             button.render(g);
             int startX = button.getBounds().x + (button.getBounds().width - g.getFontMetrics().stringWidth(label)) / 2;
@@ -101,7 +100,7 @@ public class EditorBar extends BottomBar {
     @Override
     public void mousePressed(int x, int y, int button) {
         super.mousePressed(x, y, button);
-        for (SpriteButton sb : spriteButtons)
+        for (ImageButton sb : spriteButtons)
             if (sb.getBounds().contains(x, y))
                 sb.setMousePressed(true);
     }
@@ -113,12 +112,12 @@ public class EditorBar extends BottomBar {
             if (save.getBounds().contains(x, y) && save.isMousePressed())
                 edit.saveMap();
         for (int i = 0; i < spriteButtons.size(); i++) {
-            SpriteButton sb = spriteButtons.get(i);
+            ImageButton sb = spriteButtons.get(i);
             if (sb.getBounds().contains(x, y) && sb.isMousePressed())
                 edit.setSelectedType(i);
         }
 
-        for (SpriteButton sb : spriteButtons)
+        for (ImageButton sb : spriteButtons)
             sb.reset(x, y);
         save.reset(x, y);
     }
@@ -126,7 +125,7 @@ public class EditorBar extends BottomBar {
     @Override
     public void mouseMoved(int x, int y) {
         super.mouseMoved(x, y);
-        for (SpriteButton sb : spriteButtons) {
+        for (ImageButton sb : spriteButtons) {
             sb.setMouseOver(false);
             if (sb.getBounds().contains(x, y))
                 sb.setMouseOver(true);

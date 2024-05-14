@@ -2,9 +2,7 @@ package gamestates;
 
 import static main.Game.SCREEN_HEIGHT;
 import static main.Game.SCREEN_WIDTH;
-import static ui.buttons.Button.TEXT_LARGE;
-import static ui.buttons.Button.getButtonHeight;
-import static ui.buttons.Button.getButtonWidth;
+import static ui.buttons.Button.*;
 
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
@@ -32,10 +30,10 @@ public class Menu extends State {
         int x = (SCREEN_WIDTH - getButtonWidth(TEXT_LARGE)) / 2;
         int y = (SCREEN_HEIGHT - (buttonHeight * numButtons + yOffset * (numButtons - 1))) / 2;
 
-        newGame = new TextButton(TEXT_LARGE, "New Game", fontSize, x, y);
-        loadGame = new TextButton(TEXT_LARGE, "Load Game", fontSize, x, y += buttonHeight + yOffset);
-        editMap = new TextButton(TEXT_LARGE, "Edit Map", fontSize, x, y += buttonHeight + yOffset);
-        quit = new TextButton(TEXT_LARGE, "Quit", fontSize, x, y += buttonHeight + yOffset);
+        newGame = new TextButton(TEXT_LARGE, x, y, fontSize, "New Game");
+        loadGame = new TextButton(TEXT_LARGE, x, y += buttonHeight + yOffset, fontSize, "Load Game");
+        editMap = new TextButton(TEXT_LARGE, x, y += buttonHeight + yOffset, fontSize, "Edit Map");
+        quit = new TextButton(TEXT_LARGE, x, y += buttonHeight + yOffset, fontSize, "Quit");
 
         buttons.addAll(Arrays.asList(newGame, loadGame, editMap, quit));
     }
