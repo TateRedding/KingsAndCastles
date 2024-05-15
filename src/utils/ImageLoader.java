@@ -17,11 +17,14 @@ import javax.imageio.ImageIO;
 import objects.Map;
 import objects.Tile;
 import ui.TextBox;
-import ui.buttons.Button;
 
 public class ImageLoader {
 
     private static final String BOTTOM_BAR = "bottom_bar.png";
+    private static final String BRUSH_CIRCLE_BUTTON = "brush_circle_button.png";
+    private static final String BRUSH_DOWN_BUTTON = "brush_down_button.png";
+    private static final String BRUSH_SQUARE_BUTTON = "brush_square_button.png";
+    private static final String BRUSH_UP_BUTTON = "brush_up_button.png";
     private static final String CASTLE_ZONE = "castle_zone.png";
     private static final String DROP_DOWN_BODY = "drop_down_body.png";
     private static final String DROP_DOWN_BUTTON = "drop_down_button.png";
@@ -43,7 +46,8 @@ public class ImageLoader {
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
     public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, select, topBar;
-    public static BufferedImage[] exButton, ddDownButton, ddUpButton, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
+    public static BufferedImage[] brushCircleButton, brushDownButton, brushSquareButton, brushUpButton, exButton,
+            ddDownButton, ddUpButton, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
 
     public static void loadImages() {
@@ -61,17 +65,21 @@ public class ImageLoader {
     private static void loadButtonImages() {
         int amount = 4;
 
-        smallTextButton = getVerticalImageArray(TEXT_BUTTON_SMALL, 0, getButtonWidth(Button.TEXT_SMALL),
-                getButtonHeight(Button.TEXT_SMALL), amount);
-        largeTextButton = getVerticalImageArray(TEXT_BUTTON_LARGE, 0, getButtonWidth(Button.TEXT_LARGE),
-                getButtonHeight(Button.TEXT_LARGE), amount);
-        spriteButton = getVerticalImageArray(SPRITE_BUTTON, 0, getButtonWidth(Button.SPRITE), getButtonHeight(Button.SPRITE),
-                amount);
-        exButton = getVerticalImageArray(EX_BUTTON, 0, getButtonWidth(Button.EX), getButtonHeight(Button.EX), amount);
-        ddDownButton = getVerticalImageArray(DROP_DOWN_BUTTON, 0, getButtonWidth(Button.DD_DOWN), getButtonHeight(Button.DD_DOWN), amount);
+        brushCircleButton = getVerticalImageArray(BRUSH_CIRCLE_BUTTON, 0, getButtonWidth(BRUSH_CIRCLE), getButtonHeight(BRUSH_CIRCLE), amount);
+        brushDownButton = getVerticalImageArray(BRUSH_DOWN_BUTTON, 0, getButtonWidth(BRUSH_DOWN), getButtonHeight(BRUSH_DOWN), amount);
+        brushSquareButton = getVerticalImageArray(BRUSH_SQUARE_BUTTON, 0, getButtonWidth(BRUSH_SQUARE), getButtonHeight(BRUSH_SQUARE), amount);
+        brushUpButton = getVerticalImageArray(BRUSH_UP_BUTTON, 0, getButtonWidth(BRUSH_UP), getButtonHeight(BRUSH_UP), amount);
+        exButton = getVerticalImageArray(EX_BUTTON, 0, getButtonWidth(EX), getButtonHeight(EX), amount);
+        ddDownButton = getVerticalImageArray(DROP_DOWN_BUTTON, 0, getButtonWidth(DD_DOWN), getButtonHeight(DD_DOWN), amount);
         ddUpButton = new BufferedImage[ddDownButton.length];
         for (int i = 0; i < ddDownButton.length; i++)
             ddUpButton[i] = flipVertically(ddDownButton[i]);
+        largeTextButton = getVerticalImageArray(TEXT_BUTTON_LARGE, 0, getButtonWidth(TEXT_LARGE),
+                getButtonHeight(TEXT_LARGE), amount);
+        smallTextButton = getVerticalImageArray(TEXT_BUTTON_SMALL, 0, getButtonWidth(TEXT_SMALL),
+                getButtonHeight(TEXT_SMALL), amount);
+        spriteButton = getVerticalImageArray(SPRITE_BUTTON, 0, getButtonWidth(SPRITE), getButtonHeight(SPRITE),
+                amount);
     }
 
     private static void loadResourceImages() {

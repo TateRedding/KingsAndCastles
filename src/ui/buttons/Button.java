@@ -7,12 +7,16 @@ import java.awt.image.BufferedImage;
 
 public class Button {
 
-    public static final int TEXT_SMALL = 0;
-    public static final int TEXT_LARGE = 1;
-    public static final int SPRITE = 2;
-    public static final int EX = 3;
-    public static final int DD_DOWN = 4;
-    public static final int DD_UP = 5;
+    public static final int BRUSH_CIRCLE = 0;
+    public static final int BRUSH_DOWN = 1;
+    public static final int BRUSH_SQUARE = 2;
+    public static final int BRUSH_UP = 4;
+    public static final int EX = 5;
+    public static final int DD_DOWN = 6;
+    public static final int DD_UP = 7;
+    public static final int SPRITE = 8;
+    public static final int TEXT_LARGE = 9;
+    public static final int TEXT_SMALL = 10;
 
     protected BufferedImage[] buttonImages;
     protected Rectangle bounds;
@@ -53,29 +57,29 @@ public class Button {
 
     public static int getButtonWidth(int buttonType) {
         return switch (buttonType) {
-            case TEXT_SMALL -> 56;
-            case TEXT_LARGE -> 168;
-            case SPRITE -> 76;
-            case EX -> 24;
+            case BRUSH_CIRCLE, BRUSH_DOWN, BRUSH_SQUARE, BRUSH_UP, EX -> 24;
             case DD_DOWN, DD_UP -> 48;
+            case SPRITE -> 76;
+            case TEXT_LARGE -> 168;
+            case TEXT_SMALL -> 56;
             default -> 0;
         };
     }
 
     public static int getButtonHeight(int buttonType) {
         return switch (buttonType) {
-            case TEXT_SMALL, EX -> 27;
-            case TEXT_LARGE -> 81;
-            case SPRITE -> 83;
+            case BRUSH_CIRCLE, BRUSH_DOWN, BRUSH_SQUARE, BRUSH_UP, EX, TEXT_SMALL -> 27;
             case DD_DOWN, DD_UP -> 48;
+            case SPRITE -> 83;
+            case TEXT_LARGE -> 81;
             default -> 0;
         };
     }
 
     protected int getButtonOffset(int buttonType) {
         return switch (buttonType) {
-            case TEXT_SMALL, EX -> 3;
-            case TEXT_LARGE, SPRITE -> 7;
+            case BRUSH_CIRCLE, BRUSH_DOWN, BRUSH_SQUARE, BRUSH_UP, EX, TEXT_SMALL -> 3;
+            case SPRITE, TEXT_LARGE -> 7;
             default -> 0;
         };
     }
