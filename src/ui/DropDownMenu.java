@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import main.Game;
 import ui.buttons.Button;
+import ui.buttons.ImageButton;
 import utils.ImageLoader;
 import utils.RenderText;
 
@@ -19,7 +20,7 @@ public class DropDownMenu {
     public static final int DD_BODY_HEIGHT = 240;
     public static final int DD_WIDTH = 576;
 
-    private Button ddButton;
+    private ImageButton ddButton;
     protected Button unselect;
     private Rectangle bounds;
 
@@ -44,11 +45,11 @@ public class DropDownMenu {
         this.rowWidth = DD_WIDTH - rowXOffset * 2;
         this.rowX = x + rowXOffset;
         this.bounds = new Rectangle(x, y, DD_WIDTH, DD_TOP_HEIGHT);
-        this.ddButton = new Button(DD_DOWN, x + bounds.width - getButtonWidth(DD_DOWN), y);
+        this.ddButton = new ImageButton(DROP_DOWN, x + bounds.width - getButtonWidth(DROP_DOWN), y, ImageLoader.dropDownArrow[DD_DOWN], 1.0f);
 
-        int unselectX = bounds.x + (bounds.height - getButtonWidth(EX)) / 2;
-        int unselectY = bounds.y + (bounds.height - getButtonHeight(EX)) / 2;
-        this.unselect = new Button(EX, unselectX, unselectY);
+        int unselectX = bounds.x + (bounds.height - getButtonWidth(ICON)) / 2;
+        int unselectY = bounds.y + (bounds.height - getButtonHeight(ICON)) / 2;
+        this.unselect = new ImageButton(ICON, unselectX, unselectY, ImageLoader.icons[ICON_EX], 1.0f);
 
         float yStart = y + DD_TOP_HEIGHT;
         int boundsXOffset = 8;
@@ -146,9 +147,9 @@ public class DropDownMenu {
 
     private void setButtonDirection() {
         if (expanded)
-            ddButton.setButtonType(DD_UP);
+            ddButton.setDisplayImage(ImageLoader.dropDownArrow[DD_UP]);
         else
-            ddButton.setButtonType(DD_DOWN);
+            ddButton.setDisplayImage(ImageLoader.dropDownArrow[DD_DOWN]);
     }
 
     public void resetIndicies() {
@@ -171,7 +172,7 @@ public class DropDownMenu {
                 setExpanded(!expanded);
             else if (selectedIndex != -1 && unselect.getBounds().contains(x, y) && unselect.isMousePressed()) {
                 selectedIndex = -1;
-                expanded = false;
+                setExpanded(false);
             }
             for (Rectangle rowBounds : rowBounds)
                 if (rowBounds.contains(x, y) && hoverIndex != -1) {

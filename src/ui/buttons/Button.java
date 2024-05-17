@@ -6,17 +6,23 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Button {
+    // Button types
+    public static final int DROP_DOWN = 0;
+    public static final int ICON = 1;
+    public static final int SPRITE = 2;
+    public static final int TEXT_LARGE = 3;
+    public static final int TEXT_SMALL = 4;
 
-    public static final int BRUSH_CIRCLE = 0;
-    public static final int BRUSH_DOWN = 1;
-    public static final int BRUSH_SQUARE = 2;
-    public static final int BRUSH_UP = 4;
-    public static final int EX = 5;
-    public static final int DD_DOWN = 6;
-    public static final int DD_UP = 7;
-    public static final int SPRITE = 8;
-    public static final int TEXT_LARGE = 9;
-    public static final int TEXT_SMALL = 10;
+    // Icons
+    public static final int ICON_EX = 0;
+    public static final int ICON_CIRCLE = 1;
+    public static final int ICON_SQUARE = 2;
+    public static final int ICON_UP = 3;
+    public static final int ICON_DOWN = 4;
+
+    // Drop Down
+    public static final int DD_DOWN = 0;
+    public static final int DD_UP = 1;
 
     protected BufferedImage[] buttonImages;
     protected Rectangle bounds;
@@ -31,34 +37,26 @@ public class Button {
         this.x = x;
         this.y = y;
         this.buttonType = buttonType;
-        initImagesAndBounds();
-    }
-
-    private void initImagesAndBounds() {
         buttonImages = getButtonImages(buttonType);
-        if (buttonImages != null) {
-            this.width = buttonImages[0].getWidth();
-            this.height = buttonImages[0].getHeight();
-            bounds = new Rectangle(x, y, width, height);
-        }
+        this.width = getButtonWidth(buttonType);
+        this.height = getButtonHeight(buttonType);
+        bounds = new Rectangle(x, y, width, height);
     }
 
     private static BufferedImage[] getButtonImages(int buttonType) {
         return switch (buttonType) {
-            case TEXT_SMALL -> ImageLoader.smallTextButton;
-            case TEXT_LARGE -> ImageLoader.largeTextButton;
+            case ICON -> ImageLoader.iconButton;
             case SPRITE -> ImageLoader.spriteButton;
-            case EX -> ImageLoader.exButton;
-            case DD_DOWN -> ImageLoader.ddDownButton;
-            case DD_UP -> ImageLoader.ddUpButton;
+            case TEXT_LARGE -> ImageLoader.largeTextButton;
+            case TEXT_SMALL -> ImageLoader.smallTextButton;
             default -> null;
         };
     }
 
     public static int getButtonWidth(int buttonType) {
         return switch (buttonType) {
-            case BRUSH_CIRCLE, BRUSH_DOWN, BRUSH_SQUARE, BRUSH_UP, EX -> 24;
-            case DD_DOWN, DD_UP -> 48;
+            case DROP_DOWN -> 48;
+            case ICON -> 24;
             case SPRITE -> 76;
             case TEXT_LARGE -> 168;
             case TEXT_SMALL -> 56;
@@ -68,8 +66,8 @@ public class Button {
 
     public static int getButtonHeight(int buttonType) {
         return switch (buttonType) {
-            case BRUSH_CIRCLE, BRUSH_DOWN, BRUSH_SQUARE, BRUSH_UP, EX, TEXT_SMALL -> 27;
-            case DD_DOWN, DD_UP -> 48;
+            case DROP_DOWN -> 48;
+            case ICON, TEXT_SMALL -> 27;
             case SPRITE -> 83;
             case TEXT_LARGE -> 81;
             default -> 0;
@@ -78,7 +76,7 @@ public class Button {
 
     protected int getButtonOffset(int buttonType) {
         return switch (buttonType) {
-            case BRUSH_CIRCLE, BRUSH_DOWN, BRUSH_SQUARE, BRUSH_UP, EX, TEXT_SMALL -> 3;
+            case ICON, TEXT_SMALL -> 3;
             case SPRITE, TEXT_LARGE -> 7;
             default -> 0;
         };
@@ -97,7 +95,8 @@ public class Button {
     }
 
     public void render(Graphics g) {
-        g.drawImage(buttonImages[index], x, y, null);
+        if (buttonImages != null && buttonImages[index] != null)
+            g.drawImage(buttonImages[index], x, y, null);
     }
 
     public void reset(int x, int y) {
@@ -134,10 +133,5 @@ public class Button {
 
     public Rectangle getBounds() {
         return bounds;
-    }
-
-    public void setButtonType(int buttonType) {
-        this.buttonType = buttonType;
-        initImagesAndBounds();
     }
 }

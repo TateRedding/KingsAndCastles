@@ -21,15 +21,12 @@ import ui.TextBox;
 public class ImageLoader {
 
     private static final String BOTTOM_BAR = "bottom_bar.png";
-    private static final String BRUSH_CIRCLE_BUTTON = "brush_circle_button.png";
-    private static final String BRUSH_DOWN_BUTTON = "brush_down_button.png";
-    private static final String BRUSH_SQUARE_BUTTON = "brush_square_button.png";
-    private static final String BRUSH_UP_BUTTON = "brush_up_button.png";
     private static final String CASTLE_ZONE = "castle_zone.png";
+    private static final String DROP_DOWN_ARROW = "drop_down_arrow.png";
     private static final String DROP_DOWN_BODY = "drop_down_body.png";
-    private static final String DROP_DOWN_BUTTON = "drop_down_button.png";
     private static final String DROP_DOWN_TOP = "drop_down_top.png";
-    private static final String EX_BUTTON = "ex_button.png";
+    private static final String ICON_BUTTON = "icon_button.png";
+    private static final String ICONS = "icons.png";
     private static final String ORES = "ores.png";
     private static final String OVERLAY_BG = "overlay_bg.png";
     private static final String ROCKS = "rocks.png";
@@ -46,34 +43,31 @@ public class ImageLoader {
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
     public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, select, topBar;
-    public static BufferedImage[] brushCircleButton, brushDownButton, brushSquareButton, brushUpButton, exButton,
-            ddDownButton, ddUpButton, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
+    public static BufferedImage[] dropDownArrow, iconButton, icons, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
 
     public static void loadImages() {
-
         loadButtonImages();
         loadResourceImages();
         loadTerrainTiles();
         loadUIImages();
 
-        editorBarButtonSprites = new ArrayList<BufferedImage>(Arrays.asList(tiles.get(GRASS).get(0),
-                tiles.get(DIRT).get(0), tiles.get(SAND).get(0), tiles.get(WATER_GRASS).get(0),
-                tiles.get(WATER_SAND).get(0), getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0), ores[0]));
+        editorBarButtonSprites = new ArrayList<>(Arrays.asList(
+                tiles.get(GRASS).get(0),
+                tiles.get(DIRT).get(0),
+                tiles.get(SAND).get(0),
+                tiles.get(WATER_GRASS).get(0),
+                tiles.get(WATER_SAND).get(0),
+                getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0),
+                ores[0]
+        ));
+        icons = getHorizontalImageArray(ICONS, 0, 16, 16, 5);
+        dropDownArrow = getHorizontalImageArray(DROP_DOWN_ARROW, 0, 20, 12, 2);
     }
 
     private static void loadButtonImages() {
         int amount = 4;
-
-        brushCircleButton = getVerticalImageArray(BRUSH_CIRCLE_BUTTON, 0, getButtonWidth(BRUSH_CIRCLE), getButtonHeight(BRUSH_CIRCLE), amount);
-        brushDownButton = getVerticalImageArray(BRUSH_DOWN_BUTTON, 0, getButtonWidth(BRUSH_DOWN), getButtonHeight(BRUSH_DOWN), amount);
-        brushSquareButton = getVerticalImageArray(BRUSH_SQUARE_BUTTON, 0, getButtonWidth(BRUSH_SQUARE), getButtonHeight(BRUSH_SQUARE), amount);
-        brushUpButton = getVerticalImageArray(BRUSH_UP_BUTTON, 0, getButtonWidth(BRUSH_UP), getButtonHeight(BRUSH_UP), amount);
-        exButton = getVerticalImageArray(EX_BUTTON, 0, getButtonWidth(EX), getButtonHeight(EX), amount);
-        ddDownButton = getVerticalImageArray(DROP_DOWN_BUTTON, 0, getButtonWidth(DD_DOWN), getButtonHeight(DD_DOWN), amount);
-        ddUpButton = new BufferedImage[ddDownButton.length];
-        for (int i = 0; i < ddDownButton.length; i++)
-            ddUpButton[i] = flipVertically(ddDownButton[i]);
+        iconButton = getVerticalImageArray(ICON_BUTTON, 0, getButtonWidth(ICON), getButtonHeight(ICON), amount);
         largeTextButton = getVerticalImageArray(TEXT_BUTTON_LARGE, 0, getButtonWidth(TEXT_LARGE),
                 getButtonHeight(TEXT_LARGE), amount);
         smallTextButton = getVerticalImageArray(TEXT_BUTTON_SMALL, 0, getButtonWidth(TEXT_SMALL),
@@ -216,18 +210,6 @@ public class ImageLoader {
 
     private static BufferedImage getSprite(BufferedImage atlas, int x, int y) {
         return atlas.getSubimage(x * SPRITE_SIZE, y * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE);
-    }
-
-    private static BufferedImage flipVertically(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        BufferedImage flippedImage = new BufferedImage(width, height, image.getType());
-        Graphics2D g = flippedImage.createGraphics();
-        g.drawImage(image, 0, 0, width, height, 0, height, width, 0, null);
-        g.dispose();
-
-        return flippedImage;
     }
 
 }

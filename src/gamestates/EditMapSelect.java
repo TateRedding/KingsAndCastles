@@ -3,6 +3,7 @@ package gamestates;
 import main.Game;
 import objects.Map;
 import ui.buttons.Button;
+import ui.buttons.ImageButton;
 import ui.buttons.TextButton;
 import ui.overlays.NewMapForm;
 import ui.overlays.Overlay;
@@ -108,7 +109,7 @@ public class EditMapSelect extends MapSelect {
             showNewMapForm = false;
         if (showNewMapForm) {
             if (newMapForm.getBounds().contains(x, y)) {
-                Button exButton = newMapForm.getExButton();
+                ImageButton exButton = newMapForm.getExButton();
                 if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
                     showNewMapForm = false;
                     exButton.reset(x, y);

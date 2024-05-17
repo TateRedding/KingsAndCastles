@@ -4,6 +4,7 @@ import main.Game;
 import objects.Map;
 import ui.DropDownMenu;
 import ui.buttons.Button;
+import ui.buttons.ImageButton;
 import ui.overlays.DeleteConfirm;
 import utils.LoadSave;
 import utils.RenderText;
@@ -112,7 +113,7 @@ public abstract class MapSelect extends FileSelect {
                 fileList.resetIndicies();
             }
         } else if (deleteConfirm.getBounds().contains(x, y)) {
-            Button exButton = deleteConfirm.getExButton();
+            ImageButton exButton = deleteConfirm.getExButton();
             if (exButton.getBounds().contains(x, y) && exButton.isMousePressed()) {
                 deleting = false;
                 exButton.reset(x, y);
