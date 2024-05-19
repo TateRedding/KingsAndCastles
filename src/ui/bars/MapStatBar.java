@@ -32,14 +32,15 @@ public class MapStatBar extends TopBar {
         this.map = edit.getMap();
 
         this.defaultToolTip = "Drag/ Arrow Keys: Move map";
+        String[] terrainToolTip = {"Left-click: Place tile", "Esc: Unselect", "Scroll: Adjust brush size", "Right-click & Drag: Move Map"};
         this.toolTips = new String[][]{
-                {"Left-click: Place tile", "Esc: Unselect"},
-                {"Left-click: Place tile", "Esc: Unselect"},
-                {"Left-click: Place tile", "Esc: Unselect"},
-                {"Left-click: Place tile", "Esc: Unselect"},
-                {"Left-click: Place tile", "Esc: Unselect"},
+                terrainToolTip,
+                terrainToolTip,
+                terrainToolTip,
+                terrainToolTip,
+                terrainToolTip,
                 {"Left-click: Place zone", "Right-click: Delete zone", "Scroll: Switch player", "Esc: Unselect"},
-                {"Left-click: Place mine", "Right-click: Delete mine", "Esc: Unselect"}
+                {"Left-click: Place mine", "Right-click: Delete mine", "Esc: Unselect", "Right-click & Drag: Move Map"}
         };
     }
 

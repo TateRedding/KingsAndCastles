@@ -51,7 +51,9 @@ public class Edit extends MapState {
         for (int size = 1; size <= maxBrushSize; size++) {
             ArrayList<Point> squareBrushPoints = new ArrayList<>();
             ArrayList<Point> circleBrushPoints = new ArrayList<>();
-            int negDist = (brushSize - 1) / 2 * -1;
+            int negDist = (size - 1) / 2 * -1;
+            System.out.println("Brush size: " + size);
+            System.out.println("negDist: " + negDist);
             int startPos = negDist * TILE_SIZE;
             int diameter = size * TILE_SIZE;
             Rectangle squareBounds = new Rectangle(startPos, startPos, diameter, diameter);
@@ -333,17 +335,19 @@ public class Edit extends MapState {
     public void mouseDragged(int x, int y) {
         super.mouseDragged(x, y);
         if (inGameArea)
-            if (selectedType != -1) {
-                if (leftMouseDown) {
-                    if (selectedType == CASTLE_ZONE)
-                        setCastleZone();
-                    else if (selectedType != GOLD_MINE)
-                        changeTile(MouseEvent.MOUSE_DRAGGED);
-                } else if (rightMouseDown)
-                    if (selectedType == CASTLE_ZONE)
-                        unsetCastleZone();
-            } else
-                dragScreen(x, y);
+            if (leftMouseDown) {
+                if (selectedType == CASTLE_ZONE)
+                    setCastleZone();
+                else if (selectedType != -1 && selectedType != GOLD_MINE)
+                    changeTile(MouseEvent.MOUSE_DRAGGED);
+                else
+                    dragScreen(x, y);
+            } else if (rightMouseDown) {
+                if (selectedType == CASTLE_ZONE)
+                    unsetCastleZone();
+                else
+                    dragScreen(x, y);
+            }
     }
 
     @Override
@@ -359,11 +363,18 @@ public class Edit extends MapState {
     public void mouseWheelMoved(int dir, int amt) {
         super.mouseWheelMoved(dir, amt);
         if (dir == -1) {
-            if (selectedZone < map.getNumPlayers() - 1) {
-                selectedZone++;
-            }
-        } else if (selectedZone > 0)
-            selectedZone--;
+            if (selectedType == CASTLE_ZONE) {
+                if (selectedZone < map.getNumPlayers() - 1)
+                    selectedZone++;
+            } else if (selectedType != GOLD_MINE && brushSize < maxBrushSize)
+                brushSize++;
+        } else {
+            if (selectedType == CASTLE_ZONE) {
+                if (selectedZone > 0)
+                    selectedZone--;
+            } else if (selectedType != GOLD_MINE && brushSize > 1)
+                brushSize--;
+        }
     }
 
     @Override
@@ -381,12 +392,12 @@ public class Edit extends MapState {
         this.brushSize = brushSize;
     }
 
-    public int getBrushShape() {
-        return brushShape;
-    }
-
     public void setBrushShape(int brushShape) {
         this.brushShape = brushShape;
+    }
+
+    public int getMaxBrushSize() {
+        return maxBrushSize;
     }
 
     public int getSelectedType() {

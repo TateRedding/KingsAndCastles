@@ -26,9 +26,11 @@ public class EditorBar extends BottomBar {
     private ImageButton brushCircle, brushDown, brushSquare, brushUp;
 
     private boolean showCastleZoneWarning, showBrushButtons;
+    private int brushSize;
 
     public EditorBar(Edit edit) {
         this.edit = edit;
+        this.brushSize = edit.getBrushSize();
         initTileButtons();
         initBrushButtons();
     }
@@ -71,9 +73,12 @@ public class EditorBar extends BottomBar {
     @Override
     public void update() {
         super.update();
-        for (ImageButton sb : spriteButtons) {
+        this.brushSize = edit.getBrushSize();
+        brushDown.setDisabled(brushSize <= 1);
+        brushUp.setDisabled(brushSize >= edit.getMaxBrushSize());
+
+        for (ImageButton sb : spriteButtons)
             sb.update();
-        }
 
         int selectedType = edit.getSelectedType();
         showBrushButtons = (selectedType != -1 && selectedType != CASTLE_ZONE && selectedType != GOLD_MINE);
@@ -154,22 +159,45 @@ public class EditorBar extends BottomBar {
         for (ImageButton sb : spriteButtons)
             if (sb.getBounds().contains(x, y))
                 sb.setMousePressed(true);
+        for (ImageButton bb : brushButtons)
+            if (bb.getBounds().contains(x, y))
+                bb.setMousePressed(true);
+
     }
 
     @Override
     public void mouseReleased(int x, int y, int button) {
         super.mouseReleased(x, y, button);
-        if (button == MouseEvent.BUTTON1)
+        if (button == MouseEvent.BUTTON1) {
             if (save.getBounds().contains(x, y) && save.isMousePressed())
                 edit.saveMap();
-        for (int i = 0; i < spriteButtons.size(); i++) {
-            ImageButton sb = spriteButtons.get(i);
-            if (sb.getBounds().contains(x, y) && sb.isMousePressed())
-                edit.setSelectedType(i);
+            else if (brushSquare.getBounds().contains(x, y) && brushSquare.isMousePressed())
+                edit.setBrushShape(SQUARE);
+            else if (brushCircle.getBounds().contains(x, y) && brushCircle.isMousePressed())
+                edit.setBrushShape(CIRCLE);
+            else if (brushUp.getBounds().contains(x, y) && brushUp.isMousePressed()) {
+                if (brushSize < edit.getMaxBrushSize()) {
+                    brushSize++;
+                    edit.setBrushSize(brushSize);
+                }
+            } else if (brushDown.getBounds().contains(x, y) && brushDown.isMousePressed())
+                if (brushSize > 1) {
+                    brushSize--;
+                    edit.setBrushSize(brushSize);
+                }
+
+            for (int i = 0; i < spriteButtons.size(); i++) {
+                ImageButton sb = spriteButtons.get(i);
+                if (sb.getBounds().contains(x, y) && sb.isMousePressed())
+                    edit.setSelectedType(i);
+            }
         }
 
         for (ImageButton sb : spriteButtons)
             sb.reset(x, y);
+        for (ImageButton bb : brushButtons)
+            bb.reset(x, y);
+
         save.reset(x, y);
     }
 
@@ -180,6 +208,11 @@ public class EditorBar extends BottomBar {
             sb.setMouseOver(false);
             if (sb.getBounds().contains(x, y))
                 sb.setMouseOver(true);
+        }
+        for (ImageButton bb : brushButtons) {
+            bb.setMouseOver(false);
+            if (bb.getBounds().contains(x, y))
+                bb.setMouseOver(true);
         }
     }
 
