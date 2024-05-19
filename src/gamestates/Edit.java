@@ -52,8 +52,6 @@ public class Edit extends MapState {
             ArrayList<Point> squareBrushPoints = new ArrayList<>();
             ArrayList<Point> circleBrushPoints = new ArrayList<>();
             int negDist = (size - 1) / 2 * -1;
-            System.out.println("Brush size: " + size);
-            System.out.println("negDist: " + negDist);
             int startPos = negDist * TILE_SIZE;
             int diameter = size * TILE_SIZE;
             Rectangle squareBounds = new Rectangle(startPos, startPos, diameter, diameter);
