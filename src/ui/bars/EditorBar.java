@@ -5,12 +5,11 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static gamestates.Edit.*;
 import static main.Game.SCREEN_WIDTH;
 import static main.Game.getGameFont;
 import static objects.Tile.WATER_SAND;
-import static ui.buttons.Button.SPRITE;
-import static ui.buttons.Button.getButtonHeight;
-import static ui.buttons.Button.getButtonWidth;
+import static ui.buttons.Button.*;
 
 import gamestates.Edit;
 import main.Game;
@@ -22,13 +21,16 @@ public class EditorBar extends BottomBar {
 
     private Edit edit;
     private ArrayList<ImageButton> spriteButtons = new ArrayList<>();
+    private ArrayList<ImageButton> brushButtons = new ArrayList<>();
     private ArrayList<String> buttonLabels = new ArrayList<>();
+    private ImageButton brushCircle, brushDown, brushSquare, brushUp;
 
-    private boolean showCastleZoneWarning;
+    private boolean showCastleZoneWarning, showBrushButtons;
 
     public EditorBar(Edit edit) {
         this.edit = edit;
         initTileButtons();
+        initBrushButtons();
     }
 
     private void initTileButtons() {
@@ -47,12 +49,37 @@ public class EditorBar extends BottomBar {
         buttonLabels.addAll(Arrays.asList("Grass", "Dirt", "Sand", "Watery Grass", "Watery Sand", "Castle Zones", "Gold Mine"));
     }
 
+    private void initBrushButtons() {
+        int xOffset = 16;
+        int yOffset = 32;
+        float scale = 1.0f;
+        Rectangle lastSpriteButtonBounds = spriteButtons.get(spriteButtons.size() - 1).getBounds();
+        int lastSpriteButtonEndX = lastSpriteButtonBounds.x + lastSpriteButtonBounds.width;
+
+        int topYStart = BOTTOM_BAR_Y + (BOTTOM_BAR_HEIGHT - (getButtonHeight(ICON) * 2 + yOffset)) / 2;
+        int bottomYStart = topYStart + getButtonHeight(ICON) + yOffset;
+        int rightXStart = lastSpriteButtonEndX + ((UI_WIDTH - lastSpriteButtonEndX) - (getButtonWidth(ICON) * 2 + xOffset)) / 2;
+        int leftXStart = rightXStart + getButtonWidth(ICON) + xOffset;
+        brushSquare = new ImageButton(ICON, rightXStart, topYStart, ImageLoader.icons[ICON_SQUARE], scale);
+        brushCircle = new ImageButton(ICON, leftXStart, topYStart, ImageLoader.icons[ICON_CIRCLE], scale);
+        brushUp = new ImageButton(ICON, rightXStart, bottomYStart, ImageLoader.icons[ICON_UP], scale);
+        brushDown = new ImageButton(ICON, leftXStart, bottomYStart, ImageLoader.icons[ICON_DOWN], scale);
+
+        brushButtons.addAll(Arrays.asList(brushSquare, brushCircle, brushUp, brushDown));
+    }
+
     @Override
     public void update() {
         super.update();
         for (ImageButton sb : spriteButtons) {
             sb.update();
         }
+
+        int selectedType = edit.getSelectedType();
+        showBrushButtons = (selectedType != -1 && selectedType != CASTLE_ZONE && selectedType != GOLD_MINE);
+        if (showBrushButtons)
+            for (ImageButton bb : brushButtons)
+                bb.update();
     }
 
     @Override
@@ -66,6 +93,12 @@ public class EditorBar extends BottomBar {
             renderCastleZoneWarning(g);
         if (edit.getSelectedType() == WATER_SAND)
             renderWaterSandFinePrint(g);
+
+        if (showBrushButtons) {
+            renderBrushText(g);
+            for (ImageButton bb : brushButtons)
+                bb.render(g);
+        }
     }
 
     private void renderSpriteButtons(Graphics g) {
@@ -94,6 +127,24 @@ public class EditorBar extends BottomBar {
         int height = BOTTOM_BAR_Y + BOTTOM_BAR_HEIGHT - startY;
         g.setFont(Game.getGameFont(26f));
         RenderText.renderText(g, finePrint, RenderText.CENTER, RenderText.CENTER, 0, startY, UI_WIDTH, height);
+    }
+
+    private void renderBrushText(Graphics g) {
+        String shape = "Brush Shape";
+        String size = "Brush Size: " + edit.getBrushSize();
+        Rectangle brushSquareBounds = brushSquare.getBounds();
+        Rectangle brushUpBounds = brushUp.getBounds();
+        g.setFont(Game.getGameFont(26f));
+        FontMetrics fm = g.getFontMetrics();
+
+        int shapeYStart = brushSquareBounds.y - fm.getDescent() - 2;
+        int xOffset = brushCircle.getBounds().x - (brushSquareBounds.x + brushSquareBounds.width);
+        int shapeXStart = brushSquareBounds.x + brushSquareBounds.width + (xOffset - fm.stringWidth(shape)) / 2;
+        g.drawString(shape, shapeXStart, shapeYStart);
+
+        int sizeYStart = brushUpBounds.y - fm.getDescent() - 2;
+        int sizeXStart = brushUpBounds.x + brushUpBounds.width + (xOffset - fm.stringWidth(size)) / 2;
+        g.drawString(size, sizeXStart, sizeYStart);
     }
 
 

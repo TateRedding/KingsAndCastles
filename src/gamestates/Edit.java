@@ -19,11 +19,11 @@ import utils.ImageLoader;
 
 public class Edit extends MapState {
 
-    private static final int SQUARE = 0;
-    private static final int CIRCLE = 1;
+    public static final int SQUARE = 0;
+    public static final int CIRCLE = 1;
 
-    private static final int CASTLE_ZONE = 5;
-    private static final int GOLD_MINE = 6;
+    public static final int CASTLE_ZONE = 5;
+    public static final int GOLD_MINE = 6;
 
     private EditorBar editorBar;
     private MapStatBar mapStatBar;
@@ -371,6 +371,22 @@ public class Edit extends MapState {
         super.keyPressed(e);
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_DELETE)
             selectedType = -1;
+    }
+
+    public int getBrushSize() {
+        return brushSize;
+    }
+
+    public void setBrushSize(int brushSize) {
+        this.brushSize = brushSize;
+    }
+
+    public int getBrushShape() {
+        return brushShape;
+    }
+
+    public void setBrushShape(int brushShape) {
+        this.brushShape = brushShape;
     }
 
     public int getSelectedType() {
