@@ -50,7 +50,8 @@ public abstract class MapState extends State implements Serializable {
 
     @Override
     public void update() {
-        miniMap.update();
+        if (miniMap != null)
+            miniMap.update();
     }
 
     @Override
@@ -194,4 +195,11 @@ public abstract class MapState extends State implements Serializable {
         return maxYTileOffset;
     }
 
+    public MiniMap getMiniMap() {
+        return miniMap;
+    }
+
+    public void setMiniMap(MiniMap miniMap) {
+        this.miniMap = miniMap;
+    }
 }

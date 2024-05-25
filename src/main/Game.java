@@ -19,6 +19,7 @@ import gamestates.State;
 import handlers.SaveFileHandler;
 import handlers.TileHandler;
 import objects.Map;
+import ui.MiniMap;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 import utils.LoadSave;
@@ -146,6 +147,8 @@ public class Game extends JFrame implements Runnable {
             play.setGameStatBar(new GameStatBar(play));
         if (play.getGame() == null)
             play.setGame(this);
+        if (play.getMiniMap() == null)
+            play.setMiniMap(new MiniMap(play, play.getMap().getTileData()));
         this.play = play;
         GameStates.setGameState(GameStates.PLAY);
     }

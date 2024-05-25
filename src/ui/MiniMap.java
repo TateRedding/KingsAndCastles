@@ -188,11 +188,11 @@ public class MiniMap implements Serializable {
     }
 
     private void drawMap(Graphics g) {
-        g.setColor(Color.BLACK);
+        g.setColor(new Color(64, 27, 0));
         g.drawRect(areaX - 1, areaY - 1, areaWidth + 1, areaHeight + 1);
         g.drawRect(areaX - 2, areaY - 2, areaWidth + 3, areaHeight + 3);
 
-        g.setColor(new Color(0, 0, 0, 150));
+        g.setColor(new Color(255, 180, 128, 150));
         g.fillRect(areaX, areaY, areaWidth, areaHeight);
 
         g.drawImage(miniMap, mmX, mmY, null);

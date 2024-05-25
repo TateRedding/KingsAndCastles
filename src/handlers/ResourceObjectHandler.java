@@ -6,13 +6,12 @@ import objects.Chunk;
 import objects.Tile;
 import resources.*;
 import utils.ImageLoader;
-import utils.PerlinNoise;
+import utils.OpenSimplex2;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
@@ -254,13 +253,12 @@ public class ResourceObjectHandler implements Serializable {
         int width = resourceData[0].length;
         int height = resourceData.length;
         double inc = 0.065;
-        PerlinNoise pn = new PerlinNoise(play.getSeed());
         noiseMap = new double[height][width];
         double yOff = 0;
         for (int y = 0; y < height; y++) {
             double xOff = 0.0;
             for (int x = 0; x < width; x++) {
-                noiseMap[y][x] = pn.noise(xOff, yOff);
+                noiseMap[y][x] = OpenSimplex2.noise2_ImproveX(play.getSeed(), xOff, yOff);
                 if (noiseMap[y][x] > 0 && play.getMap().isFreeLand(x, y) && play.getMap().getTileData()[y][x].getTileType() != Tile.SAND && resourceData[y][x] == null)
                     resourceData[y][x] = TREE;
                 xOff += inc;

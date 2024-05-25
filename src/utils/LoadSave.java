@@ -19,6 +19,7 @@ import javax.imageio.ImageIO;
 import gamestates.Play;
 import main.Game;
 import objects.Map;
+import ui.MiniMap;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 
@@ -195,9 +196,12 @@ public class LoadSave {
         Game game = play.getGame();
         ActionBar actionBar = play.getActionBar();
         GameStatBar gameStatBar = play.getGameStatBar();
+        MiniMap miniMap = play.getMiniMap();
+
         play.setGame(null);
         play.setActionBar(null);
         play.setGameStatBar(null);
+        play.setMiniMap(null);
 
         try {
             FileOutputStream fileStream = new FileOutputStream(gameFile);
@@ -212,6 +216,7 @@ public class LoadSave {
         play.setGame(game);
         play.setActionBar(actionBar);
         play.setGameStatBar(gameStatBar);
+        play.setMiniMap(miniMap);
     }
 
     public static void createGameFile(Play game, File gameFile) {
