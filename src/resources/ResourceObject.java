@@ -7,7 +7,7 @@ import main.Game;
 import objects.GameObject;
 import ui.bars.TopBar;
 
-public abstract class ResourceObjects extends GameObject implements Serializable {
+public abstract class ResourceObject extends GameObject implements Serializable {
 
     public static final int GOLD_MINE = 0;
     public static final int TREE = 1;
@@ -18,7 +18,7 @@ public abstract class ResourceObjects extends GameObject implements Serializable
     protected int tileX, tileY, resourceType;
     protected int currentAmount, totalAmount;
 
-    public ResourceObjects(int tileX, int tileY, int id, int resourceType) {
+    public ResourceObject(int tileX, int tileY, int id, int resourceType) {
         super(id);
         this.resourceType = resourceType;
         this.tileX = tileX;

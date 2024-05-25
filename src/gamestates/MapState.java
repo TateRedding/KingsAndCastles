@@ -3,7 +3,7 @@ package gamestates;
 import static main.Game.GAME_AREA_TILE_HEIGHT;
 import static main.Game.GAME_AREA_TILE_WIDTH;
 import static main.Game.TILE_SIZE;
-import static resources.ResourceObjects.GOLD_MINE;
+import static resources.ResourceObject.GOLD_MINE;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 import java.awt.Color;
@@ -11,6 +11,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +46,11 @@ public abstract class MapState extends State implements Serializable {
         this.maxXTileOffset = map.getTileData()[0].length - GAME_AREA_TILE_WIDTH;
         this.maxYTileOffset = map.getTileData().length - GAME_AREA_TILE_HEIGHT;
         this.gameBounds = new Rectangle(0, TopBar.TOP_BAR_HEIGHT, Game.GAME_AREA_WIDTH, Game.GAME_AREA_HEIGHT);
+    }
+
+    @Override
+    public void update() {
+        miniMap.update();
     }
 
     @Override
@@ -99,8 +105,14 @@ public abstract class MapState extends State implements Serializable {
         mouseY = (y / Game.TILE_SIZE) * Game.TILE_SIZE;
     }
 
+    private boolean checkIfInGameArea(int x, int y) {
+        return gameBounds.contains(x, y) && (!miniMap.isMapExpanded() || !miniMap.getBounds().contains(x, y));
+    }
+
     @Override
     public void mousePressed(int x, int y, int button) {
+        if (!inGameArea && miniMap.getBounds().contains(x, y))
+            miniMap.mousePressed(x, y, button);
         if (inGameArea) {
             mouseDownX = x;
             mouseDownY = y;
@@ -114,14 +126,24 @@ public abstract class MapState extends State implements Serializable {
 
     @Override
     public void mouseDragged(int x, int y) {
-        inGameArea = gameBounds.contains(x, y);
+        inGameArea = checkIfInGameArea(x, y);
         if (inGameArea)
             updateCoords(x, y);
+        else if (miniMap.getMiniMapBounds().contains(x, y))
+            miniMap.mouseDragged(x, y);
+    }
+
+    @Override
+    public void mouseReleased(int x, int y, int button) {
+        if (button == MouseEvent.BUTTON1)
+            if (!inGameArea && miniMap.getBounds().contains(x, y))
+                miniMap.mouseReleased(x, y, button);
     }
 
     @Override
     public void mouseMoved(int x, int y) {
-        inGameArea = gameBounds.contains(x, y);
+        miniMap.mouseMoved(x, y);
+        inGameArea = checkIfInGameArea(x, y);
         if (inGameArea)
             updateCoords(x, y);
     }

@@ -77,6 +77,7 @@ public class Edit extends MapState {
 
     @Override
     public void update() {
+        super.update();
         editorBar.update();
         mapStatBar.update();
     }

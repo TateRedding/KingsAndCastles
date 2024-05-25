@@ -61,24 +61,23 @@ public class ImageLoader {
                 getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0),
                 ores[0]
         ));
-        icons = getHorizontalImageArray(ICONS, 0, 16, 16, 5);
-        dropDownArrow = getHorizontalImageArray(DROP_DOWN_ARROW, 0, 20, 12, 2);
+        icons = getImageArray(ICONS, 16, 16, 2, 5, 10);
+        dropDownArrow = getImageArray(DROP_DOWN_ARROW, 20, 12, 1, 2, 2);
     }
 
     private static void loadButtonImages() {
         int amount = 4;
-        iconButton = getVerticalImageArray(ICON_BUTTON, 0, getButtonWidth(ICON), getButtonHeight(ICON), amount);
-        largeTextButton = getVerticalImageArray(TEXT_BUTTON_LARGE, 0, getButtonWidth(TEXT_LARGE),
-                getButtonHeight(TEXT_LARGE), amount);
-        smallTextButton = getVerticalImageArray(TEXT_BUTTON_SMALL, 0, getButtonWidth(TEXT_SMALL),
-                getButtonHeight(TEXT_SMALL), amount);
-        spriteButton = getVerticalImageArray(SPRITE_BUTTON, 0, getButtonWidth(SPRITE), getButtonHeight(SPRITE),
-                amount);
+        int rows = 4;
+        int cols = 1;
+        iconButton = getImageArray(ICON_BUTTON, getButtonWidth(ICON), getButtonHeight(ICON), rows, cols, amount);
+        largeTextButton = getImageArray(TEXT_BUTTON_LARGE, getButtonWidth(TEXT_LARGE), getButtonHeight(TEXT_LARGE), rows, cols, amount);
+        smallTextButton = getImageArray(TEXT_BUTTON_SMALL, getButtonWidth(TEXT_SMALL), getButtonHeight(TEXT_SMALL), rows, cols, amount);
+        spriteButton = getImageArray(SPRITE_BUTTON, getButtonWidth(SPRITE), getButtonHeight(SPRITE), rows, cols, amount);
     }
 
     private static void loadResourceImages() {
-        ores = getHorizontalImageArray(ORES, 0, SPRITE_SIZE, SPRITE_SIZE, 3);
-        rocks = getHorizontalImageArray(ROCKS, 0, SPRITE_SIZE, SPRITE_SIZE, 3);
+        ores = getSpriteArray(ORES, 0, 0, 1, 3, 3);
+        rocks = getSpriteArray(ROCKS, 0, 0, 1, 3, 3);
         trees = getSpriteArray(TREES, 0, 0, 4, 4, 16);
 
         resourceObjects = new BufferedImage[][]{
@@ -98,13 +97,13 @@ public class ImageLoader {
         int rows = 6;
         int cols = 8;
 
-        ArrayList<BufferedImage> dirtTiles = getSpriteArray(TILE_MAP, 1, 0, cols, rows);
+        ArrayList<BufferedImage> dirtTiles = getSpriteArray(TILE_MAP, 1, 0, rows, cols);
         dirtTiles.remove(dirtTiles.size() - 1);
-        ArrayList<BufferedImage> sandTiles = getSpriteArray(TILE_MAP, 7, 0, cols, rows);
+        ArrayList<BufferedImage> sandTiles = getSpriteArray(TILE_MAP, 7, 0, rows, cols);
         sandTiles.remove(sandTiles.size() - 1);
-        ArrayList<BufferedImage> waterGrassTiles = getSpriteArray(TILE_MAP, 1, 8, cols, rows);
+        ArrayList<BufferedImage> waterGrassTiles = getSpriteArray(TILE_MAP, 1, 8, rows, cols);
         waterGrassTiles.remove(waterGrassTiles.size() - 1);
-        ArrayList<BufferedImage> waterSandTiles = getSpriteArray(TILE_MAP, 7, 8, cols, rows);
+        ArrayList<BufferedImage> waterSandTiles = getSpriteArray(TILE_MAP, 7, 8, rows, cols);
         waterSandTiles.remove(waterSandTiles.size() - 1);
 
         tiles.addAll(Arrays.asList(grassTiles, dirtTiles, sandTiles, waterGrassTiles, waterSandTiles));
@@ -153,51 +152,64 @@ public class ImageLoader {
         }
     }
 
-    private static ArrayList<BufferedImage> getSpriteArray(String fileName, int rowStart, int colStart, int cols,
-                                                           int rows) {
+    private static ArrayList<BufferedImage> getSpriteArray(String fileName, int rowStart, int colStart, int rows,
+                                                           int cols) {
         BufferedImage atlas = LoadSave.loadImage(fileName);
         ArrayList<BufferedImage> sprites = new ArrayList<>();
-        for (int i = rowStart; i < rowStart + rows; i++)
-            for (int j = colStart; j < colStart + cols; j++)
-                sprites.add(getSprite(atlas, j, i));
+        for (int y = rowStart; y < rowStart + rows; y++)
+            for (int x = colStart; x < colStart + cols; x++)
+                sprites.add(getSprite(atlas, x, y));
         return sprites;
     }
 
-    private static BufferedImage[] getSpriteArray(String fileName, int rowStart, int colStart, int cols,
-                                                  int rows, int amount) {
+    private static BufferedImage[] getSpriteArray(String fileName, int rowStart, int colStart, int rows,
+                                                  int cols, int amount) {
         BufferedImage atlas = LoadSave.loadImage(fileName);
         BufferedImage[] sprites = new BufferedImage[amount];
-        for (int i = rowStart; i < rowStart + rows; i++)
-            for (int j = colStart; j < colStart + cols; j++) {
-                if ((j + rows * i) >= amount)
+        for (int y = rowStart; y < rowStart + rows; y++)
+            for (int x = colStart; x < colStart + cols; x++) {
+                if ((x + cols * y) >= amount)
                     break;
-                sprites[j + rows * i] = (getSprite(atlas, j, i));
+                sprites[x + cols * y] = (getSprite(atlas, x, y));
             }
         return sprites;
     }
 
-    private static BufferedImage[] getVerticalImageArray(String fileName, int xStart, int width, int height,
-                                                         int amount) {
+    private static BufferedImage[] getImageArray(String fileName, int width, int height, int rows, int cols, int amount) {
         BufferedImage atlas = LoadSave.loadImage(fileName);
         BufferedImage[] temp = new BufferedImage[amount];
-
-        for (int i = 0; i < temp.length; i++) {
-            temp[i] = atlas.getSubimage(xStart, i * height, width, height);
-        }
+        for (int y = 0; y < rows; y++)
+            for (int x = 0; x < cols; x++) {
+                if ((x + cols * y) >= amount)
+                    break;
+                temp[x + cols * y] = atlas.getSubimage(x * width, y * height, width, height);
+            }
         return temp;
     }
 
-    private static BufferedImage[] getHorizontalImageArray(String fileName, int yStart, int width, int height,
-                                                           int amount) {
-        BufferedImage atlas = LoadSave.loadImage(fileName);
-        BufferedImage[] temp = new BufferedImage[amount];
+    /*
+        private static BufferedImage[] getVerticalImageArray(String fileName, int xStart, int width, int height,
+                                                             int amount) {
+            BufferedImage atlas = LoadSave.loadImage(fileName);
+            BufferedImage[] temp = new BufferedImage[amount];
 
-        for (int i = 0; i < temp.length; i++) {
-            temp[i] = atlas.getSubimage(i * width, yStart, width, height);
+            for (int i = 0; i < temp.length; i++) {
+                temp[i] = atlas.getSubimage(xStart, i * height, width, height);
+            }
+            return temp;
         }
-        return temp;
-    }
 
+        private static BufferedImage[] getHorizontalImageArray(String fileName, int yStart, int width, int height,
+                                                               int amount) {
+            BufferedImage atlas = LoadSave.loadImage(fileName);
+            BufferedImage[] temp = new BufferedImage[amount];
+
+            for (int i = 0; i < temp.length; i++) {
+                temp[i] = atlas.getSubimage(i * width, yStart, width, height);
+            }
+            return temp;
+        }
+    */
     private static BufferedImage[][] get2DImageArray(String fileName, int width, int height, int cols, int rows) {
         BufferedImage atlas = LoadSave.loadImage(fileName);
         BufferedImage[][] temp = new BufferedImage[cols][rows];

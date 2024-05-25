@@ -3,134 +3,297 @@ package ui;
 import gamestates.MapState;
 import objects.Map;
 import objects.Tile;
+import resources.ResourceObject;
+import ui.buttons.Button;
+import ui.buttons.ImageButton;
+import utils.ImageLoader;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
-import static main.Game.GAME_AREA_TILE_HEIGHT;
-import static main.Game.GAME_AREA_TILE_WIDTH;
+import static main.Game.*;
 import static objects.Tile.*;
+import static resources.ResourceObject.*;
 import static ui.bars.UIBar.UI_WIDTH;
+import static ui.buttons.Button.*;
 
 
 public class MiniMap implements Serializable {
 
     private MapState mapState;
-    private BufferedImage worldMap;
-    private Rectangle bounds;
+    private BufferedImage miniMap;
+    private Rectangle bounds, mmBounds;
+    private ImageButton expand, terrain, resources, entities, buildings;
+    private ArrayList<ImageButton> iconButtons = new ArrayList<>();
 
     private Tile[][] lvlData;
-    private int x, y, width, height;
+    private int areaX, areaY, areaWidth, areaHeight;
+    private int mmX, mmY, mmWidth, mmHeight;
+    private float scale;
+    private boolean mapExpanded = true;
+    private boolean showTerrain = true;
+    private boolean showResources = true;
+    private boolean showEntities = true;
+    private boolean showBuildings = true;
 
     public MiniMap(MapState mapState, Tile[][] lvlData) {
         this.mapState = mapState;
         this.lvlData = lvlData;
-        this.width = Map.MAX_WIDTH;
-        this.height = Map.MAX_HEIGHT;
 
-        int offset = 8;
-        this.x = UI_WIDTH - offset - width;
-        this.y = offset;
-        this.bounds = new Rectangle(x, y, width, height);
+        int areaXOffset = 16;
+        int areaYOffset = 16;
+        int buttonHeight = Button.getButtonHeight(ICON);
+
+        this.areaWidth = Map.MAX_WIDTH;
+        this.areaHeight = Map.MAX_HEIGHT + buttonHeight;
+        this.areaX = UI_WIDTH - areaXOffset - areaWidth;
+        this.areaY = areaYOffset;
+        this.bounds = new Rectangle(areaX, areaY, areaWidth, areaHeight);
+
+        int tileHeight = lvlData.length;
+        int tileWidth = lvlData[0].length;
+
+        if (tileHeight > tileWidth)
+            scale = (float) Map.MAX_HEIGHT / (float) tileHeight;
+        else
+            scale = (float) Map.MAX_WIDTH / (float) tileWidth;
+
+        this.mmWidth = (int) (tileWidth * scale);
+        this.mmHeight = (int) (tileHeight * scale);
+
+
+        this.mmX = areaX + (areaWidth - mmWidth) / 2;
+        this.mmY = areaY + (areaHeight - buttonHeight - mmHeight) / 2 + buttonHeight;
+        this.mmBounds = new Rectangle(mmX, mmY, mmWidth, mmHeight);
+
+        initButtons();
+    }
+
+    private void initButtons() {
+        int numButtons = 5;
+        int buttonWidth = Button.getButtonWidth(ICON);
+        int xOffset = (areaWidth - (Button.getButtonWidth(ICON) * numButtons)) / (numButtons + 1);
+        int xStart = areaX + xOffset;
+        float buttonScale = 1.0f;
+
+        buildings = new ImageButton(ICON, xStart, areaY, ImageLoader.icons[ICON_BUILDING], buttonScale);
+        entities = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_ENTITY], buttonScale);
+        resources = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_RESOURCE], buttonScale);
+        terrain = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_TERRAIN], buttonScale);
+        expand = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_MAP], buttonScale);
+
+        iconButtons.addAll(Arrays.asList(buildings, entities, resources, terrain, expand));
     }
 
     public void update() {
-
+        if (mapExpanded)
+            for (ImageButton ib : iconButtons)
+                ib.update();
+        else
+            expand.update();
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
-        createMap();
-        drawMap(g);
-        drawMapHighlight(g, xOffset, yOffset);
+        if (mapExpanded) {
+            createMap();
+            drawMap(g);
+            drawMapHighlight(g, xOffset, yOffset);
+            for (ImageButton ib : iconButtons)
+                ib.render(g);
+        } else
+            expand.render(g);
     }
 
     private void createMap() {
+        miniMap = new BufferedImage(mmWidth, mmHeight, TYPE_INT_ARGB);
+        Graphics g = miniMap.getGraphics();
 
-        worldMap = new BufferedImage(width, height, TYPE_INT_ARGB);
-        Graphics g = worldMap.getGraphics();
+        if (showTerrain)
+            createTerrainLayer(g);
+        if (mapState.getClass() == gamestates.Play.class) {
+            if (showResources)
+                createResourceLayer(g);
+            if (showBuildings)
+                createBuildingLayer(g);
+            if (showEntities)
+                createEntityLayer(g);
+        }
 
-        // Draw the base Map
+    }
+
+    private void createTerrainLayer(Graphics g) {
         for (int y = 0; y < lvlData.length; y++)
             for (int x = 0; x < lvlData[y].length; x++) {
                 int tileType = lvlData[y][x].getTileType();
                 switch (tileType) {
                     case WATER_GRASS:
                     case WATER_SAND:
-                        g.setColor(new Color(70, 160, 255));
+                        g.setColor(new Color(0, 105, 183));
                         break;
                     case SAND:
-                        g.setColor(new Color(220, 210, 165));
+                        g.setColor(new Color(230, 180, 92));
                         break;
                     case DIRT:
-                        g.setColor(new Color(150, 110, 75));
+                        g.setColor(new Color(93, 79, 25));
                         break;
                     case GRASS:
-                        g.setColor(new Color(0, 125, 45));
+                        g.setColor(new Color(96, 121, 42));
                         break;
                 }
-                g.fillRect(x, y, 1, 1);
+                g.fillRect((int) (x * scale), (int) (y * scale), (int) Math.ceil(scale), (int) Math.ceil(scale));
             }
+    }
+
+    private void createResourceLayer(Graphics g) {
+        ArrayList<ResourceObject> resources = mapState.getGame().getPlay().getResourceObjectHandler().getResources();
+        for (ResourceObject r : resources) {
+            int resourceType = r.getResourceType();
+            switch (resourceType) {
+                case GOLD_MINE:
+                    g.setColor(new Color(240, 214, 125));
+                    break;
+                case TREE:
+                    g.setColor(new Color(53, 97, 47));
+                    break;
+                case ROCK:
+                    g.setColor(new Color(127, 117, 116));
+                    break;
+                case COAL_MINE:
+                    g.setColor(Color.BLACK);
+                    break;
+                case IRON_MINE:
+                    g.setColor(new Color(120, 50, 50));
+                    break;
+            }
+
+            int x = (int) (r.getTileX() * scale);
+            int y = (int) (r.getTileY() * scale);
+            g.fillRect(x, y, (int) Math.ceil(scale), (int) Math.ceil(scale));
+        }
+    }
+
+    private void createBuildingLayer(Graphics g) {
+
+    }
+
+    private void createEntityLayer(Graphics g) {
 
     }
 
     private void drawMap(Graphics g) {
-        g.drawImage(worldMap, x, y, null);
+        g.setColor(Color.BLACK);
+        g.drawRect(areaX - 1, areaY - 1, areaWidth + 1, areaHeight + 1);
+        g.drawRect(areaX - 2, areaY - 2, areaWidth + 3, areaHeight + 3);
+
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(areaX, areaY, areaWidth, areaHeight);
+
+        g.drawImage(miniMap, mmX, mmY, null);
     }
 
     private void drawMapHighlight(Graphics g, int xOffset, int yOffset) {
-        int hlWidth = GAME_AREA_TILE_WIDTH;
-        int hlHeight = GAME_AREA_TILE_HEIGHT;
-
-        g.setColor(new Color(0, 0, 0, 100));
-        g.fillRect(x + xOffset, y + yOffset, hlWidth, hlHeight);
+        int hlWidth = (int) (GAME_AREA_TILE_WIDTH * scale);
+        int hlHeight = (int) (GAME_AREA_TILE_HEIGHT * scale);
+        int hlX = mmX + (int) (xOffset * scale);
+        int hlY = mmY + (int) (yOffset * scale);
 
         g.setColor(Color.GRAY);
-        g.drawRect(x + xOffset, y + yOffset, hlWidth - 1, hlHeight - 1);
+        g.drawRect(hlX, hlY, hlWidth - 1, hlHeight - 1);
+
+        g.setColor(new Color(0, 0, 0, 100));
+        g.fillRect(hlX, hlY, hlWidth, hlHeight);
     }
 
     private void setScreenPosition(int x, int y) {
-        int minX = GAME_AREA_TILE_WIDTH;
-        int minY = GAME_AREA_TILE_HEIGHT;
+        int minX = GAME_AREA_TILE_WIDTH / 2;
+        int minY = GAME_AREA_TILE_HEIGHT / 2;
         int maxX = lvlData[0].length - minX;
         int maxY = lvlData.length - minY;
 
-        if (x < minX)
+        int tileX = (int) ((x - mmX) / scale);
+        int tileY = (int) ((y - mmY) / scale);
+
+        if (tileX < minX)
             mapState.setXTileOffset(0);
-        else if (x > maxX)
+        else if (tileX > maxX)
             mapState.setXTileOffset(mapState.getMaxXTileOffset());
         else
-            mapState.setXTileOffset(x - minX);
+            mapState.setXTileOffset(tileX - minX);
 
-        if (y < minY)
+        if (tileY < minY)
             mapState.setYTileOffset(0);
-        else if (y > maxY)
+        else if (tileY > maxY)
             mapState.setYTileOffset(mapState.getMaxYTileOffset());
         else
-            mapState.setYTileOffset(y - minY);
+            mapState.setYTileOffset(tileY - minY);
     }
 
-    public void mousePressed(int x, int y) {
-
+    public void mousePressed(int x, int y, int button) {
+        if (button == MouseEvent.BUTTON1) {
+            if (mapExpanded) {
+                for (ImageButton ib : iconButtons)
+                    if (ib.getBounds().contains(x, y))
+                        ib.setMousePressed(true);
+            } else if (expand.getBounds().contains(x, y))
+                expand.setMousePressed(true);
+        }
     }
 
-    public void mouseReleased(int x, int y) {
-        setScreenPosition(x, y);
+    public void mouseReleased(int x, int y, int button) {
+        if (button == MouseEvent.BUTTON1) {
+            if (mapExpanded) {
+                if (mmBounds.contains(x, y))
+                    setScreenPosition(x, y);
+                else if (buildings.getBounds().contains(x, y) && buildings.isMousePressed())
+                    showBuildings = !showBuildings;
+                else if (entities.getBounds().contains(x, y) && entities.isMousePressed())
+                    showEntities = !showEntities;
+                else if (resources.getBounds().contains(x, y) && resources.isMousePressed())
+                    showResources = !showResources;
+                else if (terrain.getBounds().contains(x, y) && terrain.isMousePressed())
+                    showTerrain = !showTerrain;
+            }
+            if (expand.getBounds().contains(x, y) && expand.isMousePressed())
+                mapExpanded = !mapExpanded;
+
+            for (ImageButton ib : iconButtons)
+                ib.reset(x, y);
+        }
     }
 
     public void mouseDragged(int x, int y) {
-        setScreenPosition(x, y);
+        if (mapExpanded)
+            setScreenPosition(x, y);
     }
 
     public void mouseMoved(int x, int y) {
-
+        for (ImageButton ib : iconButtons)
+            ib.setMouseOver(false);
+        if (mapExpanded) {
+            for (ImageButton ib : iconButtons)
+                if (ib.getBounds().contains(x, y))
+                    ib.setMouseOver(true);
+        } else if (expand.getBounds().contains(x, y))
+            expand.setMouseOver(true);
     }
 
     public Rectangle getBounds() {
         return bounds;
+    }
+
+    public boolean isMapExpanded() {
+        return mapExpanded;
+    }
+
+    public Rectangle getMiniMapBounds() {
+        return mmBounds;
     }
 
 }

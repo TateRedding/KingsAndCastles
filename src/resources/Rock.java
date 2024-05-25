@@ -2,7 +2,7 @@ package resources;
 
 import java.io.Serializable;
 
-public class Rock extends ResourceObjects implements Serializable {
+public class Rock extends ResourceObject implements Serializable {
 
     private int spriteId;
 

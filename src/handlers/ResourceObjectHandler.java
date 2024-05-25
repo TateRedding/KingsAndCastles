@@ -12,11 +12,12 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static objects.Chunk.MAX_CHUNK_SIZE;
-import static resources.ResourceObjects.*;
+import static resources.ResourceObject.*;
 
 public class ResourceObjectHandler implements Serializable {
 
@@ -331,6 +332,16 @@ public class ResourceObjectHandler implements Serializable {
         if (y != resourceData.length - 1 && resourceData[y + 1][x] != null && resourceData[y + 1][x] == TREE)
             bitmaskId += 8;
         return bitmaskId;
+    }
+
+    public ArrayList<ResourceObject> getResources() {
+        ArrayList<ResourceObject> resources = new ArrayList<>();
+        resources.addAll(goldMines);
+        resources.addAll(trees);
+        resources.addAll(rocks);
+        resources.addAll(coalMines);
+        resources.addAll(ironMines);
+        return resources;
     }
 
 }

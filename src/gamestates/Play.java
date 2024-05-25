@@ -42,6 +42,7 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
 
     @Override
     public void update() {
+        super.update();
         resourceObjectHandler.update();
         if (actionBar != null)
             actionBar.update();
@@ -56,6 +57,7 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
 
         actionBar.render(g);
         gameStatBar.render(g);
+        miniMap.render(g, xTileOffset, yTileOffset);
     }
 
     public void saveGame() {
@@ -115,6 +117,10 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
 
     public String getName() {
         return name;
+    }
+
+    public ResourceObjectHandler getResourceObjectHandler() {
+        return resourceObjectHandler;
     }
 
     public long getSeed() {
