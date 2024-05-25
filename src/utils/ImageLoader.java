@@ -27,6 +27,7 @@ public class ImageLoader {
     private static final String DROP_DOWN_TOP = "drop_down_top.png";
     private static final String ICON_BUTTON = "icon_button.png";
     private static final String ICONS = "icons.png";
+    private static final String LABORER = "laborer.png";
     private static final String ORES = "ores.png";
     private static final String OVERLAY_BG = "overlay_bg.png";
     private static final String ROCKS = "rocks.png";
@@ -42,13 +43,14 @@ public class ImageLoader {
 
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
-    public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, select, topBar;
+    public static BufferedImage bottomBar, dropDownBody, dropDownTop, laborer, overlayBg, select, topBar;
     public static BufferedImage[] dropDownArrow, iconButton, icons, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
 
     public static void loadImages() {
         loadButtonImages();
         loadResourceImages();
+        loadEntityImages();
         loadTerrainTiles();
         loadUIImages();
 
@@ -87,6 +89,10 @@ public class ImageLoader {
                 {ores[1]},
                 {ores[2]}
         };
+    }
+
+    private static void loadEntityImages() {
+        laborer = getSpriteArray(LABORER, 0, 0, 1, 1, 1)[0];
     }
 
     private static void loadTerrainTiles() {

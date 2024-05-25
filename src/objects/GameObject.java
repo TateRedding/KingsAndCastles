@@ -16,8 +16,4 @@ public abstract class GameObject implements Serializable {
         return hitbox;
     }
 
-    public int getId() {
-        return id;
-    }
-
 }
