@@ -1,14 +1,17 @@
 package gamestates;
 
-import java.awt.Graphics;
+import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import entities.Entity;
 import handlers.EntityHandler;
 import handlers.ResourceObjectHandler;
 import main.Game;
+import objects.GameObject;
 import objects.Map;
 import objects.Player;
+import resources.ResourceObject;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 import utils.Savable;
@@ -90,6 +93,17 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
 
     public void saveGame() {
         game.getSaveFileHandler().saveGame(this);
+    }
+
+    public GameObject getGameObjectAt(int x, int y) {
+        Entity e = entityHandler.getEntityAt(x, y);
+        if (e != null)
+            return e;
+
+        ResourceObject ro = resourceObjectHandler.getResourceObjectAt(x, y);
+        if (ro != null)
+            return ro;
+        return null;
     }
 
     @Override

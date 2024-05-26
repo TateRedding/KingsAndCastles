@@ -27,6 +27,7 @@ public class ResourceObjectHandler implements Serializable {
     private ArrayList<Rock> rocks = new ArrayList<>();
     private ArrayList<CoalMine> coalMines = new ArrayList<>();
     private ArrayList<IronMine> ironMines = new ArrayList<>();
+    private ArrayList<ResourceObject> resourceObjects = new ArrayList<>();
     private Tile[][] tileData;
     private double[][] noiseMap;
 
@@ -35,6 +36,11 @@ public class ResourceObjectHandler implements Serializable {
         this.tileData = play.getMap().getTileData();
         this.random = new Random(play.getSeed());
         generateResourceObjects();
+        resourceObjects.addAll(goldMines);
+        resourceObjects.addAll(trees);
+        resourceObjects.addAll(rocks);
+        resourceObjects.addAll(coalMines);
+        resourceObjects.addAll(ironMines);
     }
 
     public void update() {
@@ -332,14 +338,14 @@ public class ResourceObjectHandler implements Serializable {
         return bitmaskId;
     }
 
-    public ArrayList<ResourceObject> getResources() {
-        ArrayList<ResourceObject> resources = new ArrayList<>();
-        resources.addAll(goldMines);
-        resources.addAll(trees);
-        resources.addAll(rocks);
-        resources.addAll(coalMines);
-        resources.addAll(ironMines);
-        return resources;
+    public ResourceObject getResourceObjectAt(int x, int y) {
+        for (ResourceObject ro : resourceObjects)
+            if (ro.getHitbox().contains(x, y))
+                return ro;
+        return null;
     }
 
+    public ArrayList<ResourceObject> getResourceObjects() {
+        return resourceObjects;
+    }
 }

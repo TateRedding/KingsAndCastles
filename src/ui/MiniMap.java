@@ -152,7 +152,7 @@ public class MiniMap implements Serializable {
     }
 
     private void createResourceLayer(Graphics g) {
-        ArrayList<ResourceObject> resources = mapState.getGame().getPlay().getResourceObjectHandler().getResources();
+        ArrayList<ResourceObject> resources = mapState.getGame().getPlay().getResourceObjectHandler().getResourceObjects();
         for (ResourceObject r : resources) {
             int resourceType = r.getResourceType();
             switch (resourceType) {
