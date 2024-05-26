@@ -3,10 +3,13 @@ package handlers;
 import entities.Entity;
 import entities.Laborer;
 import gamestates.Play;
+import objects.Player;
 
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
 
 import static main.Game.TILE_SIZE;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
@@ -16,12 +19,14 @@ public class EntityHandler implements Serializable {
     private Play play;
     private ArrayList<Entity> entities = new ArrayList<>();
 
+    private int id = 0;
+
     public EntityHandler(Play play) {
         this.play = play;
+        createStartingEntities();
     }
 
     public void update() {
-
         for (Entity e : entities)
             e.update();
     }
@@ -31,6 +36,22 @@ public class EntityHandler implements Serializable {
             g.drawImage(Entity.getSprite(e.getEntityType()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
             // Debugging
             // drawPath(e, g, xOffset, yOffset);
+        }
+    }
+
+    private void createStartingEntities() {
+        ArrayList<ArrayList<Point>> castleZones = play.getMap().getCastleZones();
+        ArrayList<Player> players = play.getPlayers();
+        Random random = new Random(play.getSeed());
+        
+        for (int i = 0; i < players.size(); i++) {
+            int maxStartingEntities = Math.min(players.get(i).getPopulation(), castleZones.get(i).size());
+            ArrayList<Point> spawnPoints = new ArrayList<>(castleZones.get(i));
+            Collections.shuffle(spawnPoints, random);
+            for (int j = 0; j < maxStartingEntities; j++) {
+                Point spawn = spawnPoints.get(j);
+                entities.add(new Laborer(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++));
+            }
         }
     }
 

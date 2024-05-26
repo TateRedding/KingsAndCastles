@@ -143,12 +143,12 @@ public class Game extends JFrame implements Runnable {
     public void startGame(Play play) {
         if (play.getActionBar() == null)
             play.setActionBar(new ActionBar(play));
-        if (play.getGameStatBar() == null)
-            play.setGameStatBar(new GameStatBar(play));
         if (play.getGame() == null)
             play.setGame(this);
         if (play.getMiniMap() == null)
             play.setMiniMap(new MiniMap(play, play.getMap().getTileData()));
+        if (play.getGameStatBar() == null)
+            play.setGameStatBar(new GameStatBar(play));
         this.play = play;
         GameStates.setGameState(GameStates.PLAY);
     }

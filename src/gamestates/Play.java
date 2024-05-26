@@ -12,7 +12,6 @@ import main.Game;
 import objects.GameObject;
 import objects.Map;
 import objects.Player;
-import pathfinding.AStar;
 import resources.ResourceObject;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
@@ -41,9 +40,6 @@ public class Play extends MapState implements Savable, Serializable {
         this.name = name;
         this.seed = System.currentTimeMillis();
         this.actionBar = new ActionBar(this);
-        this.gameStatBar = new GameStatBar(this);
-        this.resourceObjectHandler = new ResourceObjectHandler(this);
-
         int numPlayers = map.getNumPlayers();
         // Player 1 will always be human
         players.add(new Player(this, true));
@@ -53,6 +49,8 @@ public class Play extends MapState implements Savable, Serializable {
             players.add(new Player(this, false));
 
         this.entityHandler = new EntityHandler(this);
+        this.gameStatBar = new GameStatBar(this);
+        this.resourceObjectHandler = new ResourceObjectHandler(this);
     }
 
     public Play(Game game, Map map, String name, long seed) {

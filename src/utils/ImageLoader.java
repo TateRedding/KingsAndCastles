@@ -63,7 +63,7 @@ public class ImageLoader {
                 getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0),
                 ores[0]
         ));
-        icons = getImageArray(ICONS, 16, 16, 2, 5, 10);
+        icons = getImageArray(ICONS, 16, 16, 4, 5, 16);
         dropDownArrow = getImageArray(DROP_DOWN_ARROW, 20, 12, 1, 2, 2);
     }
 
