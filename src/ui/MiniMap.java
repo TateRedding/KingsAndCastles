@@ -33,7 +33,7 @@ public class MiniMap implements Serializable {
     private ImageButton expand, terrain, resources, entities, buildings;
     private ArrayList<ImageButton> iconButtons = new ArrayList<>();
 
-    private Tile[][] lvlData;
+    private Tile[][] tileData;
     private int areaX, areaY, areaWidth, areaHeight;
     private int mmX, mmY, mmWidth, mmHeight;
     private float scale;
@@ -43,9 +43,9 @@ public class MiniMap implements Serializable {
     private boolean showEntities = true;
     private boolean showBuildings = true;
 
-    public MiniMap(MapState mapState, Tile[][] lvlData) {
+    public MiniMap(MapState mapState, Tile[][] tileData) {
         this.mapState = mapState;
-        this.lvlData = lvlData;
+        this.tileData = tileData;
 
         int areaXOffset = 16;
         int areaYOffset = 16;
@@ -57,8 +57,8 @@ public class MiniMap implements Serializable {
         this.areaY = areaYOffset;
         this.bounds = new Rectangle(areaX, areaY, areaWidth, areaHeight);
 
-        int tileHeight = lvlData.length;
-        int tileWidth = lvlData[0].length;
+        int tileHeight = tileData.length;
+        int tileWidth = tileData[0].length;
 
         if (tileHeight > tileWidth)
             scale = (float) Map.MAX_HEIGHT / (float) tileHeight;
@@ -129,9 +129,9 @@ public class MiniMap implements Serializable {
     }
 
     private void createTerrainLayer(Graphics g) {
-        for (int y = 0; y < lvlData.length; y++)
-            for (int x = 0; x < lvlData[y].length; x++) {
-                int tileType = lvlData[y][x].getTileType();
+        for (int y = 0; y < tileData.length; y++)
+            for (int x = 0; x < tileData[y].length; x++) {
+                int tileType = tileData[y][x].getTileType();
                 switch (tileType) {
                     case WATER_GRASS:
                     case WATER_SAND:
@@ -152,31 +152,34 @@ public class MiniMap implements Serializable {
     }
 
     private void createResourceLayer(Graphics g) {
-        ArrayList<ResourceObject> resources = mapState.getGame().getPlay().getResourceObjectHandler().getResourceObjects();
-        for (ResourceObject r : resources) {
-            int resourceType = r.getResourceType();
-            switch (resourceType) {
-                case GOLD_MINE:
-                    g.setColor(new Color(240, 214, 125));
-                    break;
-                case TREE:
-                    g.setColor(new Color(53, 97, 47));
-                    break;
-                case ROCK:
-                    g.setColor(new Color(127, 117, 116));
-                    break;
-                case COAL_MINE:
-                    g.setColor(Color.BLACK);
-                    break;
-                case IRON_MINE:
-                    g.setColor(new Color(120, 50, 50));
-                    break;
-            }
+        ResourceObject[][] resourceObjectData = mapState.getMap().getResourceObjectData();
+        for (ResourceObject[] resourceObjectDatum : resourceObjectData)
+            for (ResourceObject ro : resourceObjectDatum) {
+                if (ro != null) {
+                    int resourceType = ro.getResourceType();
+                    switch (resourceType) {
+                        case GOLD:
+                            g.setColor(new Color(240, 214, 125));
+                            break;
+                        case TREE:
+                            g.setColor(new Color(53, 97, 47));
+                            break;
+                        case ROCK:
+                            g.setColor(new Color(127, 117, 116));
+                            break;
+                        case COAL:
+                            g.setColor(Color.BLACK);
+                            break;
+                        case IRON:
+                            g.setColor(new Color(120, 50, 50));
+                            break;
+                    }
 
-            int x = (int) (r.getTileX() * scale);
-            int y = (int) (r.getTileY() * scale);
-            g.fillRect(x, y, (int) Math.ceil(scale), (int) Math.ceil(scale));
-        }
+                    int xStart = (int) (ro.getTileX() * scale);
+                    int yStart = (int) (ro.getTileY() * scale);
+                    g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
+                }
+            }
     }
 
     private void createBuildingLayer(Graphics g) {
@@ -214,8 +217,8 @@ public class MiniMap implements Serializable {
     private void setScreenPosition(int x, int y) {
         int minX = GAME_AREA_TILE_WIDTH / 2;
         int minY = GAME_AREA_TILE_HEIGHT / 2;
-        int maxX = lvlData[0].length - minX;
-        int maxY = lvlData.length - minY;
+        int maxX = tileData[0].length - minX;
+        int maxY = tileData.length - minY;
 
         int tileX = (int) ((x - mmX) / scale);
         int tileY = (int) ((y - mmY) / scale);

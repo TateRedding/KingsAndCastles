@@ -81,7 +81,7 @@ public class EditorBar extends BottomBar {
             sb.update();
 
         int selectedType = edit.getSelectedType();
-        showBrushButtons = (selectedType != -1 && selectedType != CASTLE_ZONE && selectedType != GOLD_MINE);
+        showBrushButtons = (selectedType != -1 && selectedType != CASTLE_ZONE && selectedType != GOLD_MINE_TILE);
         if (showBrushButtons)
             for (ImageButton bb : brushButtons)
                 bb.update();

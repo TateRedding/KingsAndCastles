@@ -20,9 +20,8 @@ public class TileHandler {
         this.game = game;
     }
 
-    public void drawTileData(Tile[][] tileData, Graphics g, int xOffset, int yOffset) {
+    public void drawTiles(Tile[][] tileData, Graphics g, int xOffset, int yOffset) {
         int yStart = TopBar.TOP_BAR_HEIGHT / Game.TILE_SIZE;
-
         for (int y = 0; y < tileData.length; y++)
             for (int x = 0; x < tileData[y].length; x++) {
                 Tile currTile = tileData[y][x];

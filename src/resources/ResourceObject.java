@@ -9,18 +9,19 @@ import ui.bars.TopBar;
 
 public abstract class ResourceObject extends GameObject implements Serializable {
 
-    public static final int GOLD_MINE = 0;
+    public static final int GOLD = 0;
     public static final int TREE = 1;
     public static final int ROCK = 2;
-    public static final int COAL_MINE = 3;
-    public static final int IRON_MINE = 4;
+    public static final int COAL = 3;
+    public static final int IRON = 4;
 
-    protected int tileX, tileY, resourceType;
+    protected int tileX, tileY, resourceType, spriteId;
     protected int currentAmount, totalAmount;
 
-    public ResourceObject(int tileX, int tileY, int id, int resourceType) {
+    public ResourceObject(int tileX, int tileY, int id, int resourceType, int spriteId) {
         super(id);
         this.resourceType = resourceType;
+        this.spriteId = spriteId;
         this.tileX = tileX;
         this.tileY = tileY;
         this.totalAmount = getStartingTotal(resourceType);
@@ -31,21 +32,21 @@ public abstract class ResourceObject extends GameObject implements Serializable 
 
     public static int getStartingTotal(int resourceType) {
         return switch (resourceType) {
-            case GOLD_MINE -> 1000;
+            case GOLD -> 1000;
             case TREE -> 20;
             case ROCK -> 45;
-            case COAL_MINE -> 200;
-            case IRON_MINE -> 60;
+            case COAL -> 200;
+            case IRON -> 60;
             default -> 0;
         };
     }
 
     public static int getAmountPerAction(int resourceType) {
         return switch (resourceType) {
-            case GOLD_MINE -> 1;
-            case TREE, IRON_MINE -> 4;
+            case GOLD -> 1;
+            case TREE, IRON -> 4;
             case ROCK -> 5;
-            case COAL_MINE -> 2;
+            case COAL -> 2;
             default -> 0;
         };
     }
@@ -53,8 +54,8 @@ public abstract class ResourceObject extends GameObject implements Serializable 
     public static int getMaxPerChunk(int resourceType) {
         return switch (resourceType) {
             case ROCK -> 32;
-            case COAL_MINE -> 5;
-            case IRON_MINE -> 24;
+            case COAL -> 5;
+            case IRON -> 24;
             default -> 0;
         };
     }
@@ -77,6 +78,14 @@ public abstract class ResourceObject extends GameObject implements Serializable 
 
     public void setCurrentAmount(int currentAmount) {
         this.currentAmount = currentAmount;
+    }
+
+    public int getSpriteId() {
+        return spriteId;
+    }
+
+    public void setSpriteId(int spriteId) {
+        this.spriteId = spriteId;
     }
 
     public int getTotalAmount() {

@@ -13,6 +13,8 @@ import java.util.Arrays;
 import main.Game;
 import objects.Map;
 import objects.Tile;
+import resources.GoldMine;
+import resources.ResourceObject;
 import ui.bars.EditorBar;
 import ui.bars.MapStatBar;
 import utils.ImageLoader;
@@ -23,7 +25,7 @@ public class Edit extends MapState {
     public static final int CIRCLE = 1;
 
     public static final int CASTLE_ZONE = 5;
-    public static final int GOLD_MINE = 6;
+    public static final int GOLD_MINE_TILE = 6;
 
     private EditorBar editorBar;
     private MapStatBar mapStatBar;
@@ -132,10 +134,11 @@ public class Edit extends MapState {
             int currTileX = tileX + p.x;
             int currTileY = tileY + p.y;
             if (isTileInRange(currTileX, currTileY)) {
-                int prevTileType = map.getTileData()[currTileY][currTileX].getTileType();
-                if (prevTileType == tileType || ((tileType == WATER_GRASS || tileType == WATER_SAND) && map.getGoldMinePoints().contains(new Point(currTileX, currTileY))))
+                Tile currTile = tileData[currTileY][currTileX];
+                int prevTileType = currTile.getTileType();
+                if (prevTileType == tileType || ((tileType == WATER_GRASS || tileType == WATER_SAND) && resourceObjectData[currTileY][currTileX] != null))
                     continue;
-                map.getTileData()[currTileY][currTileX] = new Tile(tileType, 0);
+                tileData[currTileY][currTileX] = new Tile(tileType, 0);
                 map.getTileCounts()[prevTileType]--;
                 map.getTileCounts()[tileType]++;
                 changedTiles.add(new Point(currTileX, currTileY));
@@ -149,19 +152,19 @@ public class Edit extends MapState {
 
             ArrayList<Point> surroundingPoints = getSurroundingPoints(changedPoint.x, changedPoint.y);
             for (Point sp : surroundingPoints) {
-                int spTileType = map.getTileData()[sp.y][sp.x].getTileType();
+                int spTileType = tileData[sp.y][sp.x].getTileType();
                 if (!tilesToUpdate.contains(sp) && spTileType != GRASS)
                     tilesToUpdate.add(sp);
 
                 if (tileType == WATER_SAND && (spTileType == GRASS || spTileType == DIRT) && !changedTiles.contains(sp)) {
-                    map.getTileData()[sp.y][sp.x] = new Tile(SAND, 0);
+                    tileData[sp.y][sp.x] = new Tile(SAND, 0);
                     map.getTileCounts()[spTileType]--;
                     map.getTileCounts()[SAND]++;
                     if (!tilesToUpdate.contains(sp))
                         tilesToUpdate.add(sp);
                     ArrayList<Point> sandSurroundingPoints = getSurroundingPoints(sp.x, sp.y);
                     for (Point sandSP : sandSurroundingPoints)
-                        if (!tilesToUpdate.contains(sandSP) && map.getTileData()[sandSP.y][sandSP.x].getTileType() != GRASS)
+                        if (!tilesToUpdate.contains(sandSP) && tileData[sandSP.y][sandSP.x].getTileType() != GRASS)
                             tilesToUpdate.add(sandSP);
                 }
             }
@@ -173,7 +176,7 @@ public class Edit extends MapState {
     }
 
     private boolean isTileInRange(int tileX, int tileY) {
-        return !(tileX < 0 || tileX >= map.getTileData()[0].length || tileY < 0 || tileY >= map.getTileData().length);
+        return !(tileX < 0 || tileX >= tileData[0].length || tileY < 0 || tileY >= tileData.length);
     }
 
     private ArrayList<Point> getSurroundingPoints(int tileX, int tileY) {
@@ -190,7 +193,6 @@ public class Edit extends MapState {
 
     private int calculateBitmaskId(Point point) {
         StringBuilder binaryStringBuilder = new StringBuilder();
-        Tile[][] tileData = map.getTileData();
         ArrayList<Integer> acceptedTypes = new ArrayList<Integer>();
         int tileType = tileData[point.y][point.x].getTileType();
         if (tileType == SAND)
@@ -264,22 +266,22 @@ public class Edit extends MapState {
     }
 
     private void placeGoldMine() {
-        int tileType = tileData[tileY][tileX].getTileType();
+        Tile currTile = tileData[tileY][tileX];
+        ResourceObject currRO = resourceObjectData[tileY][tileX];
+        int tileType = currTile.getTileType();
         if (tileType == WATER_GRASS || tileType == WATER_SAND)
             return;
-        for (Point gm : map.getGoldMinePoints())
-            if (gm.x == tileX && gm.y == tileY)
-                return;
-        map.getGoldMinePoints().add(new Point(tileX, tileY));
+        if (currRO != null && currRO.getResourceType() == ResourceObject.GOLD)
+            return;
+        resourceObjectData[tileY][tileX] = new GoldMine(tileX, tileY, (tileY * resourceObjectData[tileY].length + tileX));
+        map.setGoldMineCount(map.getGoldMineCount() + 1);
     }
 
     private void removeGoldMine() {
-        for (int i = 0; i < map.getGoldMinePoints().size(); i++) {
-            Point currPoint = map.getGoldMinePoints().get(i);
-            if (currPoint.x == tileX && currPoint.y == tileY) {
-                map.getGoldMinePoints().remove(i);
-                return;
-            }
+        ResourceObject currRO = resourceObjectData[tileY][tileX];
+        if (currRO != null && currRO.getResourceType() == ResourceObject.GOLD) {
+            resourceObjectData[tileY][tileX] = null;
+            map.setGoldMineCount(map.getGoldMineCount() - 1);
         }
     }
 
@@ -314,7 +316,7 @@ public class Edit extends MapState {
                     case CASTLE_ZONE:
                         setCastleZone();
                         break;
-                    case GOLD_MINE:
+                    case GOLD_MINE_TILE:
                         placeGoldMine();
                         break;
                     default:
@@ -323,7 +325,7 @@ public class Edit extends MapState {
             else if (rightMouseDown)
                 if (selectedType == CASTLE_ZONE)
                     unsetCastleZone();
-                else if (selectedType == GOLD_MINE)
+                else if (selectedType == GOLD_MINE_TILE)
                     removeGoldMine();
 
         leftMouseDown = false;
@@ -337,7 +339,7 @@ public class Edit extends MapState {
             if (leftMouseDown) {
                 if (selectedType == CASTLE_ZONE)
                     setCastleZone();
-                else if (selectedType != -1 && selectedType != GOLD_MINE)
+                else if (selectedType != -1 && selectedType != GOLD_MINE_TILE)
                     changeTile(MouseEvent.MOUSE_DRAGGED);
                 else
                     dragScreen(x, y);
@@ -365,13 +367,13 @@ public class Edit extends MapState {
             if (selectedType == CASTLE_ZONE) {
                 if (selectedZone < map.getNumPlayers() - 1)
                     selectedZone++;
-            } else if (selectedType != GOLD_MINE && brushSize < maxBrushSize)
+            } else if (selectedType != GOLD_MINE_TILE && brushSize < maxBrushSize)
                 brushSize++;
         } else {
             if (selectedType == CASTLE_ZONE) {
                 if (selectedZone > 0)
                     selectedZone--;
-            } else if (selectedType != GOLD_MINE && brushSize > 1)
+            } else if (selectedType != GOLD_MINE_TILE && brushSize > 1)
                 brushSize--;
         }
     }

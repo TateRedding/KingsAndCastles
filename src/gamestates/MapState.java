@@ -3,7 +3,6 @@ package gamestates;
 import static main.Game.GAME_AREA_TILE_HEIGHT;
 import static main.Game.GAME_AREA_TILE_WIDTH;
 import static main.Game.TILE_SIZE;
-import static resources.ResourceObject.GOLD_MINE;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 import java.awt.Color;
@@ -19,6 +18,7 @@ import java.util.Arrays;
 import main.Game;
 import objects.Map;
 import objects.Tile;
+import resources.ResourceObject;
 import ui.MiniMap;
 import ui.bars.TopBar;
 import utils.ImageLoader;
@@ -29,6 +29,7 @@ public abstract class MapState extends State implements Serializable {
     protected MiniMap miniMap;
     protected Rectangle gameBounds;
     protected Tile[][] tileData;
+    protected ResourceObject[][] resourceObjectData;
 
     protected int gameX, gameY;
     protected int mouseX, mouseY;
@@ -42,6 +43,7 @@ public abstract class MapState extends State implements Serializable {
         super(game);
         this.map = map;
         this.tileData = map.getTileData();
+        this.resourceObjectData = map.getResourceObjectData();
         this.miniMap = new MiniMap(this, tileData);
         this.maxXTileOffset = map.getTileData()[0].length - GAME_AREA_TILE_WIDTH;
         this.maxYTileOffset = map.getTileData().length - GAME_AREA_TILE_HEIGHT;
@@ -56,9 +58,9 @@ public abstract class MapState extends State implements Serializable {
 
     @Override
     public void render(Graphics g) {
-        game.getTileHandler().drawTileData(tileData, g, xTileOffset, yTileOffset);
+        game.getTileHandler().drawTiles(tileData, g, xTileOffset, yTileOffset);
         drawCastleZones(g, xTileOffset, yTileOffset);
-        drawGoldMines(g, xTileOffset, yTileOffset);
+        drawResourceObjects(g, xTileOffset, yTileOffset);
     }
 
     private void drawCastleZones(Graphics g, int xOffset, int yOffset) {
@@ -72,9 +74,15 @@ public abstract class MapState extends State implements Serializable {
         }
     }
 
-    private void drawGoldMines(Graphics g, int xOffset, int yOffset) {
-        for (Point gm : map.getGoldMinePoints())
-            g.drawImage(ImageLoader.resourceObjects[GOLD_MINE][0], (gm.x - xOffset) * TILE_SIZE, (gm.y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, null);
+    private void drawResourceObjects(Graphics g, int xOffset, int yOffset) {
+        int yStart = TopBar.TOP_BAR_HEIGHT / Game.TILE_SIZE;
+        for (int y = 0; y < resourceObjectData.length; y++)
+            for (int x = 0; x < resourceObjectData[y].length; x++) {
+                ResourceObject currRO = resourceObjectData[y][x];
+                if (currRO != null)
+                    g.drawImage(ImageLoader.resourceObjects[currRO.getResourceType()][currRO.getSpriteId()], (x - xOffset) * Game.TILE_SIZE,
+                            (y + yStart - yOffset) * Game.TILE_SIZE, null);
+            }
     }
 
     protected void dragScreen(int x, int y) {
@@ -94,7 +102,6 @@ public abstract class MapState extends State implements Serializable {
             yTileOffset++;
             mouseDownY = y;
         }
-
     }
 
     protected void updateCoords(int x, int y) {

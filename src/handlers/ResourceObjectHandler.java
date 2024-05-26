@@ -1,7 +1,6 @@
 package handlers;
 
 import gamestates.Play;
-import main.Game;
 import objects.Chunk;
 import objects.Tile;
 import resources.*;
@@ -22,119 +21,49 @@ public class ResourceObjectHandler implements Serializable {
 
     private Play play;
     private Random random;
-    private ArrayList<GoldMine> goldMines = new ArrayList<>();
-    private ArrayList<Tree> trees = new ArrayList<>();
-    private ArrayList<Rock> rocks = new ArrayList<>();
-    private ArrayList<CoalMine> coalMines = new ArrayList<>();
-    private ArrayList<IronMine> ironMines = new ArrayList<>();
-    private ArrayList<ResourceObject> resourceObjects = new ArrayList<>();
     private Tile[][] tileData;
+    private ResourceObject[][] resourceObjectData;
     private double[][] noiseMap;
+    private int gridWidth;
 
     public ResourceObjectHandler(Play play) {
         this.play = play;
         this.tileData = play.getMap().getTileData();
+        this.resourceObjectData = play.getMap().getResourceObjectData();
+        this.gridWidth = tileData[0].length;
         this.random = new Random(play.getSeed());
         generateResourceObjects();
-        resourceObjects.addAll(goldMines);
-        resourceObjects.addAll(trees);
-        resourceObjects.addAll(rocks);
-        resourceObjects.addAll(coalMines);
-        resourceObjects.addAll(ironMines);
-    }
-
-    public void update() {
-
-    }
-
-    public void render(Graphics g, int xOffset, int yOffset) {
-        for (Tree t : trees)
-            g.drawImage(ImageLoader.resourceObjects[TREE][t.getBitmaskId()], t.getHitbox().x - (xOffset * Game.TILE_SIZE), t.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
-
-        for (Rock r : rocks)
-            g.drawImage(ImageLoader.resourceObjects[ROCK][r.getSpriteId()], r.getHitbox().x - (xOffset * Game.TILE_SIZE), r.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
-
-        for (CoalMine cm : coalMines)
-            g.drawImage(ImageLoader.resourceObjects[COAL_MINE][0], cm.getHitbox().x - (xOffset * Game.TILE_SIZE), cm.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
-
-        for (IronMine im : ironMines)
-            g.drawImage(ImageLoader.resourceObjects[IRON_MINE][0], im.getHitbox().x - (xOffset * Game.TILE_SIZE), im.getHitbox().y - (yOffset * Game.TILE_SIZE), null);
-
-        // drawTreeMap(g);
-    }
-
-    // DEBUGGING
-    private void drawTreeMap(Graphics g) {
-        BufferedImage treeImg = new BufferedImage(noiseMap[0].length, noiseMap.length, TYPE_INT_ARGB);
-        Graphics imgG = treeImg.getGraphics();
-        for (int y = 0; y < noiseMap.length; y++)
-            for (int x = 0; x < noiseMap[y].length; x++) {
-                if (noiseMap[y][x] > 0)
-                    imgG.setColor(Color.GREEN);
-                else
-                    imgG.setColor(Color.BLUE);
-                imgG.fillRect(x, y, 1, 1);
-            }
-
-        BufferedImage noiseImg = new BufferedImage(noiseMap[0].length, noiseMap.length, TYPE_INT_ARGB);
-        imgG = noiseImg.getGraphics();
-        for (int y = 0; y < noiseMap.length; y++)
-            for (int x = 0; x < noiseMap[y].length; x++) {
-                int greyValue = (int) ((noiseMap[y][x] + 1) / 2 * 255);
-                imgG.setColor(new Color(greyValue, greyValue, greyValue));
-                imgG.fillRect(x, y, 1, 1);
-            }
-
-        g.drawImage(treeImg, 0, 160, null);
-        g.drawImage(noiseImg, 0, 160 + treeImg.getHeight(), null);
     }
 
     private void generateResourceObjects() {
-        Integer[][] resourceData = new Integer[tileData.length][tileData[0].length];
-        int goldMineId = 0;
-        int treeId = 0;
-        int rockId = 0;
-        int coalId = 0;
-        int ironId = 0;
+        generateCoalPoints();
+        generateIronPoints();
+        generateRockPoints();
+        generateTreePoints();
 
-        for (Point p : play.getMap().getGoldMinePoints()) {
-            goldMines.add(new GoldMine(p.x, p.y, goldMineId++));
-            resourceData[p.y][p.x] = GOLD_MINE;
-        }
-
-        generateCoalPoints(resourceData);
-        generateIronPoints(resourceData);
-        generateRockPoints(resourceData);
-        generateTreePoints(resourceData);
-
-        for (int y = 0; y < resourceData.length; y++)
-            for (int x = 0; x < resourceData[y].length; x++) {
-                if (resourceData[y][x] == null)
-                    continue;
-                switch (resourceData[y][x]) {
-                    case TREE -> trees.add(new Tree(x, y, treeId++, getBitmaskId(x, y, resourceData)));
-                    case ROCK -> rocks.add(new Rock(x, y, rockId++, random.nextInt(ImageLoader.rocks.length)));
-                    case COAL_MINE -> coalMines.add(new CoalMine(x, y, coalId++));
-                    case IRON_MINE -> ironMines.add(new IronMine(x, y, ironId++));
-                }
+        for (int y = 0; y < resourceObjectData.length; y++)
+            for (int x = 0; x < resourceObjectData[y].length; x++) {
+                ResourceObject currRO = resourceObjectData[y][x];
+                if (currRO != null && currRO.getResourceType() == TREE)
+                    currRO.setSpriteId(getBitmaskId(x, y));
             }
     }
 
-    private void generateCoalPoints(Integer[][] resourceData) {
+    private void generateCoalPoints() {
         Chunk[][] chunks = play.getMap().getChunks();
         for (Chunk[] row : chunks)
             for (Chunk c : row) {
-                ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c, resourceData);
+                ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c);
                 double chunkSize = c.getWidth() * c.getHeight();
                 double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
                 double percentage = chunkSize / maxSize;
-                int maxCoal = (int) Math.max(Math.round(getMaxPerChunk(COAL_MINE) * percentage), 1);
+                int maxCoal = (int) Math.max(Math.round(getMaxPerChunk(COAL) * percentage), 1);
                 int coalCount = 0;
 
                 if (!spawnablePoints.isEmpty()) {
                     int veinSourceIdx = random.nextInt(spawnablePoints.size());
                     Point veinSource = spawnablePoints.get(veinSourceIdx);
-                    resourceData[veinSource.y][veinSource.x] = COAL_MINE;
+                    resourceObjectData[veinSource.y][veinSource.x] = new CoalMine(veinSource.x, veinSource.y, veinSource.y * gridWidth + veinSource.x);
                     coalCount++;
                     spawnablePoints.remove(veinSourceIdx);
 
@@ -143,7 +72,7 @@ public class ResourceObjectHandler implements Serializable {
                         int remaining = maxCoal - coalCount;
                         if (remaining >= nextPoints.size()) {
                             for (Point np : nextPoints) {
-                                resourceData[np.y][np.x] = COAL_MINE;
+                                resourceObjectData[np.y][np.x] = new CoalMine(np.x, np.y, np.y * gridWidth + np.x);
                                 coalCount++;
                                 spawnablePoints.remove(np);
                             }
@@ -158,7 +87,7 @@ public class ResourceObjectHandler implements Serializable {
                         } else {
                             int nextPointIndex = random.nextInt(nextPoints.size());
                             Point nextPoint = nextPoints.get(nextPointIndex);
-                            resourceData[nextPoint.y][nextPoint.x] = COAL_MINE;
+                            resourceObjectData[nextPoint.y][nextPoint.x] = new CoalMine(nextPoint.x, nextPoint.y, nextPoint.y * gridWidth + nextPoint.x);
                             nextPoints.remove(nextPointIndex);
                             spawnablePoints.remove(nextPoint);
                             coalCount++;
@@ -168,21 +97,21 @@ public class ResourceObjectHandler implements Serializable {
             }
     }
 
-    private void generateIronPoints(Integer[][] resourceData) {
+    private void generateIronPoints() {
         Chunk[][] chunks = play.getMap().getChunks();
         for (Chunk[] row : chunks)
             for (Chunk c : row) {
-                ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c, resourceData);
+                ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c);
                 double chunkSize = c.getWidth() * c.getHeight();
                 double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
                 double percentage = chunkSize / maxSize;
-                int maxIron = (int) Math.max(Math.round(getMaxPerChunk(IRON_MINE) * percentage), 1);
+                int maxIron = (int) Math.max(Math.round(getMaxPerChunk(IRON) * percentage), 1);
                 int ironCount = 0;
 
                 if (!spawnablePoints.isEmpty()) {
                     int veinSourceIdx = random.nextInt(spawnablePoints.size());
                     Point veinSource = spawnablePoints.get(veinSourceIdx);
-                    resourceData[veinSource.y][veinSource.x] = IRON_MINE;
+                    resourceObjectData[veinSource.y][veinSource.x] = new IronMine(veinSource.x, veinSource.y, veinSource.y * gridWidth + veinSource.x);
                     ironCount++;
                     spawnablePoints.remove(veinSourceIdx);
 
@@ -221,7 +150,7 @@ public class ResourceObjectHandler implements Serializable {
                         }
                         for (int idx = 1; idx < currBranchPoints.size(); idx++) {
                             Point currPoint = currBranchPoints.get(idx);
-                            resourceData[currPoint.y][currPoint.x] = IRON_MINE;
+                            resourceObjectData[currPoint.y][currPoint.x] = new IronMine(currPoint.x, currPoint.y, currPoint.y * gridWidth + currPoint.x);
                             ironCount++;
                         }
                     }
@@ -229,11 +158,11 @@ public class ResourceObjectHandler implements Serializable {
             }
     }
 
-    private void generateRockPoints(Integer[][] resourceData) {
+    private void generateRockPoints() {
         Chunk[][] chunks = play.getMap().getChunks();
         for (Chunk[] row : chunks)
             for (Chunk c : row) {
-                ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c, resourceData);
+                ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c);
                 double chunkSize = c.getWidth() * c.getHeight();
                 double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
                 double percentage = chunkSize / maxSize;
@@ -241,23 +170,23 @@ public class ResourceObjectHandler implements Serializable {
                 if (!spawnablePoints.isEmpty())
                     if (spawnablePoints.size() == max)
                         for (Point sp : spawnablePoints) {
-                            resourceData[sp.y][sp.x] = ROCK;
+                            resourceObjectData[sp.y][sp.x] = new Rock(sp.x, sp.y, sp.y * gridWidth + sp.x, random.nextInt(ImageLoader.rocks.length));
                             spawnablePoints.remove(sp);
                         }
                     else
                         for (int i = 0; i < max; i++) {
                             int rockIdx = random.nextInt(spawnablePoints.size());
                             Point rockPoint = spawnablePoints.get(rockIdx);
-                            resourceData[rockPoint.y][rockPoint.x] = ROCK;
+                            resourceObjectData[rockPoint.y][rockPoint.x] = new Rock(rockPoint.x, rockPoint.y, rockPoint.y * gridWidth + rockPoint.x, random.nextInt(ImageLoader.rocks.length));
                             spawnablePoints.remove(rockPoint);
                         }
 
             }
     }
 
-    private void generateTreePoints(Integer[][] resourceData) {
-        int width = resourceData[0].length;
-        int height = resourceData.length;
+    private void generateTreePoints() {
+        int width = resourceObjectData[0].length;
+        int height = resourceObjectData.length;
         double inc = 0.065;
         noiseMap = new double[height][width];
         double yOff = 0;
@@ -265,21 +194,21 @@ public class ResourceObjectHandler implements Serializable {
             double xOff = 0.0;
             for (int x = 0; x < width; x++) {
                 noiseMap[y][x] = OpenSimplex2.noise2_ImproveX(play.getSeed(), xOff, yOff);
-                if (noiseMap[y][x] > 0 && play.getMap().isFreeLand(x, y) && play.getMap().getTileData()[y][x].getTileType() != Tile.SAND && resourceData[y][x] == null)
-                    resourceData[y][x] = TREE;
+                if (noiseMap[y][x] > 0 && play.getMap().isFreeLand(x, y) && play.getMap().getTileData()[y][x].getTileType() != Tile.SAND && resourceObjectData[y][x] == null)
+                    resourceObjectData[y][x] = new Tree(x, y, y * gridWidth + x, 0);
                 xOff += inc;
             }
             yOff += inc;
         }
     }
 
-    private ArrayList<Point> getResourceSpawnablePoints(Chunk chunk, Integer[][] resourceData) {
+    private ArrayList<Point> getResourceSpawnablePoints(Chunk chunk) {
         ArrayList<Point> resourceSpawnablePoints = new ArrayList<>();
         int startY = chunk.getStartY();
         int startX = chunk.getStartX();
         for (int y = startY; y < startY + chunk.getHeight(); y++)
             for (int x = startX; x < startX + chunk.getWidth(); x++)
-                if (chunk.getMap().isFreeLand(x, y) && resourceData[y][x] == null)
+                if (chunk.getMap().isFreeLand(x, y) && resourceObjectData[y][x] == null)
                     resourceSpawnablePoints.add(new Point(x, y));
         return resourceSpawnablePoints;
     }
@@ -325,27 +254,16 @@ public class ResourceObjectHandler implements Serializable {
         return surroundingPointsInVector;
     }
 
-    private int getBitmaskId(int x, int y, Integer[][] resourceData) {
+    private int getBitmaskId(int x, int y) {
         int bitmaskId = 0;
-        if (y != 0 && resourceData[y - 1][x] != null && resourceData[y - 1][x] == TREE)
+        if (y != 0 && resourceObjectData[y - 1][x] != null && resourceObjectData[y - 1][x].getResourceType() == TREE)
             bitmaskId += 1;
-        if (x != 0 && resourceData[y][x - 1] != null && resourceData[y][x - 1] == TREE)
+        if (x != 0 && resourceObjectData[y][x - 1] != null && resourceObjectData[y][x - 1].getResourceType() == TREE)
             bitmaskId += 2;
-        if (x != resourceData[y].length - 1 && resourceData[y][x + 1] != null && resourceData[y][x + 1] == TREE)
+        if (x != resourceObjectData[y].length - 1 && resourceObjectData[y][x + 1] != null && resourceObjectData[y][x + 1].getResourceType() == TREE)
             bitmaskId += 4;
-        if (y != resourceData.length - 1 && resourceData[y + 1][x] != null && resourceData[y + 1][x] == TREE)
+        if (y != resourceObjectData.length - 1 && resourceObjectData[y + 1][x] != null && resourceObjectData[y + 1][x].getResourceType() == TREE)
             bitmaskId += 8;
         return bitmaskId;
-    }
-
-    public ResourceObject getResourceObjectAt(int x, int y) {
-        for (ResourceObject ro : resourceObjects)
-            if (ro.getHitbox().contains(x, y))
-                return ro;
-        return null;
-    }
-
-    public ArrayList<ResourceObject> getResourceObjects() {
-        return resourceObjects;
     }
 }

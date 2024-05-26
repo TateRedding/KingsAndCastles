@@ -1,6 +1,7 @@
 package gamestates;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -11,12 +12,16 @@ import main.Game;
 import objects.GameObject;
 import objects.Map;
 import objects.Player;
+import pathfinding.AStar;
 import resources.ResourceObject;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 import utils.Savable;
 
-public class Play extends MapState implements Savable, Serializable, Cloneable {
+import static main.Game.TILE_SIZE;
+import static ui.bars.TopBar.TOP_BAR_HEIGHT;
+
+public class Play extends MapState implements Savable, Serializable {
 
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
@@ -72,7 +77,6 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
     @Override
     public void update() {
         super.update();
-        resourceObjectHandler.update();
         entityHandler.update();
         if (actionBar != null)
             actionBar.update();
@@ -83,7 +87,6 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
     @Override
     public void render(Graphics g) {
         super.render(g);
-        resourceObjectHandler.render(g, xTileOffset, yTileOffset);
         entityHandler.render(g, xTileOffset, yTileOffset);
 
         actionBar.render(g);
@@ -100,7 +103,7 @@ public class Play extends MapState implements Savable, Serializable, Cloneable {
         if (e != null)
             return e;
 
-        ResourceObject ro = resourceObjectHandler.getResourceObjectAt(x, y);
+        ResourceObject ro = resourceObjectData[(y - TOP_BAR_HEIGHT) / TILE_SIZE][x / TILE_SIZE];
         if (ro != null)
             return ro;
         return null;
