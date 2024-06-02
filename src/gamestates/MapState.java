@@ -89,7 +89,7 @@ public abstract class MapState extends State implements Serializable {
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
                 if (currRO != null)
-                    g.drawImage(ImageLoader.resourceObjects[currRO.getType()][currRO.getSpriteId()], (x - xOffset) * Game.TILE_SIZE,
+                    g.drawImage(ImageLoader.resourceObjects[currRO.getResourceType()][currRO.getSpriteId()], (x - xOffset) * Game.TILE_SIZE,
                             (y + yStart - yOffset) * Game.TILE_SIZE, null);
             }
     }

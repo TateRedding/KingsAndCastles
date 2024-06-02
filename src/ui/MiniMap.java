@@ -156,7 +156,7 @@ public class MiniMap implements Serializable {
         for (ResourceObject[] resourceObjectDatum : resourceObjectData)
             for (ResourceObject ro : resourceObjectDatum) {
                 if (ro != null) {
-                    int resourceType = ro.getType();
+                    int resourceType = ro.getResourceType();
                     switch (resourceType) {
                         case GOLD:
                             g.setColor(new Color(240, 214, 125));

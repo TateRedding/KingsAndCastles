@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
+import static entities.Entity.LABORER;
 import static main.Game.TILE_SIZE;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
@@ -37,10 +38,10 @@ public class EntityHandler implements Serializable {
         for (Entity e : entities) {
             e.update();
             if (e.getActionTick() >= e.getActionTickMax()) {
-                if (e.getType() == GameObject.LABORER) {
-                    play.gatherResource(e.getPlayerNum(), (ResourceObject) e.getTargetObject());
+                if (e.getEntityType() == LABORER) {
+                    play.gatherResource(e.getPlayer(), e.getResourceToGather());
                 } else {
-                    attack(e, (Entity) e.getTargetObject());
+                    attack(e, e.getEntityToAttack());
                 }
                 e.setActionTick(0);
             }
@@ -49,7 +50,7 @@ public class EntityHandler implements Serializable {
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Entity e : entities) {
-            g.drawImage(Entity.getSprite(e.getType()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
+            g.drawImage(Entity.getSprite(e.getEntityType()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
             // Debugging
             drawPath(e, g, xOffset, yOffset);
             drawHitbox(e, g, xOffset, yOffset);
@@ -123,6 +124,8 @@ public class EntityHandler implements Serializable {
 
         for (int x = tileX - 1; x < tileX + 2; x++)
             for (int y = tileY - 1; y < tileY + 2; y++) {
+                if (x < 0 || y < 0 || x >= play.getMap().getTileData()[0].length || y >= play.getMap().getTileData().length)
+                    continue;
                 int pixelX = x * TILE_SIZE;
                 int pixelY = y * TILE_SIZE + TOP_BAR_HEIGHT;
                 int tileType = play.getMap().getTileData()[y][x].getTileType();

@@ -42,7 +42,7 @@ public class ResourceObjectHandler implements Serializable {
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
-                if (currRO != null && currRO.getType() == TREE)
+                if (currRO != null && currRO.getResourceType() == TREE)
                     currRO.setSpriteId(getBitmaskId(x, y));
             }
     }
@@ -254,13 +254,13 @@ public class ResourceObjectHandler implements Serializable {
 
     private int getBitmaskId(int x, int y) {
         int bitmaskId = 0;
-        if (y != 0 && resourceObjectData[y - 1][x] != null && resourceObjectData[y - 1][x].getType() == TREE)
+        if (y != 0 && resourceObjectData[y - 1][x] != null && resourceObjectData[y - 1][x].getResourceType() == TREE)
             bitmaskId += 1;
-        if (x != 0 && resourceObjectData[y][x - 1] != null && resourceObjectData[y][x - 1].getType() == TREE)
+        if (x != 0 && resourceObjectData[y][x - 1] != null && resourceObjectData[y][x - 1].getResourceType() == TREE)
             bitmaskId += 2;
-        if (x != resourceObjectData[y].length - 1 && resourceObjectData[y][x + 1] != null && resourceObjectData[y][x + 1].getType() == TREE)
+        if (x != resourceObjectData[y].length - 1 && resourceObjectData[y][x + 1] != null && resourceObjectData[y][x + 1].getResourceType() == TREE)
             bitmaskId += 4;
-        if (y != resourceObjectData.length - 1 && resourceObjectData[y + 1][x] != null && resourceObjectData[y + 1][x].getType() == TREE)
+        if (y != resourceObjectData.length - 1 && resourceObjectData[y + 1][x] != null && resourceObjectData[y + 1][x].getResourceType() == TREE)
             bitmaskId += 8;
         return bitmaskId;
     }

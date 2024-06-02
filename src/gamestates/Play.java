@@ -5,7 +5,9 @@ import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import buildings.Building;
 import entities.Entity;
+import handlers.BuildingHandler;
 import handlers.EntityHandler;
 import handlers.ResourceObjectHandler;
 import main.Game;
@@ -18,8 +20,9 @@ import ui.bars.GameStatBar;
 import utils.ImageLoader;
 import utils.Savable;
 
+import static entities.Entity.*;
 import static main.Game.TILE_SIZE;
-import static objects.GameObject.*;
+import static resources.ResourceObject.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class Play extends MapState implements Savable, Serializable {
@@ -38,10 +41,13 @@ public class Play extends MapState implements Savable, Serializable {
     private GameStatBar gameStatBar;
 
     private ArrayList<Player> players = new ArrayList<>();
-    private GameObject selectedGameObject, hoverGameObject;
+    private Entity selectedEntity, hoverEntity;
+    private Building selectedBuilding, hoverBuilding;
+    private ResourceObject hoverResourceObject;
 
-    private ResourceObjectHandler resourceObjectHandler;
+    private BuildingHandler buildingHandler;
     private EntityHandler entityHandler;
+    private ResourceObjectHandler resourceObjectHandler;
 
     private String name;
     private long seed;
@@ -62,6 +68,7 @@ public class Play extends MapState implements Savable, Serializable {
         for (int i = 1; i < numPlayers; i++)
             players.add(new Player(this, i + 1, false));
 
+        this.buildingHandler = new BuildingHandler(this);
         this.entityHandler = new EntityHandler(this);
         this.gameStatBar = new GameStatBar(this);
         this.resourceObjectHandler = new ResourceObjectHandler(this);
@@ -84,12 +91,16 @@ public class Play extends MapState implements Savable, Serializable {
         for (int i = 1; i < numPlayers; i++)
             players.add(new Player(this, i + 1, false));
 
+        this.buildingHandler = new BuildingHandler(this);
         this.entityHandler = new EntityHandler(this);
+        this.gameStatBar = new GameStatBar(this);
+        this.resourceObjectHandler = new ResourceObjectHandler(this);
     }
 
     @Override
     public void update() {
         super.update();
+        buildingHandler.update();
         entityHandler.update();
         if (actionBar != null)
             actionBar.update();
@@ -100,6 +111,7 @@ public class Play extends MapState implements Savable, Serializable {
     @Override
     public void render(Graphics g) {
         super.render(g);
+        buildingHandler.render(g, xTileOffset, yTileOffset);
         entityHandler.render(g, xTileOffset, yTileOffset);
 
         actionBar.render(g);
@@ -108,8 +120,7 @@ public class Play extends MapState implements Savable, Serializable {
 
         if (inGameArea)
             renderAction(g, xTileOffset, yTileOffset);
-        if (selectedGameObject != null)
-            highlightSelectedGameObject(g, xTileOffset, yTileOffset);
+        highlightSelectedObject(g, xTileOffset, yTileOffset);
     }
 
     private void renderAction(Graphics g, int xOffset, int yOffset) {
@@ -118,71 +129,66 @@ public class Play extends MapState implements Savable, Serializable {
 
     }
 
-    private void highlightSelectedGameObject(Graphics g, int xTileOffset, int yTileOffset) {
-        g.setColor(new Color(255, 255, 0, 100));
-        Rectangle bounds = selectedGameObject.getHitbox();
-        g.fillRect(bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), bounds.width, bounds.height);
+    private void highlightSelectedObject(Graphics g, int xTileOffset, int yTileOffset) {
+        Rectangle bounds = null;
+        if (selectedBuilding != null)
+            bounds = selectedBuilding.getHitbox();
+        else if (selectedEntity != null)
+            bounds = selectedEntity.getHitbox();
+        if (bounds != null) {
+            g.setColor(new Color(255, 255, 0, 100));
+            g.fillRect(bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), bounds.width, bounds.height);
+        }
     }
 
-    private void determineAction() {
-        if (selectedGameObject == null && hoverGameObject == null) {
-            // Case 1: Both are null
-            action = -1;
-        } else if (selectedGameObject == null) {
-            // Case 2: Only selectedGameObject is null
-            action = SELECT;
-        } else if (hoverGameObject == null) {
-            // Case 3: Only hoverGameObject is null
-            if (selectedGameObject.getPlayerNum() == 1)
-                action = MOVE;
-            else
-                action = -1;
-        } else {
-            // Case 4: Neither are null
-            int selectedType = selectedGameObject.getType();
-            int hoverCategory = hoverGameObject.getCategory();
-            int hoverType = hoverGameObject.getType();
+    public void determineAction() {
+        action = -1;  // Default action
 
-            if (selectedGameObject.getPlayerNum() != 1) {
+        if (selectedEntity == null) {
+            if (hoverEntity != null || hoverBuilding != null)
                 action = SELECT;
+        } else {
+            if (selectedEntity.getPlayer().getPlayerNum() != 1) {
+                if (hoverEntity != null || hoverBuilding != null)
+                    action = SELECT;
             } else {
-                if (selectedType == LABORER) {
-                    if (hoverCategory == RESOURCE) {
-                        if (hoverType == TREE)
+                if (selectedEntity.getEntityType() == LABORER && (hoverBuilding != null || hoverEntity != null))
+                    action = SELECT;
+                else if (hoverEntity == null && hoverBuilding == null && hoverResourceObject == null)
+                    action = MOVE;
+                else if (selectedEntity.getEntityType() == LABORER) {
+                    if (hoverResourceObject != null) {
+                        if (hoverResourceObject.getResourceType() == TREE)
                             action = CHOP;
                         else
                             action = MINE;
-                    } else if (hoverCategory == BUILDING) {
-                        if (hoverGameObject.getPlayerNum() == 1) {
-                            // If hovering over a building that that isn't at full health
-                            //// repair
-                            // If hovering over farm that has room for workers (must be full health)
-                            //// farm
-                        }
-                    } else
-                        action = SELECT;
+
+                    } else if (hoverBuilding != null) {
+                        if (hoverBuilding.getBuildingType() == Building.FARM && hoverBuilding.getHealth() == hoverBuilding.getMaxHealth())
+                            action = FARM;
+                        else if (hoverBuilding.getHealth() < hoverBuilding.getMaxHealth())
+                            action = REPAIR;
+                    }
                 } else {
-                    if (hoverGameObject.getPlayerNum() != 1) {
-                        if (hoverCategory == ENTITY || hoverCategory == BUILDING) {
-                            // If melee unit selected
-                            //// attack with melee
-                            // If ranged unit selected
-                            //// attack with ranged
-                        }
-                        if (hoverCategory == BUILDING) {
-                            // If it's just a building and selected unit is siege
-                            //// attack siege (could just suffice with ranged)
-                        }
+                    if (hoverEntity != null && hoverEntity.getPlayer().getPlayerNum() != 1) {
+                        if (getAttackStyle(selectedEntity.getEntityType()) == MELEE)
+                            action = ATTACK_MELEE;
+                        else if (getAttackStyle(selectedEntity.getEntityType()) == RANGED)
+                            action = ATTACK_RANGED;
+                    } else if (hoverBuilding != null && hoverBuilding.getPlayer().getPlayerNum() != 1) {
+                        if (getAttackStyle(selectedEntity.getEntityType()) == MELEE)
+                            action = ATTACK_MELEE;
+                        else if (getAttackStyle(selectedEntity.getEntityType()) == RANGED)
+                            action = ATTACK_RANGED;
                     }
                 }
             }
         }
     }
 
-    public void gatherResource(int playerNum, ResourceObject ro) {
-        int resourceType = ro.getType();
+    public void gatherResource(Player player, ResourceObject ro) {
+        int resourceType = ro.getResourceType();
         int amt = ResourceObject.getAmountPerAction(resourceType);
-        Player player = players.get(playerNum - 1);
         switch (resourceType) {
             case GOLD -> player.setGold(player.getGold() + amt);
             case TREE -> player.setWood(player.getWood() + amt);
@@ -201,10 +207,11 @@ public class Play extends MapState implements Savable, Serializable {
         if (e != null)
             return e;
 
-        ResourceObject ro = resourceObjectData[(y - TOP_BAR_HEIGHT) / TILE_SIZE][x / TILE_SIZE];
-        if (ro != null)
-            return ro;
-        return null;
+        Building b = buildingHandler.getBuildingAt(x, y);
+        if (b != null)
+            return b;
+
+        return resourceObjectData[(y - TOP_BAR_HEIGHT) / TILE_SIZE][x / TILE_SIZE];
     }
 
     @Override
@@ -222,13 +229,13 @@ public class Play extends MapState implements Savable, Serializable {
         if (inGameArea) {
             if (button == MouseEvent.BUTTON1) {
                 if (action == SELECT) {
-                    selectedGameObject = hoverGameObject;
+                    selectedEntity = hoverEntity;
+                    selectedBuilding = hoverBuilding;
                 } else if (action == MOVE) {
-                    entityHandler.moveTo((Entity) selectedGameObject, tileX, tileY);
+                    entityHandler.moveTo(selectedEntity, tileX, tileY);
                 } else if (action == CHOP || action == MINE) {
-                    Entity selectedEntity = (Entity) selectedGameObject;
                     entityHandler.moveToNearestTile(selectedEntity, tileX, tileY);
-                    selectedEntity.setTargetObject(hoverGameObject);
+                    selectedEntity.setResourceToGather(hoverResourceObject);
                 }
             }
         }
@@ -256,7 +263,9 @@ public class Play extends MapState implements Savable, Serializable {
             gameStatBar.mouseMoved(x, y);
 
         if (inGameArea) {
-            hoverGameObject = getGameObjectAt(x, y);
+            hoverBuilding = buildingHandler.getBuildingAt(x, y);
+            hoverEntity = entityHandler.getEntityAt(x, y);
+            hoverResourceObject = resourceObjectData[tileY][tileX];
             determineAction();
         }
     }
@@ -293,7 +302,11 @@ public class Play extends MapState implements Savable, Serializable {
         return seed;
     }
 
-    public GameObject getSelectedGameObject() {
-        return selectedGameObject;
+    public Building getSelectedBuilding() {
+        return selectedBuilding;
+    }
+
+    public Entity getSelectedEntity() {
+        return selectedEntity;
     }
 }

@@ -26,33 +26,22 @@ public class ActionBar extends BottomBar {
     @Override
     public void render(Graphics g) {
         super.render(g);
-        if (play.getSelectedGameObject() != null)
-            renderSelectedGameObject(g);
+        if (play.getSelectedEntity() != null)
+            renderSelection(g, Entity.getSprite(play.getSelectedEntity().getEntityType()));
+        if (play.getSelectedBuilding() != null) {
+            //renderSelection(g, building sprite);
+        }
     }
 
-    private void renderSelectedGameObject(Graphics g) {
-        GameObject go = play.getSelectedGameObject();
+    private void renderSelection(Graphics g, BufferedImage sprite) {
         float scale = 2.0f;
-
-        if (go.getCategory() == GameObject.ENTITY) {
-            BufferedImage sprite = switch (go.getCategory()) {
-                case GameObject.ENTITY -> Entity.getSprite(go.getType());
-                case GameObject.RESOURCE -> {
-                    ResourceObject re = (ResourceObject) go;
-                    yield ImageLoader.resourceObjects[re.getType()][re.getSpriteId()];
-                }
-                default -> null;
-            };
-
-            if (sprite != null) {
-                int spriteWidth = (int) (sprite.getWidth() * scale);
-                int spriteHeight = (int) (sprite.getHeight() * scale);
-                int xStart = (UI_WIDTH - spriteWidth) / 2;
-                int yStart = BOTTOM_BAR_Y + (BOTTOM_BAR_HEIGHT - spriteHeight) / 2;
-                g.drawImage(sprite, xStart, yStart, spriteWidth, spriteHeight, null);
-            }
+        if (sprite != null) {
+            int spriteWidth = (int) (sprite.getWidth() * scale);
+            int spriteHeight = (int) (sprite.getHeight() * scale);
+            int xStart = (UI_WIDTH - spriteWidth) / 2;
+            int yStart = BOTTOM_BAR_Y + (BOTTOM_BAR_HEIGHT - spriteHeight) / 2;
+            g.drawImage(sprite, xStart, yStart, spriteWidth, spriteHeight, null);
         }
-
     }
 
     @Override

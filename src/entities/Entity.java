@@ -2,6 +2,7 @@ package entities;
 
 import objects.GameObject;
 import objects.Player;
+import resources.ResourceObject;
 import utils.ImageLoader;
 
 import java.awt.*;
@@ -15,6 +16,14 @@ import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public abstract class Entity extends GameObject implements Serializable {
 
+    // Attack Styles
+    public static final int NONE = 0;
+    public static final int MELEE = 1;
+    public static final int RANGED = 2;
+
+    // Entity Types
+    public static final int LABORER = 0;
+
     // Directions
     public static final int UP = 0;
     public static final int LEFT = 1;
@@ -22,7 +31,9 @@ public abstract class Entity extends GameObject implements Serializable {
     public static final int DOWN = 3;
 
     protected ArrayList<Point> path;
+    protected Player player;
 
+    protected int entityType;
     protected int health, maxHealth, damage;
     protected int actionTick, actionTickMax;
     protected int actionRange, sightRange;
@@ -30,12 +41,15 @@ public abstract class Entity extends GameObject implements Serializable {
 
     protected boolean isAlive = true;
 
-    protected GameObject targetObject;
+    protected ResourceObject resourceToGather;
+    protected Entity entityToAttack;
 
     public Entity(Player player, float x, float y, int entityType, int id) {
-        super(player.getPlayerNum(), id, ENTITY, entityType);
+        super(id);
+        this.player = player;
         this.x = x;
         this.y = y;
+        this.entityType = entityType;
         this.maxHealth = getDefaultMaxHealth(entityType);
         this.health = maxHealth;
         this.damage = getDefaultDamage(entityType);
@@ -96,23 +110,29 @@ public abstract class Entity extends GameObject implements Serializable {
         };
     }
 
+    public static int getAttackStyle(int entityType) {
+        return switch (entityType) {
+            case LABORER -> NONE;
+            default -> -1;
+        };
+    }
+
     public void update() {
         if (isAlive) {
-            if (path != null && !path.isEmpty()) {
+            if (path != null && !path.isEmpty())
                 move();
-            }
-            if (targetObject != null && isTargetInRange()) {
+            if ((resourceToGather != null && isTargetInRange(resourceToGather)) || entityToAttack != null && isTargetInRange(entityToAttack))
                 actionTick++;
-            }
+
         }
     }
 
-    private boolean isTargetInRange() {
+    private boolean isTargetInRange(GameObject target) {
         double startX = x - actionRange * TILE_SIZE;
         double startY = y - actionRange * TILE_SIZE;
         double size = (actionRange * 2 + 1) * TILE_SIZE;
         Ellipse2D range = new Ellipse2D.Double(startX, startY, size, size);
-        Rectangle targetBounds = targetObject.getHitbox();
+        Rectangle targetBounds = target.getHitbox();
         int middleX = targetBounds.x + targetBounds.width / 2;
         int middleY = targetBounds.y + targetBounds.height / 2;
         return range.contains(middleX, middleY);
@@ -202,6 +222,18 @@ public abstract class Entity extends GameObject implements Serializable {
         return damage;
     }
 
+    public Entity getEntityToAttack() {
+        return entityToAttack;
+    }
+
+    public void setEntityToAttack(Entity entityToAttack) {
+        this.entityToAttack = entityToAttack;
+    }
+
+    public int getEntityType() {
+        return entityType;
+    }
+
     public int getHealth() {
         return health;
     }
@@ -218,11 +250,15 @@ public abstract class Entity extends GameObject implements Serializable {
         this.path = path;
     }
 
-    public GameObject getTargetObject() {
-        return targetObject;
+    public Player getPlayer() {
+        return player;
     }
 
-    public void setTargetObject(GameObject targetObject) {
-        this.targetObject = targetObject;
+    public ResourceObject getResourceToGather() {
+        return resourceToGather;
+    }
+
+    public void setResourceToGather(ResourceObject resourceToGather) {
+        this.resourceToGather = resourceToGather;
     }
 }
