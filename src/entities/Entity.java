@@ -5,6 +5,7 @@ import objects.Player;
 import utils.ImageLoader;
 
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,11 +24,13 @@ public abstract class Entity extends GameObject implements Serializable {
     protected ArrayList<Point> path;
 
     protected int health, maxHealth, damage;
-    protected int attackTick, attackTickMax;
-    protected int gatherTick, gatherTickMax = 50;
+    protected int actionTick, actionTickMax;
+    protected int actionRange, sightRange;
     protected float x, y, speed;
 
     protected boolean isAlive = true;
+
+    protected GameObject targetObject;
 
     public Entity(Player player, float x, float y, int entityType, int id) {
         super(player.getPlayerNum(), id, ENTITY, entityType);
@@ -36,8 +39,10 @@ public abstract class Entity extends GameObject implements Serializable {
         this.maxHealth = getDefaultMaxHealth(entityType);
         this.health = maxHealth;
         this.damage = getDefaultDamage(entityType);
-        this.attackTickMax = getDefaultAttackSpeed(entityType);
+        this.actionTickMax = getDefaultActionSpeed(entityType);
         this.speed = getDefaultMoveSpeed(entityType);
+        this.actionRange = getDefaultActionRange(entityType);
+        this.sightRange = getDefaultSightRange(entityType);
         this.hitbox = new Rectangle((int) x, (int) y, TILE_SIZE, TILE_SIZE);
     }
 
@@ -50,12 +55,12 @@ public abstract class Entity extends GameObject implements Serializable {
 
     public static int getDefaultDamage(int entityType) {
         return switch (entityType) {
-            case LABORER -> 2;
+            case LABORER -> 0;
             default -> 0;
         };
     }
 
-    public static int getDefaultAttackSpeed(int entityType) {
+    public static int getDefaultActionSpeed(int entityType) {
         return switch (entityType) {
             case LABORER -> 50;
             default -> 0;
@@ -66,6 +71,21 @@ public abstract class Entity extends GameObject implements Serializable {
         return switch (entityType) {
             case LABORER -> 0.8f;
             default -> 0.0f;
+        };
+    }
+
+    public static int getDefaultActionRange(int entityType) {
+
+        return switch (entityType) {
+            case LABORER -> 1;
+            default -> 0;
+        };
+    }
+
+    public static int getDefaultSightRange(int entityType) {
+        return switch (entityType) {
+            case LABORER -> 1;
+            default -> 0;
         };
     }
 
@@ -81,7 +101,21 @@ public abstract class Entity extends GameObject implements Serializable {
             if (path != null && !path.isEmpty()) {
                 move();
             }
+            if (targetObject != null && isTargetInRange()) {
+                actionTick++;
+            }
         }
+    }
+
+    private boolean isTargetInRange() {
+        double startX = x - actionRange * TILE_SIZE;
+        double startY = y - actionRange * TILE_SIZE;
+        double size = (actionRange * 2 + 1) * TILE_SIZE;
+        Ellipse2D range = new Ellipse2D.Double(startX, startY, size, size);
+        Rectangle targetBounds = targetObject.getHitbox();
+        int middleX = targetBounds.x + targetBounds.width / 2;
+        int middleY = targetBounds.y + targetBounds.height / 2;
+        return range.contains(middleX, middleY);
     }
 
     protected void move() {
@@ -148,6 +182,34 @@ public abstract class Entity extends GameObject implements Serializable {
         hitbox.y = (int) y;
     }
 
+    public int getActionTickMax() {
+        return actionTickMax;
+    }
+
+    public void setActionTick(int actionTick) {
+        this.actionTick = actionTick;
+    }
+
+    public int getActionTick() {
+        return actionTick;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
     public ArrayList<Point> getPath() {
         return path;
     }
@@ -156,4 +218,11 @@ public abstract class Entity extends GameObject implements Serializable {
         this.path = path;
     }
 
+    public GameObject getTargetObject() {
+        return targetObject;
+    }
+
+    public void setTargetObject(GameObject targetObject) {
+        this.targetObject = targetObject;
+    }
 }

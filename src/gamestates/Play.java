@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import entities.Entity;
-import entities.Laborer;
 import handlers.EntityHandler;
 import handlers.ResourceObjectHandler;
 import main.Game;
@@ -26,7 +25,7 @@ import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 public class Play extends MapState implements Savable, Serializable {
 
     // Actions
-    static final int SELECT = 0;
+    public static final int SELECT = 0;
     private static final int MOVE = 1;
     private static final int CHOP = 2;
     private static final int MINE = 3;
@@ -141,19 +140,19 @@ public class Play extends MapState implements Savable, Serializable {
         } else {
             // Case 4: Neither are null
             int selectedType = selectedGameObject.getType();
-            int hoverCat = hoverGameObject.getCategory();
+            int hoverCategory = hoverGameObject.getCategory();
             int hoverType = hoverGameObject.getType();
 
             if (selectedGameObject.getPlayerNum() != 1) {
                 action = SELECT;
             } else {
                 if (selectedType == LABORER) {
-                    if (hoverCat == RESOURCE) {
+                    if (hoverCategory == RESOURCE) {
                         if (hoverType == TREE)
                             action = CHOP;
                         else
                             action = MINE;
-                    } else if (hoverCat == BUILDING) {
+                    } else if (hoverCategory == BUILDING) {
                         if (hoverGameObject.getPlayerNum() == 1) {
                             // If hovering over a building that that isn't at full health
                             //// repair
@@ -164,19 +163,32 @@ public class Play extends MapState implements Savable, Serializable {
                         action = SELECT;
                 } else {
                     if (hoverGameObject.getPlayerNum() != 1) {
-                        if (hoverCat == ENTITY || hoverCat == BUILDING) {
+                        if (hoverCategory == ENTITY || hoverCategory == BUILDING) {
                             // If melee unit selected
                             //// attack with melee
                             // If ranged unit selected
                             //// attack with ranged
                         }
-                        if (hoverCat == BUILDING) {
+                        if (hoverCategory == BUILDING) {
                             // If it's just a building and selected unit is siege
                             //// attack siege (could just suffice with ranged)
                         }
                     }
                 }
             }
+        }
+    }
+
+    public void gatherResource(int playerNum, ResourceObject ro) {
+        int resourceType = ro.getType();
+        int amt = ResourceObject.getAmountPerAction(resourceType);
+        Player player = players.get(playerNum - 1);
+        switch (resourceType) {
+            case GOLD -> player.setGold(player.getGold() + amt);
+            case TREE -> player.setWood(player.getWood() + amt);
+            case ROCK -> player.setStone(player.getStone() + amt);
+            case COAL -> player.setCoal(player.getCoal() + amt);
+            case IRON -> player.setIron(player.getIron() + amt);
         }
     }
 
@@ -213,6 +225,10 @@ public class Play extends MapState implements Savable, Serializable {
                     selectedGameObject = hoverGameObject;
                 } else if (action == MOVE) {
                     entityHandler.moveTo((Entity) selectedGameObject, tileX, tileY);
+                } else if (action == CHOP || action == MINE) {
+                    Entity selectedEntity = (Entity) selectedGameObject;
+                    entityHandler.moveToNearestTile(selectedEntity, tileX, tileY);
+                    selectedEntity.setTargetObject(hoverGameObject);
                 }
             }
         }

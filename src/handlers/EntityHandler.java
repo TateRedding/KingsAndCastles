@@ -6,14 +6,18 @@ import gamestates.Play;
 import objects.GameObject;
 import objects.Player;
 import pathfinding.AStar;
+import resources.ResourceObject;
 
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Random;
 
 import static main.Game.TILE_SIZE;
+import static objects.Tile.WATER_GRASS;
+import static objects.Tile.WATER_SAND;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class EntityHandler implements Serializable {
@@ -30,8 +34,17 @@ public class EntityHandler implements Serializable {
     }
 
     public void update() {
-        for (Entity e : entities)
+        for (Entity e : entities) {
             e.update();
+            if (e.getActionTick() >= e.getActionTickMax()) {
+                if (e.getType() == GameObject.LABORER) {
+                    play.gatherResource(e.getPlayerNum(), (ResourceObject) e.getTargetObject());
+                } else {
+                    attack(e, (Entity) e.getTargetObject());
+                }
+                e.setActionTick(0);
+            }
+        }
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
@@ -74,6 +87,18 @@ public class EntityHandler implements Serializable {
         g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
+    private void attack(Entity attacker, Entity target) {
+        target.setHealth(target.getHealth() - attacker.getDamage());
+        if (target.getHealth() <= 0) {
+            target.setAlive(false);
+            for (Entity e : entities)
+                if (e.getId() == target.getId()) {
+                    entities.remove(e);
+                    return;
+                }
+        }
+    }
+
     public void moveTo(Entity e, int tileX, int tileY) {
         Point goal = new Point(tileX, tileY);
         if (e.getPath() != null && !e.getPath().isEmpty()) {
@@ -85,6 +110,46 @@ public class EntityHandler implements Serializable {
         } else {
             Point start = new Point(e.getHitbox().x / TILE_SIZE, (e.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
             e.setPath(AStar.pathFind(start, goal, play));
+        }
+    }
+
+    public void moveToNearestTile(Entity e, int tileX, int tileY) {
+        HashMap<Double, Point> openTiles = new HashMap<Double, Point>();
+        Point start;
+        if (e.getPath() != null && !e.getPath().isEmpty())
+            start = e.getPath().get(0);
+        else
+            start = new Point(e.getHitbox().x / TILE_SIZE, (e.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+
+        for (int x = tileX - 1; x < tileX + 2; x++)
+            for (int y = tileY - 1; y < tileY + 2; y++) {
+                int pixelX = x * TILE_SIZE;
+                int pixelY = y * TILE_SIZE + TOP_BAR_HEIGHT;
+                int tileType = play.getMap().getTileData()[y][x].getTileType();
+                if (play.getGameObjectAt(pixelX, pixelY) == null && tileType != WATER_SAND && tileType != WATER_GRASS) {
+                    Point target = new Point(x, y);
+                    double xDist = start.getX() - target.getX();
+                    double yDist = start.getY() - target.getY();
+                    double cSquared = (xDist * xDist) + (yDist * yDist);
+                    openTiles.put(Math.sqrt(cSquared), target);
+                }
+            }
+
+        if (openTiles.isEmpty())
+            return;
+
+        ArrayList<Double> sorted = new ArrayList<>(openTiles.keySet());
+        Collections.sort(sorted);
+
+        for (int i = 0; i < openTiles.size(); i++) {
+            Point target = openTiles.get(sorted.get(i));
+            ArrayList<Point> path = AStar.pathFind(start, target, play);
+            if (path != null) {
+                if (e.getPath() != null && !e.getPath().isEmpty())
+                    path.add(0, e.getPath().get(0));
+                e.setPath(path);
+                return;
+            }
         }
     }
 
