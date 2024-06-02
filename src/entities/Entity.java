@@ -14,17 +14,14 @@ import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public abstract class Entity extends GameObject implements Serializable {
 
+    // Directions
     public static final int UP = 0;
     public static final int LEFT = 1;
     public static final int RIGHT = 2;
     public static final int DOWN = 3;
 
-    public static final int LABORER = 0;
-
-    protected Player player;
     protected ArrayList<Point> path;
 
-    protected int entityType;
     protected int health, maxHealth, damage;
     protected int attackTick, attackTickMax;
     protected int gatherTick, gatherTickMax = 50;
@@ -33,11 +30,9 @@ public abstract class Entity extends GameObject implements Serializable {
     protected boolean isAlive = true;
 
     public Entity(Player player, float x, float y, int entityType, int id) {
-        super(id);
-        this.player = player;
+        super(player.getPlayerNum(), id, ENTITY, entityType);
         this.x = x;
         this.y = y;
-        this.entityType = entityType;
         this.maxHealth = getDefaultMaxHealth(entityType);
         this.health = maxHealth;
         this.damage = getDefaultDamage(entityType);
@@ -153,11 +148,6 @@ public abstract class Entity extends GameObject implements Serializable {
         hitbox.y = (int) y;
     }
 
-
-    public int getEntityType() {
-        return entityType;
-    }
-
     public ArrayList<Point> getPath() {
         return path;
     }
@@ -165,4 +155,5 @@ public abstract class Entity extends GameObject implements Serializable {
     public void setPath(ArrayList<Point> path) {
         this.path = path;
     }
+
 }

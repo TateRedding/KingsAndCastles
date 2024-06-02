@@ -31,9 +31,18 @@ public abstract class MapState extends State implements Serializable {
     protected Tile[][] tileData;
     protected ResourceObject[][] resourceObjectData;
 
+    // Pixel coordinates are relative to the entire screen
+    // Tile coordinates are relative to indexes of 2D grid arrays such as tileData
+
+    // Pixel coordinates of the top left pixel of the tile the cursor is in relative to the entire map
     protected int gameX, gameY;
+
+    // Pixel coordinates of the top left pixel of the tile the cursor
     protected int mouseX, mouseY;
+
+    // Tile coordinates of the tile the cursor is in
     protected int tileX, tileY;
+
     protected int xTileOffset, yTileOffset;
     protected int maxXTileOffset, maxYTileOffset;
     protected int mouseDownX, mouseDownY;
@@ -80,7 +89,7 @@ public abstract class MapState extends State implements Serializable {
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
                 if (currRO != null)
-                    g.drawImage(ImageLoader.resourceObjects[currRO.getResourceType()][currRO.getSpriteId()], (x - xOffset) * Game.TILE_SIZE,
+                    g.drawImage(ImageLoader.resourceObjects[currRO.getType()][currRO.getSpriteId()], (x - xOffset) * Game.TILE_SIZE,
                             (y + yStart - yOffset) * Game.TILE_SIZE, null);
             }
     }
@@ -106,9 +115,9 @@ public abstract class MapState extends State implements Serializable {
 
     protected void updateCoords(int x, int y) {
         gameX = ((x + (xTileOffset * TILE_SIZE)) / TILE_SIZE) * TILE_SIZE;
-        gameY = (((y - TOP_BAR_HEIGHT) + (yTileOffset * TILE_SIZE)) / TILE_SIZE) * TILE_SIZE;
+        gameY = (((y - TOP_BAR_HEIGHT) + (yTileOffset * TILE_SIZE)) / TILE_SIZE) * TILE_SIZE + TOP_BAR_HEIGHT;
         tileX = gameX / TILE_SIZE;
-        tileY = gameY / TILE_SIZE;
+        tileY = (gameY - TOP_BAR_HEIGHT) / TILE_SIZE;
         mouseX = (x / Game.TILE_SIZE) * Game.TILE_SIZE;
         mouseY = (y / Game.TILE_SIZE) * Game.TILE_SIZE;
     }

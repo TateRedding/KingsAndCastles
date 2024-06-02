@@ -9,18 +9,11 @@ import ui.bars.TopBar;
 
 public abstract class ResourceObject extends GameObject implements Serializable {
 
-    public static final int GOLD = 0;
-    public static final int TREE = 1;
-    public static final int ROCK = 2;
-    public static final int COAL = 3;
-    public static final int IRON = 4;
-
-    protected int tileX, tileY, resourceType, spriteId;
+    protected int tileX, tileY, spriteId;
     protected int currentAmount, totalAmount;
 
     public ResourceObject(int tileX, int tileY, int id, int resourceType, int spriteId) {
-        super(id);
-        this.resourceType = resourceType;
+        super(id, RESOURCE, resourceType);
         this.spriteId = spriteId;
         this.tileX = tileX;
         this.tileY = tileY;
@@ -66,10 +59,6 @@ public abstract class ResourceObject extends GameObject implements Serializable 
 
     public int getTileY() {
         return tileY;
-    }
-
-    public int getResourceType() {
-        return resourceType;
     }
 
     public int getCurrentAmount() {

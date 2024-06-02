@@ -163,7 +163,26 @@ public class LoadSave {
                 System.out.println("Failed to delete " + imageName);
         } else
             System.out.println("Could not locate " + imageName);
+    }
 
+    public static void clearMaps() {
+        File mapFolder = new File(mapPath);
+        boolean success = true;
+        if (mapFolder.exists()) {
+            File[] files = mapFolder.listFiles();
+            if (files != null)
+                for (File file : files)
+                    if (file.isFile()) {
+                        boolean deleted = file.delete();
+                        if (!deleted) {
+                            success = false;
+                            System.out.println("Failed to delete " + file.getName());
+                        }
+                    }
+        } else
+            System.out.println("Could not locate map folder.");
+        if (success)
+            System.out.println("Successfully cleared map folder.");
     }
 
     public static Play loadGame(File gameFile) {
@@ -244,6 +263,26 @@ public class LoadSave {
         } else
             System.out.println("Could not locate " + gameFileName);
 
+    }
+
+    public static void clearGames() {
+        File gameFolder = new File(gamePath);
+        boolean success = true;
+        if (gameFolder.exists()) {
+            File[] files = gameFolder.listFiles();
+            if (files != null)
+                for (File file : files)
+                    if (file.isFile()) {
+                        boolean deleted = file.delete();
+                        if (!deleted) {
+                            success = false;
+                            System.out.println("Failed to delete " + file.getName());
+                        }
+                    }
+        } else
+            System.out.println("Could not locate game folder.");
+        if (success)
+            System.out.println("Successfully cleared game folder.");
     }
 
 }

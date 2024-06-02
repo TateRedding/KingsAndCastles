@@ -3,6 +3,7 @@ package handlers;
 import entities.Entity;
 import entities.Laborer;
 import gamestates.Play;
+import objects.GameObject;
 import objects.Player;
 
 import java.awt.*;
@@ -20,6 +21,7 @@ public class EntityHandler implements Serializable {
     private ArrayList<Entity> entities = new ArrayList<>();
 
     private int id = 0;
+    private GameObject targetObject;
 
     public EntityHandler(Play play) {
         this.play = play;
@@ -33,7 +35,7 @@ public class EntityHandler implements Serializable {
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Entity e : entities) {
-            g.drawImage(Entity.getSprite(e.getEntityType()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
+            g.drawImage(Entity.getSprite(e.getType()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
             // Debugging
             // drawPath(e, g, xOffset, yOffset);
         }
@@ -43,7 +45,7 @@ public class EntityHandler implements Serializable {
         ArrayList<ArrayList<Point>> castleZones = play.getMap().getCastleZones();
         ArrayList<Player> players = play.getPlayers();
         Random random = new Random(play.getSeed());
-        
+
         for (int i = 0; i < players.size(); i++) {
             int maxStartingEntities = Math.min(players.get(i).getPopulation(), castleZones.get(i).size());
             ArrayList<Point> spawnPoints = new ArrayList<>(castleZones.get(i));
@@ -73,5 +75,13 @@ public class EntityHandler implements Serializable {
 
     public ArrayList<Entity> getEntities() {
         return entities;
+    }
+
+    public GameObject getTargetObject() {
+        return targetObject;
+    }
+
+    public void setTargetObject(GameObject targetObject) {
+        this.targetObject = targetObject;
     }
 }

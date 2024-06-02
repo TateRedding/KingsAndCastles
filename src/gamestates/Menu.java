@@ -5,6 +5,7 @@ import static main.Game.SCREEN_WIDTH;
 import static ui.buttons.Button.*;
 
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +18,8 @@ public class Menu extends State {
     private TextButton newGame, loadGame, editMap, quit;
     private ArrayList<TextButton> buttons = new ArrayList<TextButton>();
 
+    private boolean ctrlHeld;
+
     public Menu(Game game) {
         super(game);
         initButtons();
@@ -24,7 +27,7 @@ public class Menu extends State {
 
     private void initButtons() {
         float fontSize = 46f;
-        int numButtons = 4;
+        int numButtons = 3;
         int yOffset = 30;
         int buttonHeight = getButtonHeight(TEXT_LARGE);
         int x = (SCREEN_WIDTH - getButtonWidth(TEXT_LARGE)) / 2;
@@ -33,8 +36,9 @@ public class Menu extends State {
         newGame = new TextButton(TEXT_LARGE, x, y, fontSize, "New Game");
         loadGame = new TextButton(TEXT_LARGE, x, y += buttonHeight + yOffset, fontSize, "Load Game");
         editMap = new TextButton(TEXT_LARGE, x, y += buttonHeight + yOffset, fontSize, "Edit Map");
-        quit = new TextButton(TEXT_LARGE, x, y += buttonHeight + yOffset, fontSize, "Quit");
 
+        int offset = 48;
+        quit = new TextButton(TEXT_SMALL, SCREEN_WIDTH - getButtonWidth(TEXT_SMALL) - offset, offset, 28f, "Quit");
         buttons.addAll(Arrays.asList(newGame, loadGame, editMap, quit));
     }
 
@@ -86,6 +90,11 @@ public class Menu extends State {
         for (TextButton tb : buttons)
             if (tb.getBounds().contains(x, y))
                 tb.setMouseOver(true);
+    }
+
+    public void keyPressed(KeyEvent e) {
+        if ((e.isControlDown() || e.isMetaDown()) && e.getKeyCode() == KeyEvent.VK_D)
+            GameStates.setGameState(GameStates.DEBUG);
     }
 
 }

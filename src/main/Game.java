@@ -7,15 +7,8 @@ import java.awt.*;
 
 import javax.swing.JFrame;
 
-import gamestates.Credits;
-import gamestates.Edit;
-import gamestates.EditMapSelect;
-import gamestates.GameStates;
-import gamestates.LoadGame;
+import gamestates.*;
 import gamestates.Menu;
-import gamestates.Play;
-import gamestates.PlayMapSelect;
-import gamestates.State;
 import handlers.SaveFileHandler;
 import handlers.TileHandler;
 import objects.Map;
@@ -43,6 +36,7 @@ public class Game extends JFrame implements Runnable {
     private static Font gameFont;
 
     private Credits credits;
+    private Debug debug;
     private Edit edit;
     private EditMapSelect editMapSelect;
     private LoadGame loadGame;
@@ -59,6 +53,7 @@ public class Game extends JFrame implements Runnable {
         ImageLoader.loadImages();
 
         credits = new Credits(this);
+        debug = new Debug(this);
         menu = new Menu(this);
         saveFileHandler = new SaveFileHandler();
         tileHandler = new TileHandler(this);
@@ -123,6 +118,7 @@ public class Game extends JFrame implements Runnable {
     public State getCurrentGameState() {
         return switch (GameStates.gameState) {
             case CREDITS -> credits;
+            case DEBUG -> debug;
             case EDIT -> edit;
             case EDIT_MAP_SELECT -> editMapSelect;
             case LOAD_GAME -> loadGame;

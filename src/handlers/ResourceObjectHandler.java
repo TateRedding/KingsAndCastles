@@ -8,12 +8,10 @@ import utils.ImageLoader;
 import utils.OpenSimplex2;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static objects.Chunk.MAX_CHUNK_SIZE;
 import static resources.ResourceObject.*;
 
@@ -44,7 +42,7 @@ public class ResourceObjectHandler implements Serializable {
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
-                if (currRO != null && currRO.getResourceType() == TREE)
+                if (currRO != null && currRO.getType() == TREE)
                     currRO.setSpriteId(getBitmaskId(x, y));
             }
     }
@@ -256,13 +254,13 @@ public class ResourceObjectHandler implements Serializable {
 
     private int getBitmaskId(int x, int y) {
         int bitmaskId = 0;
-        if (y != 0 && resourceObjectData[y - 1][x] != null && resourceObjectData[y - 1][x].getResourceType() == TREE)
+        if (y != 0 && resourceObjectData[y - 1][x] != null && resourceObjectData[y - 1][x].getType() == TREE)
             bitmaskId += 1;
-        if (x != 0 && resourceObjectData[y][x - 1] != null && resourceObjectData[y][x - 1].getResourceType() == TREE)
+        if (x != 0 && resourceObjectData[y][x - 1] != null && resourceObjectData[y][x - 1].getType() == TREE)
             bitmaskId += 2;
-        if (x != resourceObjectData[y].length - 1 && resourceObjectData[y][x + 1] != null && resourceObjectData[y][x + 1].getResourceType() == TREE)
+        if (x != resourceObjectData[y].length - 1 && resourceObjectData[y][x + 1] != null && resourceObjectData[y][x + 1].getType() == TREE)
             bitmaskId += 4;
-        if (y != resourceObjectData.length - 1 && resourceObjectData[y + 1][x] != null && resourceObjectData[y + 1][x].getResourceType() == TREE)
+        if (y != resourceObjectData.length - 1 && resourceObjectData[y + 1][x] != null && resourceObjectData[y + 1][x].getType() == TREE)
             bitmaskId += 8;
         return bitmaskId;
     }
