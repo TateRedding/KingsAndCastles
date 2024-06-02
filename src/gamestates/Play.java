@@ -211,6 +211,8 @@ public class Play extends MapState implements Savable, Serializable {
             if (button == MouseEvent.BUTTON1) {
                 if (action == SELECT) {
                     selectedGameObject = hoverGameObject;
+                } else if (action == MOVE) {
+                    entityHandler.moveTo((Entity) selectedGameObject, tileX, tileY);
                 }
             }
         }

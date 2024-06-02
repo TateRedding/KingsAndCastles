@@ -5,6 +5,7 @@ import entities.Laborer;
 import gamestates.Play;
 import objects.GameObject;
 import objects.Player;
+import pathfinding.AStar;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -37,7 +38,8 @@ public class EntityHandler implements Serializable {
         for (Entity e : entities) {
             g.drawImage(Entity.getSprite(e.getType()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
             // Debugging
-            // drawPath(e, g, xOffset, yOffset);
+            drawPath(e, g, xOffset, yOffset);
+            drawHitbox(e, g, xOffset, yOffset);
         }
     }
 
@@ -59,10 +61,30 @@ public class EntityHandler implements Serializable {
 
     private void drawPath(Entity e, Graphics g, int xOffset, int yOffset) {
         if (e.getPath() != null && !e.getPath().isEmpty()) {
-            g.setColor(new Color(255, 0, 0, 100));
+            g.setColor(new Color(255, 0, 255, 100));
             for (Point p : e.getPath()) {
                 g.fillRect((p.x - xOffset) * TILE_SIZE, (p.y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, TILE_SIZE, TILE_SIZE);
             }
+        }
+    }
+
+    private void drawHitbox(Entity e, Graphics g, int xOffset, int yOffset) {
+        g.setColor(Color.RED);
+        Rectangle bounds = e.getHitbox();
+        g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
+
+    public void moveTo(Entity e, int tileX, int tileY) {
+        Point goal = new Point(tileX, tileY);
+        if (e.getPath() != null && !e.getPath().isEmpty()) {
+            ArrayList<Point> path = AStar.pathFind(e.getPath().get(0), goal, play);
+            if (path != null) {
+                path.add(0, e.getPath().get(0));
+                e.setPath(path);
+            }
+        } else {
+            Point start = new Point(e.getHitbox().x / TILE_SIZE, (e.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+            e.setPath(AStar.pathFind(start, goal, play));
         }
     }
 
