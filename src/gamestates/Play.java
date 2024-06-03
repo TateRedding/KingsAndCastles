@@ -170,12 +170,7 @@ public class Play extends MapState implements Savable, Serializable {
                             action = REPAIR;
                     }
                 } else {
-                    if (hoverEntity != null && hoverEntity.getPlayer().getPlayerNum() != 1) {
-                        if (getAttackStyle(selectedEntity.getEntityType()) == MELEE)
-                            action = ATTACK_MELEE;
-                        else if (getAttackStyle(selectedEntity.getEntityType()) == RANGED)
-                            action = ATTACK_RANGED;
-                    } else if (hoverBuilding != null && hoverBuilding.getPlayer().getPlayerNum() != 1) {
+                    if ((hoverEntity != null && hoverEntity.getPlayer().getPlayerNum() != 1) || hoverBuilding != null && hoverBuilding.getPlayer().getPlayerNum() != 1) {
                         if (getAttackStyle(selectedEntity.getEntityType()) == MELEE)
                             action = ATTACK_MELEE;
                         else if (getAttackStyle(selectedEntity.getEntityType()) == RANGED)
@@ -183,18 +178,6 @@ public class Play extends MapState implements Savable, Serializable {
                     }
                 }
             }
-        }
-    }
-
-    public void gatherResource(Player player, ResourceObject ro) {
-        int resourceType = ro.getResourceType();
-        int amt = ResourceObject.getAmountPerAction(resourceType);
-        switch (resourceType) {
-            case GOLD -> player.setGold(player.getGold() + amt);
-            case TREE -> player.setWood(player.getWood() + amt);
-            case ROCK -> player.setStone(player.getStone() + amt);
-            case COAL -> player.setCoal(player.getCoal() + amt);
-            case IRON -> player.setIron(player.getIron() + amt);
         }
     }
 
@@ -234,7 +217,8 @@ public class Play extends MapState implements Savable, Serializable {
                 } else if (action == MOVE) {
                     entityHandler.moveTo(selectedEntity, tileX, tileY);
                 } else if (action == CHOP || action == MINE) {
-                    entityHandler.moveToNearestTile(selectedEntity, tileX, tileY);
+                    if (!selectedEntity.isTargetInRange(hoverResourceObject))
+                        entityHandler.moveToNearestTile(selectedEntity, tileX, tileY);
                     selectedEntity.setResourceToGather(hoverResourceObject);
                 }
             }

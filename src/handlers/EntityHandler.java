@@ -39,7 +39,7 @@ public class EntityHandler implements Serializable {
             e.update();
             if (e.getActionTick() >= e.getActionTickMax()) {
                 if (e.getEntityType() == LABORER) {
-                    play.gatherResource(e.getPlayer(), e.getResourceToGather());
+                    play.getResourceObjectHandler().gatherResource(e.getPlayer(), e.getResourceToGather(), e);
                 } else {
                     attack(e, e.getEntityToAttack());
                 }
@@ -119,8 +119,9 @@ public class EntityHandler implements Serializable {
         Point start;
         if (e.getPath() != null && !e.getPath().isEmpty())
             start = e.getPath().get(0);
-        else
+        else {
             start = new Point(e.getHitbox().x / TILE_SIZE, (e.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+        }
 
         for (int x = tileX - 1; x < tileX + 2; x++)
             for (int y = tileY - 1; y < tileY + 2; y++) {

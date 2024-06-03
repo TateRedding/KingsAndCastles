@@ -13,7 +13,7 @@ public class Player implements Serializable {
     private int food = 100;
     private int gold = 10000;
     private int iron = 0;
-    private int population = 2;
+    private int population = 1;
     private int stone = 250;
     private int wood = 500;
 

@@ -1,7 +1,9 @@
 package handlers;
 
+import entities.Entity;
 import gamestates.Play;
 import objects.Chunk;
+import objects.Player;
 import objects.Tile;
 import resources.*;
 import utils.ImageLoader;
@@ -263,5 +265,24 @@ public class ResourceObjectHandler implements Serializable {
         if (y != resourceObjectData.length - 1 && resourceObjectData[y + 1][x] != null && resourceObjectData[y + 1][x].getResourceType() == TREE)
             bitmaskId += 8;
         return bitmaskId;
+    }
+
+    public void gatherResource(Player player, ResourceObject ro, Entity e) {
+        int resourceType = ro.getResourceType();
+        int currAmt = ro.getCurrentAmount();
+        int gatherAmt = Math.min(ResourceObject.getAmountPerAction(resourceType), currAmt);
+        switch (resourceType) {
+            case GOLD -> player.setGold(player.getGold() + gatherAmt);
+            case TREE -> player.setWood(player.getWood() + gatherAmt);
+            case ROCK -> player.setStone(player.getStone() + gatherAmt);
+            case COAL -> player.setCoal(player.getCoal() + gatherAmt);
+            case IRON -> player.setIron(player.getIron() + gatherAmt);
+        }
+        int newAmt = currAmt - gatherAmt;
+        if (newAmt <= 0) {
+            play.getMap().getResourceObjectData()[ro.getTileY()][ro.getTileX()] = null;
+            e.setResourceToGather(null);
+        } else
+            ro.setCurrentAmount(newAmt);
     }
 }

@@ -127,7 +127,7 @@ public abstract class Entity extends GameObject implements Serializable {
         }
     }
 
-    private boolean isTargetInRange(GameObject target) {
+    public boolean isTargetInRange(GameObject target) {
         double startX = x - actionRange * TILE_SIZE;
         double startY = y - actionRange * TILE_SIZE;
         double size = (actionRange * 2 + 1) * TILE_SIZE;
@@ -140,8 +140,8 @@ public abstract class Entity extends GameObject implements Serializable {
 
     protected void move() {
         // Check if Entity has reached the current path point based on movement speed
-        float currentX = path.get(0).x * TILE_SIZE;
-        float currentY = path.get(0).y * TILE_SIZE + TOP_BAR_HEIGHT;
+        int currentX = path.get(0).x * TILE_SIZE;
+        int currentY = path.get(0).y * TILE_SIZE + TOP_BAR_HEIGHT;
 
         // Round to two decimal places to get rid of any floating point errors
         float roundX = Math.round(x * 100) / 100.0f;
@@ -151,9 +151,10 @@ public abstract class Entity extends GameObject implements Serializable {
                 && roundY <= currentY + speed) {
             x = currentX;
             y = currentY;
+            updateHitbox();
             path.remove(0);
         }
-        if (path == null || path.size() <= 0)
+        if (path.isEmpty())
             return;
 
         int direction = getDirection(path.get(0));
