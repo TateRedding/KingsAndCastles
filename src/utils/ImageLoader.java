@@ -14,6 +14,7 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
+import entities.Entity;
 import objects.Map;
 import objects.Tile;
 import ui.TextBox;
@@ -43,9 +44,10 @@ public class ImageLoader {
 
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
-    public static BufferedImage bottomBar, dropDownBody, dropDownTop, laborer, overlayBg, topBar;
+    public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, topBar;
     public static BufferedImage[] actions, dropDownArrow, iconButton, icons, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
+    public static BufferedImage[][][] laborer;
 
     public static void loadImages() {
         loadButtonImages();
@@ -93,7 +95,7 @@ public class ImageLoader {
     }
 
     private static void loadEntityImages() {
-        laborer = getSpriteArray(LABORER, 0, 0, 1, 1, 1)[0];
+        laborer = getEntityAnimationArray(LABORER, 4, 5);
     }
 
     private static void loadTerrainTiles() {
@@ -190,6 +192,20 @@ public class ImageLoader {
                     break;
                 temp[x + cols * y] = atlas.getSubimage(x * width, y * height, width, height);
             }
+        return temp;
+    }
+
+    private static BufferedImage[][][] getEntityAnimationArray(String fileName, int numAnimations, int maxFrames) {
+        BufferedImage atlas = LoadSave.loadImage(fileName);
+        BufferedImage[][][] temp = new BufferedImage[numAnimations][4][maxFrames];
+        int spriteSize = 32;
+        int yStart = 0;
+        for (int dir = 0; dir < temp.length; dir++) {
+            for (int y = 0; y < temp[dir].length; y++)
+                for (int x = 0; x < temp[dir][y].length; x++)
+                    temp[dir][y][x] = atlas.getSubimage(x * spriteSize, yStart + y * spriteSize, spriteSize, spriteSize);
+            yStart += spriteSize * numAnimations;
+        }
         return temp;
     }
 

@@ -80,7 +80,6 @@ public class Play extends MapState implements Savable, Serializable {
         this.seed = seed;
         this.actionBar = new ActionBar(this);
         this.gameStatBar = new GameStatBar(this);
-        this.resourceObjectHandler = new ResourceObjectHandler(this);
 
         int numPlayers = map.getNumPlayers();
         // Player 1 will always be human, and will always be the displayed & actioned Player

@@ -6,7 +6,6 @@ import gamestates.Play;
 import objects.GameObject;
 import objects.Player;
 import pathfinding.AStar;
-import resources.ResourceObject;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -37,6 +36,7 @@ public class EntityHandler implements Serializable {
     public void update() {
         for (Entity e : entities) {
             e.update();
+
             if (e.getActionTick() >= e.getActionTickMax()) {
                 if (e.getEntityType() == LABORER) {
                     play.getResourceObjectHandler().gatherResource(e.getPlayer(), e.getResourceToGather(), e);
@@ -50,10 +50,10 @@ public class EntityHandler implements Serializable {
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Entity e : entities) {
-            g.drawImage(Entity.getSprite(e.getEntityType()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
+            g.drawImage(Entity.getSprite(e.getEntityType(), e.getAnimation(), e.getDirection(), e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
             // Debugging
-            drawPath(e, g, xOffset, yOffset);
-            drawHitbox(e, g, xOffset, yOffset);
+//            drawPath(e, g, xOffset, yOffset);
+//            drawHitbox(e, g, xOffset, yOffset);
         }
     }
 
@@ -119,9 +119,8 @@ public class EntityHandler implements Serializable {
         Point start;
         if (e.getPath() != null && !e.getPath().isEmpty())
             start = e.getPath().get(0);
-        else {
+        else
             start = new Point(e.getHitbox().x / TILE_SIZE, (e.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
-        }
 
         for (int x = tileX - 1; x < tileX + 2; x++)
             for (int y = tileY - 1; y < tileY + 2; y++) {
@@ -135,7 +134,13 @@ public class EntityHandler implements Serializable {
                     double xDist = start.getX() - target.getX();
                     double yDist = start.getY() - target.getY();
                     double cSquared = (xDist * xDist) + (yDist * yDist);
-                    openTiles.put(Math.sqrt(cSquared), target);
+
+                    boolean isCardinal = (x == tileX || y == tileY);
+                    double distance = Math.sqrt(cSquared);
+                    if (!isCardinal)
+                        distance *= 1.5;
+
+                    openTiles.put(distance, target);
                 }
             }
 
