@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
-import static entities.Entity.LABORER;
+import static entities.Entity.*;
 import static main.Game.TILE_SIZE;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
@@ -50,7 +50,13 @@ public class EntityHandler implements Serializable {
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Entity e : entities) {
-            g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), e.getDirection(), e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
+            int dir = e.getDirection();
+            if (dir == UP_LEFT || dir == DOWN_LEFT)
+                dir = LEFT;
+            else if (dir == UP_RIGHT || dir == DOWN_RIGHT)
+                dir = RIGHT;
+
+            g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), dir, e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
             // Debugging
             drawPath(e, g, xOffset, yOffset);
 //            drawHitbox(e, g, xOffset, yOffset);

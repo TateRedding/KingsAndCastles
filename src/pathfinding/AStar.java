@@ -50,13 +50,10 @@ public class AStar {
                 if (openMap.containsKey(point)) {
                     Node node = openMap.get(point);
                     if (gCost < node.getgCost()) {
-                        // Remove the old node
                         openList.remove(node);
-                        // Update the node with the new costs and parent
                         node.setgCost(gCost);
                         node.setfCost(gCost + hCost);
                         node.setParent(current);
-                        // Reinsert the node with updated f-cost
                         openList.add(node);
                         openMap.put(point, node);
                     }
@@ -86,32 +83,54 @@ public class AStar {
         int gridWidth = play.getMap().getTileData()[0].length;
         int gridHeight = play.getMap().getTileData().length;
 
-        // Above
+        // Cardinal Directions (Up, Right, Down, Left)
         if (parent.y > 0) {
             Point above = new Point(parent.x, parent.y - 1);
             if (isPointWalkable(above, play))
                 neighbors.add(above);
         }
 
-        // Right
         if (parent.x < gridWidth - 1) {
             Point right = new Point(parent.x + 1, parent.y);
             if (isPointWalkable(right, play))
                 neighbors.add(right);
         }
 
-        // Below
         if (parent.y < gridHeight - 1) {
             Point below = new Point(parent.x, parent.y + 1);
             if (isPointWalkable(below, play))
                 neighbors.add(below);
         }
 
-        // Left
         if (parent.x > 0) {
             Point left = new Point(parent.x - 1, parent.y);
             if (isPointWalkable(left, play))
                 neighbors.add(left);
+        }
+
+        // Diagonal Directions
+        if (parent.y > 0 && parent.x > 0) {
+            Point topLeft = new Point(parent.x - 1, parent.y - 1);
+            if (isPointWalkable(topLeft, play))
+                neighbors.add(topLeft);
+        }
+
+        if (parent.y > 0 && parent.x < gridWidth - 1) {
+            Point topRight = new Point(parent.x + 1, parent.y - 1);
+            if (isPointWalkable(topRight, play))
+                neighbors.add(topRight);
+        }
+
+        if (parent.y < gridHeight - 1 && parent.x > 0) {
+            Point bottomLeft = new Point(parent.x - 1, parent.y + 1);
+            if (isPointWalkable(bottomLeft, play))
+                neighbors.add(bottomLeft);
+        }
+
+        if (parent.y < gridHeight - 1 && parent.x < gridWidth - 1) {
+            Point bottomRight = new Point(parent.x + 1, parent.y + 1);
+            if (isPointWalkable(bottomRight, play))
+                neighbors.add(bottomRight);
         }
 
         return neighbors;
@@ -127,8 +146,13 @@ public class AStar {
     private static double getDistance(Point from, Point to) {
         double xDist = from.getX() - to.getX();
         double yDist = from.getY() - to.getY();
-        double cSquared = (xDist * xDist) + (yDist * yDist);
-        return Math.sqrt(cSquared);
+
+        // If moving diagonally, use a different calculation
+        if (Math.abs(xDist) > 0 && Math.abs(yDist) > 0) {
+            return Math.sqrt(2); // Approximate diagonal movement distance
+        }
+
+        return Math.abs(xDist) + Math.abs(yDist);
     }
 
     private static ArrayList<Point> reverse(ArrayList<Point> path) {

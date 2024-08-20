@@ -26,11 +26,17 @@ public abstract class Entity extends GameObject implements Serializable {
     // Entity Types
     public static final int LABORER = 0;
 
-    // Directions
+    // Cardinal Directions
     public static final int UP = 0;
     public static final int LEFT = 1;
     public static final int RIGHT = 2;
     public static final int DOWN = 3;
+
+    // Diagonal Directions
+    public static final int UP_LEFT = 4;
+    public static final int DOWN_LEFT = 5;
+    public static final int UP_RIGHT = 6;
+    public static final int DOWN_RIGHT = 7;
 
     // All Entity States
     public static final int DEAD = 0;
@@ -219,7 +225,18 @@ public abstract class Entity extends GameObject implements Serializable {
         int pX = point.x * TILE_SIZE;
         int pY = point.y * TILE_SIZE + TOP_BAR_HEIGHT;
 
-        if (pX == x && pY < y)
+        // Diagonal Directions
+        if (pX < x && pY < y)
+            direction = UP_LEFT;
+        else if (pX > x && pY < y)
+            direction = UP_RIGHT;
+        else if (pX < x && pY > y)
+            direction = DOWN_LEFT;
+        else if (pX > x && pY > y)
+            direction = DOWN_RIGHT;
+
+            // Cardinal Directions
+        else if (pX == x && pY < y)
             direction = UP;
         else if (pX < x && pY == y)
             direction = LEFT;
@@ -231,6 +248,7 @@ public abstract class Entity extends GameObject implements Serializable {
 
     protected void moveInDirection(int direction) {
         switch (direction) {
+            // Cardinal Directions
             case UP:
                 this.y -= speed;
                 break;
@@ -243,11 +261,31 @@ public abstract class Entity extends GameObject implements Serializable {
             case DOWN:
                 this.y += speed;
                 break;
+
+            // Diagonal Directions
+            case UP_LEFT:
+                this.x -= speed * Math.sqrt(0.5);
+                this.y -= speed * Math.sqrt(0.5);
+                break;
+            case UP_RIGHT:
+                this.x += speed * Math.sqrt(0.5);
+                this.y -= speed * Math.sqrt(0.5);
+                break;
+            case DOWN_LEFT:
+                this.x -= speed * Math.sqrt(0.5);
+                this.y += speed * Math.sqrt(0.5);
+                break;
+            case DOWN_RIGHT:
+                this.x += speed * Math.sqrt(0.5);
+                this.y += speed * Math.sqrt(0.5);
+                break;
+
             default:
                 break;
         }
         updateHitbox();
     }
+
 
     protected void updateHitbox() {
         hitbox.x = (int) x;
