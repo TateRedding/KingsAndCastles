@@ -11,6 +11,7 @@ import handlers.BuildingHandler;
 import handlers.EntityHandler;
 import handlers.ResourceObjectHandler;
 import main.Game;
+import objects.Chunk;
 import objects.GameObject;
 import objects.Map;
 import objects.Player;
@@ -110,16 +111,22 @@ public class Play extends MapState implements Savable, Serializable {
     @Override
     public void render(Graphics g) {
         super.render(g);
+
+        // Debugging
+        drawChunkBorders(g);
+
         buildingHandler.render(g, xTileOffset, yTileOffset);
         entityHandler.render(g, xTileOffset, yTileOffset);
 
         actionBar.render(g);
         gameStatBar.render(g);
+
         miniMap.render(g, xTileOffset, yTileOffset);
 
         if (inGameArea)
             renderAction(g, xTileOffset, yTileOffset);
         highlightSelectedObject(g, xTileOffset, yTileOffset);
+
     }
 
     private void renderAction(Graphics g, int xOffset, int yOffset) {
@@ -138,6 +145,16 @@ public class Play extends MapState implements Savable, Serializable {
             g.setColor(new Color(255, 255, 0, 100));
             g.fillRect(bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), bounds.width, bounds.height);
         }
+    }
+
+    private void drawChunkBorders(Graphics g) {
+        Chunk[][] chunks = map.getChunks();
+        for (int y = 0; y < chunks.length; y++)
+            for (int x = 0; x < chunks.length; x++) {
+                Rectangle bounds = chunks[y][x].getBounds();
+                g.setColor(new Color(255, 255, 0));
+                g.drawRect(bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), bounds.width, bounds.height);
+            }
     }
 
     public void determineAction() {
@@ -185,7 +202,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public GameObject getGameObjectAt(int x, int y) {
-        Entity e = entityHandler.getEntityAt(x, y);
+        Entity e = entityHandler.getEntityAtCoord(x, y, true);
         if (e != null)
             return e;
 
@@ -247,7 +264,7 @@ public class Play extends MapState implements Savable, Serializable {
 
         if (inGameArea) {
             hoverBuilding = buildingHandler.getBuildingAt(x, y);
-            hoverEntity = entityHandler.getEntityAt(x, y);
+            hoverEntity = entityHandler.getEntityAtCoord(x, y, false);
             hoverResourceObject = resourceObjectData[tileY][tileX];
             determineAction();
         }

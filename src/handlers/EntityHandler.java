@@ -50,9 +50,9 @@ public class EntityHandler implements Serializable {
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Entity e : entities) {
-            g.drawImage(Entity.getSprite(e.getEntityType(), e.getAnimation(), e.getDirection(), e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
+            g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), e.getDirection(), e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
             // Debugging
-//            drawPath(e, g, xOffset, yOffset);
+            drawPath(e, g, xOffset, yOffset);
 //            drawHitbox(e, g, xOffset, yOffset);
         }
     }
@@ -68,7 +68,7 @@ public class EntityHandler implements Serializable {
             Collections.shuffle(spawnPoints, random);
             for (int j = 0; j < maxStartingEntities; j++) {
                 Point spawn = spawnPoints.get(j);
-                entities.add(new Laborer(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++));
+                entities.add(new Laborer(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
             }
         }
     }
@@ -138,7 +138,7 @@ public class EntityHandler implements Serializable {
                     boolean isCardinal = (x == tileX || y == tileY);
                     double distance = Math.sqrt(cSquared);
                     if (!isCardinal)
-                        distance *= 1.5;
+                        distance *= 2;
 
                     openTiles.put(distance, target);
                 }
@@ -162,15 +162,35 @@ public class EntityHandler implements Serializable {
         }
     }
 
-    public Entity getEntityAt(int x, int y) {
-        for (Entity e : entities)
-            if (e.getHitbox().contains(x, y))
-                return e;
+    public Entity getEntityAtCoord(int x, int y, boolean checkEntireTile) {
+        if (checkEntireTile) {
+            Rectangle tileBounds = new Rectangle(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            for (Entity e : entities)
+                if (e.getHitbox().intersects(tileBounds))
+                    return e;
+        } else
+            for (Entity e : entities)
+                if (e.getHitbox().contains(x, y))
+                    return e;
         return null;
+    }
+
+
+    public boolean isEntityInTile(int tileX, int tileY) {
+        for (Entity e : entities) {
+            Rectangle tileBounds = new Rectangle(tileX * TILE_SIZE, tileY * TILE_SIZE + TOP_BAR_HEIGHT, TILE_SIZE, TILE_SIZE);
+            if (e.getHitbox().intersects(tileBounds))
+                return true;
+        }
+        return false;
     }
 
     public ArrayList<Entity> getEntities() {
         return entities;
+    }
+
+    public Play getPlay() {
+        return play;
     }
 
     public GameObject getTargetObject() {

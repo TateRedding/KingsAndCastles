@@ -1,7 +1,9 @@
 package entities;
 
+import handlers.EntityHandler;
 import objects.GameObject;
 import objects.Player;
+import pathfinding.AStar;
 import resources.ResourceObject;
 import utils.ImageLoader;
 
@@ -30,12 +32,14 @@ public abstract class Entity extends GameObject implements Serializable {
     public static final int RIGHT = 2;
     public static final int DOWN = 3;
 
-    // All Entity Animations
-    public static final int IDLE = 0;
-    public static final int WALK = 1;
+    // All Entity States
+    public static final int DEAD = 0;
+    public static final int IDLE = 1;
+    public static final int WALKING = 2;
 
     protected ArrayList<Point> path;
     protected Player player;
+    protected EntityHandler entityHandler;
 
     protected int entityType;
     protected int health, maxHealth, damage;
@@ -43,7 +47,7 @@ public abstract class Entity extends GameObject implements Serializable {
     protected int actionTickMax;
     protected int actionRange, sightRange;
     protected int direction = DOWN;
-    protected int animation = IDLE;
+    protected int state = IDLE;
     protected int animationFrame = 0;
     protected int animationTick = 0;
     protected float x, y, speed;
@@ -53,12 +57,13 @@ public abstract class Entity extends GameObject implements Serializable {
     protected ResourceObject resourceToGather;
     protected Entity entityToAttack;
 
-    public Entity(Player player, float x, float y, int entityType, int id) {
+    public Entity(Player player, float x, float y, int entityType, int id, EntityHandler entityHandler) {
         super(id);
         this.player = player;
         this.x = x;
         this.y = y;
         this.entityType = entityType;
+        this.entityHandler = entityHandler;
         this.maxHealth = getDefaultMaxHealth(entityType);
         this.health = maxHealth;
         this.damage = getDefaultDamage(entityType);
@@ -112,9 +117,9 @@ public abstract class Entity extends GameObject implements Serializable {
         };
     }
 
-    public static BufferedImage getSprite(int entityType, int animation, int dir, int frame) {
+    public static BufferedImage getSprite(int entityType, int state, int dir, int frame) {
         return switch (entityType) {
-            case LABORER -> ImageLoader.laborer[animation][dir][frame];
+            case LABORER -> ImageLoader.laborer[state][dir][frame];
             default -> null;
         };
     }
@@ -131,7 +136,7 @@ public abstract class Entity extends GameObject implements Serializable {
             if (path != null && !path.isEmpty())
                 move();
             if ((resourceToGather != null && isTargetInRange(resourceToGather)) || entityToAttack != null && isTargetInRange(entityToAttack)) {
-                if (animation != WALK && animation != IDLE)
+                if (state != WALKING && state != IDLE)
                     turnTowardsTarget();
                 actionTick++;
             }
@@ -160,8 +165,8 @@ public abstract class Entity extends GameObject implements Serializable {
             targetX = resourceToGather.getTileX();
             targetY = resourceToGather.getTileY();
         } else if (entityToAttack != null) {
-            targetX = (int) (entityToAttack.getHitbox().getX() / TILE_SIZE);
-            targetY = (int) ((entityToAttack.getHitbox().getY() - TOP_BAR_HEIGHT) / TILE_SIZE);
+            targetX = (int) (entityToAttack.getHitbox().x / TILE_SIZE);
+            targetY = (int) ((entityToAttack.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
         }
 
         if (targetY < entityY)
@@ -176,7 +181,7 @@ public abstract class Entity extends GameObject implements Serializable {
     }
 
     protected void move() {
-        animation = WALK;
+        state = WALKING;
         // Check if Entity has reached the current path point based on movement speed
         int currentX = path.get(0).x * TILE_SIZE;
         int currentY = path.get(0).y * TILE_SIZE + TOP_BAR_HEIGHT;
@@ -191,9 +196,18 @@ public abstract class Entity extends GameObject implements Serializable {
             y = currentY;
             updateHitbox();
             path.remove(0);
+            if (!path.isEmpty()) {
+                Point next = path.get(0);
+                Entity e = entityHandler.getEntityAtCoord(next.x * TILE_SIZE, next.y * TILE_SIZE + TOP_BAR_HEIGHT, true);
+                if (e != null) {
+                    Point start = new Point(hitbox.x / TILE_SIZE, (hitbox.y - TOP_BAR_HEIGHT) / TILE_SIZE);
+                    path = AStar.pathFind(start, path.get(path.size() - 1), entityHandler.getPlay());
+                }
+            }
         }
-        if (path.isEmpty()) {
-            animation = IDLE;
+
+        if (path == null || path.isEmpty()) {
+            state = IDLE;
             return;
         }
 
@@ -272,12 +286,12 @@ public abstract class Entity extends GameObject implements Serializable {
         this.animationTick = animationTick;
     }
 
-    public int getAnimation() {
-        return animation;
+    public int getState() {
+        return state;
     }
 
-    public void setAnimation(int animation) {
-        this.animation = animation;
+    public void setState(int state) {
+        this.state = state;
     }
 
     public int getDamage() {
