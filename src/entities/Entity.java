@@ -214,6 +214,7 @@ public abstract class Entity extends GameObject implements Serializable {
 
         if (path == null || path.isEmpty()) {
             state = IDLE;
+            animationFrame = 0;
             return;
         }
 

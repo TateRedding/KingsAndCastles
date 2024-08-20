@@ -47,7 +47,10 @@ public class Laborer extends Entity {
                 state = (resourceToGather.getResourceType() == ResourceObject.TREE) ? CHOPPING : MINING;
                 animationFrame = 0;
             }
-        } else if (state == CHOPPING || state == MINING)
+        } else if (state == CHOPPING || state == MINING) {
             state = IDLE;
+            animationFrame = 0;
+        }
+
     }
 }

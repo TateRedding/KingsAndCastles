@@ -95,7 +95,7 @@ public class ImageLoader {
     }
 
     private static void loadEntityImages() {
-        laborer = getEntityAnimationArray(LABORER, 4, 5);
+        laborer = getEntityAnimationArray(LABORER, 5, 5);
     }
 
     private static void loadTerrainTiles() {
@@ -204,7 +204,7 @@ public class ImageLoader {
             for (int y = 0; y < temp[dir].length; y++)
                 for (int x = 0; x < temp[dir][y].length; x++)
                     temp[dir][y][x] = atlas.getSubimage(x * spriteSize, yStart + y * spriteSize, spriteSize, spriteSize);
-            yStart += spriteSize * numAnimations;
+            yStart += spriteSize * 4;
         }
         return temp;
     }

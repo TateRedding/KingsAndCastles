@@ -79,57 +79,59 @@ public class AStar {
     }
 
     private static ArrayList<Point> getNeighbors(Point parent, Play play) {
-        ArrayList<Point> neighbors = new ArrayList<Point>();
+        ArrayList<Point> neighbors = new ArrayList<>();
         int gridWidth = play.getMap().getTileData()[0].length;
         int gridHeight = play.getMap().getTileData().length;
+        
+        boolean isUpOpen = false, isRightOpen = false, isDownOpen = false, isLeftOpen = false;
 
         // Cardinal Directions (Up, Right, Down, Left)
         if (parent.y > 0) {
             Point above = new Point(parent.x, parent.y - 1);
-            if (isPointWalkable(above, play))
-                neighbors.add(above);
+            isUpOpen = isPointWalkable(above, play);
+            if (isUpOpen) neighbors.add(above);
         }
 
         if (parent.x < gridWidth - 1) {
             Point right = new Point(parent.x + 1, parent.y);
-            if (isPointWalkable(right, play))
-                neighbors.add(right);
+            isRightOpen = isPointWalkable(right, play);
+            if (isRightOpen) neighbors.add(right);
         }
 
         if (parent.y < gridHeight - 1) {
             Point below = new Point(parent.x, parent.y + 1);
-            if (isPointWalkable(below, play))
-                neighbors.add(below);
+            isDownOpen = isPointWalkable(below, play);
+            if (isDownOpen) neighbors.add(below);
         }
 
         if (parent.x > 0) {
             Point left = new Point(parent.x - 1, parent.y);
-            if (isPointWalkable(left, play))
-                neighbors.add(left);
+            isLeftOpen = isPointWalkable(left, play);
+            if (isLeftOpen) neighbors.add(left);
         }
 
-        // Diagonal Directions
+        // Diagonal Directions (Top-left, Top-right, Bottom-left, Bottom-right)
         if (parent.y > 0 && parent.x > 0) {
             Point topLeft = new Point(parent.x - 1, parent.y - 1);
-            if (isPointWalkable(topLeft, play))
+            if (isPointWalkable(topLeft, play) && (isUpOpen || isLeftOpen))
                 neighbors.add(topLeft);
         }
 
         if (parent.y > 0 && parent.x < gridWidth - 1) {
             Point topRight = new Point(parent.x + 1, parent.y - 1);
-            if (isPointWalkable(topRight, play))
+            if (isPointWalkable(topRight, play) && (isUpOpen || isRightOpen))
                 neighbors.add(topRight);
         }
 
         if (parent.y < gridHeight - 1 && parent.x > 0) {
             Point bottomLeft = new Point(parent.x - 1, parent.y + 1);
-            if (isPointWalkable(bottomLeft, play))
+            if (isPointWalkable(bottomLeft, play) && (isDownOpen || isLeftOpen))
                 neighbors.add(bottomLeft);
         }
 
         if (parent.y < gridHeight - 1 && parent.x < gridWidth - 1) {
             Point bottomRight = new Point(parent.x + 1, parent.y + 1);
-            if (isPointWalkable(bottomRight, play))
+            if (isPointWalkable(bottomRight, play) && (isDownOpen || isRightOpen))
                 neighbors.add(bottomRight);
         }
 
