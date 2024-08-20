@@ -110,7 +110,11 @@ public class EntityHandler implements Serializable {
             }
         } else {
             Point start = new Point(e.getHitbox().x / TILE_SIZE, (e.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+            double startTime = System.nanoTime();
             e.setPath(AStar.pathFind(start, goal, play));
+            double currTime = System.nanoTime();
+            double calculationTime = (currTime - startTime) / 1000000;
+            System.out.println(String.format("Calculation time: %.2fms", calculationTime));
         }
     }
 

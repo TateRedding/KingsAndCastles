@@ -7,23 +7,32 @@ import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.PriorityQueue;
 
 import gamestates.Play;
 
 public class AStar {
 
-    private static ArrayList<Node> openList;
+    private static PriorityQueue<Node> openList;
+    private static HashSet<Point> closedList;
+    private static HashMap<Point, Node> openMap;
 
     public static ArrayList<Point> pathFind(Point start, Point goal, Play play) {
-        openList = new ArrayList<>();
-        ArrayList<Node> closedList = new ArrayList<>();
+        openList = new PriorityQueue<>(Comparator.comparingDouble(Node::getfCost));
+        closedList = new HashSet<>();
+        openMap = new HashMap<>();
+
         Node current = new Node(start);
         openList.add(current);
+        openMap.put(start, current);
 
         while (!openList.isEmpty()) {
-            current = getBestNode();
-            openList.remove(current);
-            closedList.add(current);
+            current = openList.poll();
+            openMap.remove(current.getPoint());
+            closedList.add(current.getPoint());
 
             if (current.getPoint().equals(goal)) {
                 break;
@@ -33,18 +42,28 @@ public class AStar {
             for (Point point : neighbors) {
                 double gCost = current.getgCost() + getDistance(point, current.getPoint());
                 double hCost = getDistance(point, goal);
-                if (listContains(closedList, point)) {
+
+                if (closedList.contains(point)) {
                     continue;
-                } else if (listContains(openList, point)) {
-                    Node node = getNode(openList, point);
+                }
+
+                if (openMap.containsKey(point)) {
+                    Node node = openMap.get(point);
                     if (gCost < node.getgCost()) {
-                        int index = getIndex(openList, node);
-                        openList.get(index).setgCost(gCost);
-                        openList.get(index).setfCost(gCost + hCost);
-                        openList.get(index).setParent(current);
+                        // Remove the old node
+                        openList.remove(node);
+                        // Update the node with the new costs and parent
+                        node.setgCost(gCost);
+                        node.setfCost(gCost + hCost);
+                        node.setParent(current);
+                        // Reinsert the node with updated f-cost
+                        openList.add(node);
+                        openMap.put(point, node);
                     }
                 } else {
-                    openList.add(new Node(point, current, gCost, hCost));
+                    Node newNode = new Node(point, current, gCost, hCost);
+                    openList.add(newNode);
+                    openMap.put(point, newNode);
                 }
             }
         }
@@ -53,22 +72,13 @@ public class AStar {
             return null;
         }
 
-        ArrayList<Point> path = new ArrayList<Point>();
+        ArrayList<Point> path = new ArrayList<>();
         while (!current.getPoint().equals(start)) {
             path.add(current.getPoint());
             current = current.getParent();
         }
 
         return reverse(path);
-    }
-
-    private static Node getBestNode() {
-        Node best = openList.get(0);
-        for (Node node : openList) {
-            if (node.getfCost() < best.getfCost())
-                best = node;
-        }
-        return best;
     }
 
     private static ArrayList<Point> getNeighbors(Point parent, Play play) {
@@ -119,30 +129,6 @@ public class AStar {
         double yDist = from.getY() - to.getY();
         double cSquared = (xDist * xDist) + (yDist * yDist);
         return Math.sqrt(cSquared);
-    }
-
-    private static boolean listContains(ArrayList<Node> list, Point point) {
-        for (Node node : list)
-            if (node.getPoint().getX() == point.getX() && node.getPoint().getY() == point.getY())
-                return true;
-        return false;
-    }
-
-    private static Node getNode(ArrayList<Node> list, Point point) {
-        for (Node node : list)
-            if (node.getPoint().getX() == point.getX() && node.getPoint().getY() == point.getY())
-                return node;
-        return null;
-    }
-
-    private static int getIndex(ArrayList<Node> list, Node node) {
-        int index = 0;
-        for (Node listNode : list) {
-            if (listNode.getPoint().equals(node.getPoint()))
-                return index;
-            index++;
-        }
-        return 0;
     }
 
     private static ArrayList<Point> reverse(ArrayList<Point> path) {
