@@ -127,7 +127,7 @@ public class Play extends MapState implements Savable, Serializable {
 
     private void renderAction(Graphics g, int xOffset, int yOffset) {
         if (action != -1)
-            g.drawImage(ImageLoader.actions[action], gameX, gameY, null);
+            g.drawImage(ImageLoader.actions[action], gameX - (xOffset * TILE_SIZE), gameY - (yOffset * TILE_SIZE), null);
 
     }
 
@@ -153,50 +153,62 @@ public class Play extends MapState implements Savable, Serializable {
 
     public void determineAction() {
         action = -1;  // Default action
-        int sgoType = -1;
-        int hoverType = -1;
-
-        if (selectedSGO != null)
-            sgoType = selectedSGO.getType();
-
-        if (hoverGO != null)
-            hoverType = hoverGO.getType();
+        int sgoType = (selectedSGO != null) ? selectedSGO.getType() : -1;
+        int hoverType = (hoverGO != null) ? hoverGO.getType() : -1;
 
         if (sgoType == BUILDING || sgoType == -1) {
-            if (hoverType == ENTITY || hoverType == BUILDING)
+            if (hoverType == ENTITY || hoverType == BUILDING) {
                 action = SELECT;
-        } else if (sgoType == ENTITY) {
-            if (selectedSGO.getPlayer().getPlayerNum() != 1) {
-                if (hoverType == ENTITY || hoverType == BUILDING)
-                    action = SELECT;
-            } else {
-                Entity selectedEntity = (Entity) selectedSGO;
-                if (selectedEntity.getEntityType() == LABORER && (hoverType == ENTITY || hoverType == BUILDING))
-                    action = SELECT;
-                else if (hoverType == -1)
-                    action = MOVE;
-                else if (selectedEntity.getEntityType() == LABORER) {
-                    if (hoverType == RESOURCE) {
-                        if (((ResourceObject) hoverGO).getResourceType() == TREE)
-                            action = CHOP;
-                        else
-                            action = MINE;
+            }
+            return;
+        }
 
-                    } else if (hoverType == BUILDING) {
-                        Building hoverBuilding = (Building) hoverGO;
-                        if (hoverBuilding.getBuildingType() == Building.FARM && hoverBuilding.getHealth() == hoverBuilding.getMaxHealth())
-                            action = FARM;
-                        else if (hoverBuilding.getHealth() < hoverBuilding.getMaxHealth())
-                            action = REPAIR;
-                    }
-                } else {
-                    if ((hoverType == ENTITY && ((Entity) hoverGO).getPlayer().getPlayerNum() != 1) || hoverType == BUILDING && ((Building) hoverGO).getPlayer().getPlayerNum() != 1) {
-                        if (getAttackStyle(selectedEntity.getEntityType()) == MELEE)
-                            action = ATTACK_MELEE;
-                        else if (getAttackStyle(selectedEntity.getEntityType()) == RANGED)
-                            action = ATTACK_RANGED;
-                    }
+        if (sgoType == ENTITY) {
+            Entity selectedEntity = (Entity) selectedSGO;
+            if (selectedSGO.getPlayer().getPlayerNum() != 1) {
+                if (hoverType == ENTITY || hoverType == BUILDING) {
+                    action = SELECT;
                 }
+            } else {
+                handlePlayerEntityAction(hoverType, selectedEntity);
+            }
+        }
+    }
+
+    private void handlePlayerEntityAction(int hoverType, Entity selectedEntity) {
+        int entityType = selectedEntity.getEntityType();
+
+        if (entityType == LABORER && (hoverType == ENTITY || hoverType == BUILDING)) {
+            action = SELECT;
+        } else if (hoverType == -1) {
+            action = MOVE;
+        } else if (entityType == LABORER) {
+            handleLaborerAction(hoverType);
+        } else {
+            handleCombatAction(hoverType, selectedEntity);
+        }
+    }
+
+    private void handleLaborerAction(int hoverType) {
+        if (hoverType == RESOURCE) {
+            ResourceObject resourceObject = (ResourceObject) hoverGO;
+            action = (resourceObject.getResourceType() == TREE) ? CHOP : MINE;
+        } else if (hoverType == BUILDING) {
+            Building hoverBuilding = (Building) hoverGO;
+            if (hoverBuilding.getBuildingType() == Building.FARM && hoverBuilding.getHealth() == hoverBuilding.getMaxHealth()) {
+                action = FARM;
+            } else if (hoverBuilding.getHealth() < hoverBuilding.getMaxHealth()) {
+                action = REPAIR;
+            }
+        }
+    }
+
+    private void handleCombatAction(int hoverType, Entity selectedEntity) {
+        if (hoverType == ENTITY || hoverType == BUILDING) {
+            Player player = ((SelectableGameObject) hoverGO).getPlayer();
+            if (player.getPlayerNum() != 1) {
+                int attackStyle = getAttackStyle(selectedEntity.getEntityType());
+                action = (attackStyle == MELEE) ? ATTACK_MELEE : ATTACK_RANGED;
             }
         }
     }

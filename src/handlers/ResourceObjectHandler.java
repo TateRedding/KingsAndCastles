@@ -3,6 +3,7 @@ package handlers;
 import entities.Entity;
 import gamestates.Play;
 import objects.Chunk;
+import objects.Map;
 import objects.Player;
 import objects.Tile;
 import resources.*;
@@ -39,7 +40,7 @@ public class ResourceObjectHandler implements Serializable {
         generateCoalPoints();
         generateIronPoints();
         generateRockPoints();
-        //generateTreePoints();
+        generateTreePoints();
 
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
@@ -280,8 +281,24 @@ public class ResourceObjectHandler implements Serializable {
         }
         int newAmt = currAmt - gatherAmt;
         if (newAmt <= 0) {
-            play.getMap().getResourceObjectData()[ro.getTileY()][ro.getTileX()] = null;
+            int tileX = ro.getTileX();
+            int tileY = ro.getTileY();
+            Map map = play.getMap();
+            map.getResourceObjectData()[tileY][tileX] = null;
             e.setResourceToGather(null);
+            if (resourceType == TREE) {
+                for (int y = tileY - 1; y < tileY + 2; y++) {
+                    for (int x = tileX - 1; x < tileX + 2; x++) {
+                        if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length && !(y == tileY && x == tileX)) {
+                            ResourceObject currRO = map.getResourceObjectData()[y][x];
+                            if (currRO != null && currRO.getResourceType() == TREE) {
+                                currRO.setSpriteId(getBitmaskId(x, y));
+                            }
+                        }
+                    }
+                }
+                // loop in 8 surrounding points, if tree, run getBitMask and set it
+            }
         } else
             ro.setCurrentAmount(newAmt);
     }
