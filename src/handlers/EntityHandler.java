@@ -135,7 +135,7 @@ public class EntityHandler implements Serializable {
                 int pixelX = x * TILE_SIZE;
                 int pixelY = y * TILE_SIZE + TOP_BAR_HEIGHT;
                 int tileType = play.getMap().getTileData()[y][x].getTileType();
-                if (play.getGameObjectAt(pixelX, pixelY) == null && tileType != WATER_SAND && tileType != WATER_GRASS) {
+                if (play.getGameObjectAt(pixelX, pixelY, true) == null && tileType != WATER_SAND && tileType != WATER_GRASS) {
                     Point target = new Point(x, y);
                     double xDist = start.getX() - target.getX();
                     double yDist = start.getY() - target.getY();

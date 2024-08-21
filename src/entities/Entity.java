@@ -2,6 +2,7 @@ package entities;
 
 import handlers.EntityHandler;
 import objects.GameObject;
+import objects.SelectableGameObject;
 import objects.Player;
 import pathfinding.AStar;
 import resources.ResourceObject;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import static main.Game.TILE_SIZE;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
-public abstract class Entity extends GameObject implements Serializable {
+public abstract class Entity extends SelectableGameObject implements Serializable {
 
     // Attack Styles
     public static final int NONE = 0;
@@ -44,7 +45,6 @@ public abstract class Entity extends GameObject implements Serializable {
     public static final int WALKING = 2;
 
     protected ArrayList<Point> path;
-    protected Player player;
     protected EntityHandler entityHandler;
 
     protected int entityType;
@@ -64,8 +64,7 @@ public abstract class Entity extends GameObject implements Serializable {
     protected Entity entityToAttack;
 
     public Entity(Player player, float x, float y, int entityType, int id, EntityHandler entityHandler) {
-        super(id);
-        this.player = player;
+        super(player, GameObject.ENTITY, id);
         this.x = x;
         this.y = y;
         this.entityType = entityType;
@@ -357,24 +356,12 @@ public abstract class Entity extends GameObject implements Serializable {
         return entityType;
     }
 
-    public int getHealth() {
-        return health;
-    }
-
-    public void setHealth(int health) {
-        this.health = health;
-    }
-
     public ArrayList<Point> getPath() {
         return path;
     }
 
     public void setPath(ArrayList<Point> path) {
         this.path = path;
-    }
-
-    public Player getPlayer() {
-        return player;
     }
 
     public ResourceObject getResourceToGather() {

@@ -6,6 +6,8 @@ import java.awt.image.BufferedImage;
 
 import entities.Entity;
 import gamestates.Play;
+import objects.GameObject;
+import objects.SelectableGameObject;
 
 public class ActionBar extends BottomBar {
 
@@ -23,10 +25,15 @@ public class ActionBar extends BottomBar {
     @Override
     public void render(Graphics g) {
         super.render(g);
-        if (play.getSelectedEntity() != null)
-            renderSelection(g, Entity.getSprite(play.getSelectedEntity().getEntityType(), Entity.IDLE, Entity.DOWN, 0));
-        if (play.getSelectedBuilding() != null) {
-            //renderSelection(g, building sprite);
+        SelectableGameObject sgo = play.getSelectedSGO();
+        if (sgo != null) {
+            BufferedImage sprite = null;
+            if (sgo.getType() == GameObject.ENTITY)
+                sprite = Entity.getSprite(((Entity) sgo).getEntityType(), Entity.IDLE, Entity.DOWN, 0);
+            else if (sgo.getType() == GameObject.BUILDING) {
+                //sprite = building sprite
+            }
+            renderSelection(g, sprite);
         }
     }
 

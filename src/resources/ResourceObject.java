@@ -21,7 +21,7 @@ public abstract class ResourceObject extends GameObject implements Serializable 
     protected int currentAmount, totalAmount;
 
     public ResourceObject(int tileX, int tileY, int id, int resourceType, int spriteId) {
-        super(id);
+        super(GameObject.RESOURCE, id);
         this.tileX = tileX;
         this.tileY = tileY;
         this.resourceType = resourceType;

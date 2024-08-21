@@ -11,10 +11,7 @@ import handlers.BuildingHandler;
 import handlers.EntityHandler;
 import handlers.ResourceObjectHandler;
 import main.Game;
-import objects.Chunk;
-import objects.GameObject;
-import objects.Map;
-import objects.Player;
+import objects.*;
 import resources.ResourceObject;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
@@ -42,9 +39,8 @@ public class Play extends MapState implements Savable, Serializable {
     private GameStatBar gameStatBar;
 
     private ArrayList<Player> players = new ArrayList<>();
-    private Entity selectedEntity, hoverEntity;
-    private Building selectedBuilding, hoverBuilding;
-    private ResourceObject hoverResourceObject;
+    private SelectableGameObject selectedSGO;
+    private GameObject hoverGO;
 
     private BuildingHandler buildingHandler;
     private EntityHandler entityHandler;
@@ -137,10 +133,8 @@ public class Play extends MapState implements Savable, Serializable {
 
     private void highlightSelectedObject(Graphics g, int xTileOffset, int yTileOffset) {
         Rectangle bounds = null;
-        if (selectedBuilding != null)
-            bounds = selectedBuilding.getHitbox();
-        else if (selectedEntity != null)
-            bounds = selectedEntity.getHitbox();
+        if (selectedSGO != null)
+            bounds = selectedSGO.getHitbox();
         if (bounds != null) {
             g.setColor(new Color(255, 255, 0, 100));
             g.fillRect(bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), bounds.width, bounds.height);
@@ -159,34 +153,44 @@ public class Play extends MapState implements Savable, Serializable {
 
     public void determineAction() {
         action = -1;  // Default action
+        int sgoType = -1;
+        int hoverType = -1;
 
-        if (selectedEntity == null) {
-            if (hoverEntity != null || hoverBuilding != null)
+        if (selectedSGO != null)
+            sgoType = selectedSGO.getType();
+
+        if (hoverGO != null)
+            hoverType = hoverGO.getType();
+
+        if (sgoType == BUILDING || sgoType == -1) {
+            if (hoverType == ENTITY || hoverType == BUILDING)
                 action = SELECT;
-        } else {
-            if (selectedEntity.getPlayer().getPlayerNum() != 1) {
-                if (hoverEntity != null || hoverBuilding != null)
+        } else if (sgoType == ENTITY) {
+            if (selectedSGO.getPlayer().getPlayerNum() != 1) {
+                if (hoverType == ENTITY || hoverType == BUILDING)
                     action = SELECT;
             } else {
-                if (selectedEntity.getEntityType() == LABORER && (hoverBuilding != null || hoverEntity != null))
+                Entity selectedEntity = (Entity) selectedSGO;
+                if (selectedEntity.getEntityType() == LABORER && (hoverType == ENTITY || hoverType == BUILDING))
                     action = SELECT;
-                else if (hoverEntity == null && hoverBuilding == null && hoverResourceObject == null)
+                else if (hoverType == -1)
                     action = MOVE;
                 else if (selectedEntity.getEntityType() == LABORER) {
-                    if (hoverResourceObject != null) {
-                        if (hoverResourceObject.getResourceType() == TREE)
+                    if (hoverType == RESOURCE) {
+                        if (((ResourceObject) hoverGO).getResourceType() == TREE)
                             action = CHOP;
                         else
                             action = MINE;
 
-                    } else if (hoverBuilding != null) {
+                    } else if (hoverType == BUILDING) {
+                        Building hoverBuilding = (Building) hoverGO;
                         if (hoverBuilding.getBuildingType() == Building.FARM && hoverBuilding.getHealth() == hoverBuilding.getMaxHealth())
                             action = FARM;
                         else if (hoverBuilding.getHealth() < hoverBuilding.getMaxHealth())
                             action = REPAIR;
                     }
                 } else {
-                    if ((hoverEntity != null && hoverEntity.getPlayer().getPlayerNum() != 1) || hoverBuilding != null && hoverBuilding.getPlayer().getPlayerNum() != 1) {
+                    if ((hoverType == ENTITY && ((Entity) hoverGO).getPlayer().getPlayerNum() != 1) || hoverType == BUILDING && ((Building) hoverGO).getPlayer().getPlayerNum() != 1) {
                         if (getAttackStyle(selectedEntity.getEntityType()) == MELEE)
                             action = ATTACK_MELEE;
                         else if (getAttackStyle(selectedEntity.getEntityType()) == RANGED)
@@ -201,8 +205,8 @@ public class Play extends MapState implements Savable, Serializable {
         game.getSaveFileHandler().saveGame(this);
     }
 
-    public GameObject getGameObjectAt(int x, int y) {
-        Entity e = entityHandler.getEntityAtCoord(x, y, true);
+    public GameObject getGameObjectAt(int x, int y, boolean checkEntireTile) {
+        Entity e = entityHandler.getEntityAtCoord(x, y, checkEntireTile);
         if (e != null)
             return e;
 
@@ -228,14 +232,17 @@ public class Play extends MapState implements Savable, Serializable {
         if (inGameArea) {
             if (button == MouseEvent.BUTTON1) {
                 if (action == SELECT) {
-                    selectedEntity = hoverEntity;
-                    selectedBuilding = hoverBuilding;
-                } else if (action == MOVE) {
-                    entityHandler.moveTo(selectedEntity, tileX, tileY);
-                } else if (action == CHOP || action == MINE) {
-                    if (!selectedEntity.isTargetInRange(hoverResourceObject))
-                        entityHandler.moveToNearestTile(selectedEntity, tileX, tileY);
-                    selectedEntity.setResourceToGather(hoverResourceObject);
+                    selectedSGO = (SelectableGameObject) hoverGO;
+                } else {
+                    Entity selectedEntity = (Entity) selectedSGO;
+                    if (action == MOVE) {
+                        entityHandler.moveTo(selectedEntity, tileX, tileY);
+                    } else if (action == CHOP || action == MINE) {
+                        ResourceObject hoverResourceObject = (ResourceObject) hoverGO;
+                        if (!selectedEntity.isTargetInRange(hoverResourceObject))
+                            entityHandler.moveToNearestTile(selectedEntity, tileX, tileY);
+                        selectedEntity.setResourceToGather(hoverResourceObject);
+                    }
                 }
             }
         }
@@ -263,9 +270,7 @@ public class Play extends MapState implements Savable, Serializable {
             gameStatBar.mouseMoved(x, y);
 
         if (inGameArea) {
-            hoverBuilding = buildingHandler.getBuildingAt(x, y);
-            hoverEntity = entityHandler.getEntityAtCoord(x, y, false);
-            hoverResourceObject = resourceObjectData[tileY][tileX];
+            hoverGO = getGameObjectAt(x, y, false);
             determineAction();
         }
     }
@@ -302,11 +307,7 @@ public class Play extends MapState implements Savable, Serializable {
         return seed;
     }
 
-    public Building getSelectedBuilding() {
-        return selectedBuilding;
-    }
-
-    public Entity getSelectedEntity() {
-        return selectedEntity;
+    public SelectableGameObject getSelectedSGO() {
+        return selectedSGO;
     }
 }

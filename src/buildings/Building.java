@@ -1,24 +1,22 @@
 package buildings;
 
 import objects.GameObject;
+import objects.SelectableGameObject;
 import objects.Player;
 
 import java.awt.*;
 
 import static main.Game.TILE_SIZE;
 
-public abstract class Building extends GameObject {
+public abstract class Building extends SelectableGameObject {
 
     // Building Types
     public static final int FARM = 0;
 
-    protected Player player;
-
-    protected int x, y, health, maxHealth, buildingType;
+    protected int x, y, buildingType;
 
     public Building(Player player, int id, int x, int y, int buildingType) {
-        super(id);
-        this.player = player;
+        super(player, GameObject.BUILDING, id);
         this.x = x;
         this.y = y;
         this.buildingType = buildingType;
@@ -77,19 +75,4 @@ public abstract class Building extends GameObject {
         this.buildingType = buildingType;
     }
 
-    public int getHealth() {
-        return health;
-    }
-
-    public void setHealth(int health) {
-        this.health = health;
-    }
-
-    public int getMaxHealth() {
-        return maxHealth;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
 }

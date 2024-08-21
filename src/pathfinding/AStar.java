@@ -82,7 +82,7 @@ public class AStar {
         ArrayList<Point> neighbors = new ArrayList<>();
         int gridWidth = play.getMap().getTileData()[0].length;
         int gridHeight = play.getMap().getTileData().length;
-        
+
         boolean isUpOpen = false, isRightOpen = false, isDownOpen = false, isLeftOpen = false;
 
         // Cardinal Directions (Up, Right, Down, Left)
@@ -142,7 +142,7 @@ public class AStar {
         int x = point.x * TILE_SIZE;
         int y = point.y * TILE_SIZE + TOP_BAR_HEIGHT;
         int tileType = play.getMap().getTileData()[point.y][point.x].getTileType();
-        return (tileType != WATER_GRASS && tileType != WATER_SAND && play.getGameObjectAt(x, y) == null);
+        return (tileType != WATER_GRASS && tileType != WATER_SAND && play.getGameObjectAt(x, y, true) == null);
     }
 
     private static double getDistance(Point from, Point to) {
