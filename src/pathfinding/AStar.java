@@ -138,7 +138,7 @@ public class AStar {
         return neighbors;
     }
 
-    private static boolean isPointWalkable(Point point, Play play) {
+    public static boolean isPointWalkable(Point point, Play play) {
         int x = point.x * TILE_SIZE;
         int y = point.y * TILE_SIZE + TOP_BAR_HEIGHT;
         int tileType = play.getMap().getTileData()[point.y][point.x].getTileType();

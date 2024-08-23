@@ -1,6 +1,6 @@
 package handlers;
 
-import entities.Entity;
+import entities.Laborer;
 import gamestates.Play;
 import objects.Chunk;
 import objects.Map;
@@ -15,8 +15,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static entities.Laborer.GATHER_RANGE;
+import static main.Game.TILE_SIZE;
 import static objects.Chunk.MAX_CHUNK_SIZE;
 import static resources.ResourceObject.*;
+import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class ResourceObjectHandler implements Serializable {
 
@@ -268,7 +271,7 @@ public class ResourceObjectHandler implements Serializable {
         return bitmaskId;
     }
 
-    public void gatherResource(Player player, ResourceObject ro, Entity e) {
+    public void gatherResource(Player player, ResourceObject ro, Laborer laborer) {
         int resourceType = ro.getResourceType();
         int currAmt = ro.getCurrentAmount();
         int gatherAmt = Math.min(ResourceObject.getAmountPerAction(resourceType), currAmt);
@@ -280,26 +283,52 @@ public class ResourceObjectHandler implements Serializable {
             case IRON -> player.setIron(player.getIron() + gatherAmt);
         }
         int newAmt = currAmt - gatherAmt;
+
+        // Check if resource is depleted
         if (newAmt <= 0) {
-            int tileX = ro.getTileX();
-            int tileY = ro.getTileY();
+            int roTileX = ro.getTileX();
+            int roTileY = ro.getTileY();
+            int laborerTileX = laborer.getHitbox().x / TILE_SIZE;
+            int laborerTileY = (laborer.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE;
             Map map = play.getMap();
-            map.getResourceObjectData()[tileY][tileX] = null;
-            e.setResourceToGather(null);
-            if (resourceType == TREE) {
-                for (int y = tileY - 1; y < tileY + 2; y++) {
-                    for (int x = tileX - 1; x < tileX + 2; x++) {
-                        if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length && !(y == tileY && x == tileX)) {
+            map.getResourceObjectData()[roTileY][roTileX] = null;
+
+            // If depleted resource is a tree, update its sprite
+            if (resourceType == TREE)
+                for (int y = roTileY - 1; y < roTileY + 2; y++)
+                    for (int x = roTileX - 1; x < roTileX + 2; x++)
+                        if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length && !(y == roTileY && x == roTileX)) {
                             ResourceObject currRO = map.getResourceObjectData()[y][x];
-                            if (currRO != null && currRO.getResourceType() == TREE) {
+                            if (currRO != null && currRO.getResourceType() == TREE)
                                 currRO.setSpriteId(getBitmaskId(x, y));
+                        }
+
+            // Locate the nearest resource of the same type that can be pathed to
+            for (int radius = 1; radius <= GATHER_RANGE; radius++)
+                for (int y = laborerTileY - radius; y <= laborerTileY + radius; y++)
+                    for (int x = laborerTileX - radius; x <= laborerTileX + radius; x++) {
+                        if (Math.abs(x - laborerTileX) != radius && Math.abs(y - laborerTileY) != radius) continue;
+                        if (y >= 0 && y < tileData.length && x >= 0 && x < tileData[0].length) {
+                            ResourceObject currRO = map.getResourceObjectData()[y][x];
+                            if (currRO != null && currRO.getResourceType() == resourceType) {
+                                // Possible resource located
+                                if (laborer.isTargetInActionRangeAndReachable(currRO)) {
+                                    laborer.setResourceToGather(currRO);
+                                    return;
+                                } else {
+                                    // Attempt to locate a path to the resource
+                                    laborer.setPath(laborer.getEntityHandler().getPathToNearestTile(laborer, currRO.getTileX(), currRO.getTileY()));
+                                    if (laborer.getPath() != null) {
+                                        laborer.setResourceToGather(currRO);
+                                        return;
+                                    }
+                                }
                             }
                         }
                     }
-                }
-                // loop in 8 surrounding points, if tree, run getBitMask and set it
-            }
+            laborer.setResourceToGather(null);
         } else
             ro.setCurrentAmount(newAmt);
     }
+
 }

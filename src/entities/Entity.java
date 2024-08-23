@@ -1,6 +1,7 @@
 package entities;
 
 import handlers.EntityHandler;
+import gamestates.Play;
 import objects.GameObject;
 import objects.SelectableGameObject;
 import objects.Player;
@@ -14,6 +15,8 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import static entities.Laborer.CHOPPING;
+import static entities.Laborer.MINING;
 import static main.Game.TILE_SIZE;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
@@ -140,7 +143,9 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         if (isAlive) {
             if (path != null && !path.isEmpty())
                 move();
-            if ((resourceToGather != null && isTargetInRange(resourceToGather)) || entityToAttack != null && isTargetInRange(entityToAttack)) {
+            // Below will need to check if an entity is also in a combat state if entityToAttack is not null.
+            // It may also need to ensure the target is still within attacking range, should the target be moving.
+            if ((resourceToGather != null && (state == CHOPPING || state == MINING)) || entityToAttack != null) {
                 if (state != WALKING && state != IDLE)
                     turnTowardsTarget();
                 actionTick++;
@@ -149,7 +154,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         }
     }
 
-    public boolean isTargetInRange(GameObject target) {
+    public boolean isTargetInActionRangeAndReachable(GameObject target) {
         double startX = x - actionRange * TILE_SIZE;
         double startY = y - actionRange * TILE_SIZE;
         double size = (actionRange * 2 + 1) * TILE_SIZE;
@@ -157,7 +162,32 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         Rectangle targetBounds = target.getHitbox();
         int middleX = targetBounds.x + targetBounds.width / 2;
         int middleY = targetBounds.y + targetBounds.height / 2;
-        return range.contains(middleX, middleY);
+        boolean isInRange = range.contains(middleX, middleY);
+        if (isInRange) {
+            // Check if target is diagonal from this entity
+            int targetTileX = middleX / TILE_SIZE;
+            int targetTileY = (middleY - TOP_BAR_HEIGHT) / TILE_SIZE;
+            int entityTileX = (int) (x / TILE_SIZE);
+            int entityTileY = (int) ((y - TOP_BAR_HEIGHT) / TILE_SIZE);
+            if (targetTileX != entityTileX && targetTileY != entityTileY) {
+                Play play = entityHandler.getPlay();
+                // Check if point in vertical direction of target & cardinal of this entity is open
+                Point verticalPoint = new Point(entityTileX, entityTileY + (targetTileY - entityTileY));
+                boolean isVerticalPointOpen = (play.getGameObjectAt(verticalPoint.x * TILE_SIZE, verticalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(verticalPoint, play));
+                if (isVerticalPointOpen)
+                    return true;
+
+                // Check if point in horizontal direction of target & cardinal of this entity is open
+                Point horizontalPoint = new Point(entityTileX + (targetTileX - entityTileX), entityTileY);
+                boolean isHorizontalPointOpen = (play.getGameObjectAt(horizontalPoint.x * TILE_SIZE, horizontalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(horizontalPoint, play));
+                if (isHorizontalPointOpen)
+                    return true;
+                else
+                    return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     protected void turnTowardsTarget() {
@@ -186,7 +216,8 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     }
 
     protected void move() {
-        state = WALKING;
+        if (state != WALKING)
+            setState(WALKING);
         // Check if Entity has reached the current path point based on movement speed
         int currentX = path.get(0).x * TILE_SIZE;
         int currentY = path.get(0).y * TILE_SIZE + TOP_BAR_HEIGHT;
@@ -212,8 +243,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         }
 
         if (path == null || path.isEmpty()) {
-            state = IDLE;
-            animationFrame = 0;
+            setState(IDLE);
             return;
         }
 
@@ -330,6 +360,8 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
 
     public void setState(int state) {
         this.state = state;
+        this.animationFrame = 0;
+        this.animationTick = 0;
     }
 
     public int getDamage() {
@@ -342,6 +374,10 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
 
     public void setDirection(int direction) {
         this.direction = direction;
+    }
+
+    public EntityHandler getEntityHandler() {
+        return entityHandler;
     }
 
     public Entity getEntityToAttack() {

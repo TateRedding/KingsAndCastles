@@ -6,11 +6,11 @@ import resources.ResourceObject;
 
 public class Laborer extends Entity {
 
+    public static final int GATHER_RANGE = 2;
+
     // Laborer Specific States
     public static final int CHOPPING = 3;
     public static final int MINING = 4;
-
-    private boolean gathering;
 
     public Laborer(Player player, int x, int y, int id, EntityHandler entityHandler) {
         super(player, x, y, LABORER, id, entityHandler);
@@ -43,14 +43,9 @@ public class Laborer extends Entity {
         }
 
         if (resourceToGather != null) {
-            if (state == IDLE) {
-                state = (resourceToGather.getResourceType() == ResourceObject.TREE) ? CHOPPING : MINING;
-                animationFrame = 0;
-            }
-        } else if (state == CHOPPING || state == MINING) {
-            state = IDLE;
-            animationFrame = 0;
-        }
-
+            if (state == IDLE)
+                setState((resourceToGather.getResourceType() == ResourceObject.TREE) ? CHOPPING : MINING);
+        } else if (state == CHOPPING || state == MINING)
+            setState(IDLE);
     }
 }

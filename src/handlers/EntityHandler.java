@@ -39,7 +39,7 @@ public class EntityHandler implements Serializable {
 
             if (e.getActionTick() >= e.getActionTickMax()) {
                 if (e.getEntityType() == LABORER) {
-                    play.getResourceObjectHandler().gatherResource(e.getPlayer(), e.getResourceToGather(), e);
+                    play.getResourceObjectHandler().gatherResource(e.getPlayer(), e.getResourceToGather(), (Laborer) e);
                 } else {
                     attack(e, e.getEntityToAttack());
                 }
@@ -57,6 +57,7 @@ public class EntityHandler implements Serializable {
                 dir = RIGHT;
 
             g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), dir, e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
+
             // Debugging
             drawPath(e, g, xOffset, yOffset);
 //            drawHitbox(e, g, xOffset, yOffset);
@@ -106,7 +107,7 @@ public class EntityHandler implements Serializable {
         }
     }
 
-    public void moveTo(Entity e, int tileX, int tileY) {
+    public void setPathToTile(Entity e, int tileX, int tileY) {
         Point goal = new Point(tileX, tileY);
         if (e.getPath() != null && !e.getPath().isEmpty()) {
             ArrayList<Point> path = AStar.pathFind(e.getPath().get(0), goal, play);
@@ -120,7 +121,7 @@ public class EntityHandler implements Serializable {
         }
     }
 
-    public void moveToNearestTile(Entity e, int tileX, int tileY) {
+    public ArrayList<Point> getPathToNearestTile(Entity e, int tileX, int tileY) {
         HashMap<Double, Point> openTiles = new HashMap<Double, Point>();
         Point start;
         if (e.getPath() != null && !e.getPath().isEmpty())
@@ -150,8 +151,9 @@ public class EntityHandler implements Serializable {
                 }
             }
 
-        if (openTiles.isEmpty())
-            return;
+        if (openTiles.isEmpty()) {
+            return null;
+        }
 
         ArrayList<Double> sorted = new ArrayList<>(openTiles.keySet());
         Collections.sort(sorted);
@@ -162,10 +164,10 @@ public class EntityHandler implements Serializable {
             if (path != null) {
                 if (e.getPath() != null && !e.getPath().isEmpty())
                     path.add(0, e.getPath().get(0));
-                e.setPath(path);
-                return;
+                return path;
             }
         }
+        return null;
     }
 
     public Entity getEntityAtCoord(int x, int y, boolean checkEntireTile) {
@@ -179,16 +181,6 @@ public class EntityHandler implements Serializable {
                 if (e.getHitbox().contains(x, y))
                     return e;
         return null;
-    }
-
-
-    public boolean isEntityInTile(int tileX, int tileY) {
-        for (Entity e : entities) {
-            Rectangle tileBounds = new Rectangle(tileX * TILE_SIZE, tileY * TILE_SIZE + TOP_BAR_HEIGHT, TILE_SIZE, TILE_SIZE);
-            if (e.getHitbox().intersects(tileBounds))
-                return true;
-        }
-        return false;
     }
 
     public ArrayList<Entity> getEntities() {

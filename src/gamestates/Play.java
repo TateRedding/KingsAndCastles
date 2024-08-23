@@ -1,6 +1,7 @@
 package gamestates;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,6 +50,10 @@ public class Play extends MapState implements Savable, Serializable {
     private String name;
     private long seed;
     private int action = -1;
+
+    private int selectIndicatorAnimationFrame = 0;
+    private int selectIndicatorAnimationTick = 0;
+    private int selectIndicatorAnimationTickMax = 15;
 
     private boolean paused;
 
@@ -102,6 +107,15 @@ public class Play extends MapState implements Savable, Serializable {
             actionBar.update();
         if (gameStatBar != null)
             gameStatBar.update();
+
+        selectIndicatorAnimationTick++;
+        if (selectIndicatorAnimationTick > selectIndicatorAnimationTickMax) {
+            selectIndicatorAnimationTick = 0;
+            selectIndicatorAnimationFrame++;
+            if (selectIndicatorAnimationFrame >= ImageLoader.selectIndicator.length)
+                selectIndicatorAnimationFrame = 0;
+        }
+
     }
 
     @Override
@@ -114,6 +128,8 @@ public class Play extends MapState implements Savable, Serializable {
         buildingHandler.render(g, xTileOffset, yTileOffset);
         entityHandler.render(g, xTileOffset, yTileOffset);
 
+        highlightSelectedObject(g, xTileOffset, yTileOffset);
+
         actionBar.render(g);
         gameStatBar.render(g);
 
@@ -121,13 +137,19 @@ public class Play extends MapState implements Savable, Serializable {
 
         if (inGameArea)
             renderAction(g, xTileOffset, yTileOffset);
-        highlightSelectedObject(g, xTileOffset, yTileOffset);
 
     }
 
     private void renderAction(Graphics g, int xOffset, int yOffset) {
-        if (action != -1)
-            g.drawImage(ImageLoader.actions[action], gameX - (xOffset * TILE_SIZE), gameY - (yOffset * TILE_SIZE), null);
+        if (action != -1) {
+            int x = gameX;
+            int y = gameY;
+            if (action == SELECT && hoverGO.getType() == ENTITY) {
+                x = hoverGO.getHitbox().x;
+                y = hoverGO.getHitbox().y;
+            }
+            g.drawImage(ImageLoader.actions[action], x - (xOffset * TILE_SIZE), y - (yOffset * TILE_SIZE), null);
+        }
 
     }
 
@@ -135,10 +157,9 @@ public class Play extends MapState implements Savable, Serializable {
         Rectangle bounds = null;
         if (selectedSGO != null)
             bounds = selectedSGO.getHitbox();
-        if (bounds != null) {
-            g.setColor(new Color(255, 255, 0, 100));
-            g.fillRect(bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), bounds.width, bounds.height);
-        }
+        if (bounds != null)
+            g.drawImage(ImageLoader.selectIndicator[selectIndicatorAnimationFrame], bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), null);
+
     }
 
     private void drawChunkBorders(Graphics g) {
@@ -155,6 +176,9 @@ public class Play extends MapState implements Savable, Serializable {
         action = -1;  // Default action
         int sgoType = (selectedSGO != null) ? selectedSGO.getType() : -1;
         int hoverType = (hoverGO != null) ? hoverGO.getType() : -1;
+
+        if (sgoType == hoverType && selectedSGO != null && hoverGO != null && selectedSGO.getId() == hoverGO.getId())
+            return;
 
         if (sgoType == BUILDING || sgoType == -1) {
             if (hoverType == ENTITY || hoverType == BUILDING) {
@@ -245,15 +269,24 @@ public class Play extends MapState implements Savable, Serializable {
             if (button == MouseEvent.BUTTON1) {
                 if (action == SELECT) {
                     selectedSGO = (SelectableGameObject) hoverGO;
+                    action = -1;
                 } else {
                     Entity selectedEntity = (Entity) selectedSGO;
                     if (action == MOVE) {
-                        entityHandler.moveTo(selectedEntity, tileX, tileY);
+                        entityHandler.setPathToTile(selectedEntity, tileX, tileY);
+                        selectedEntity.setResourceToGather(null);
+                        selectedEntity.setEntityToAttack(null);
                     } else if (action == CHOP || action == MINE) {
                         ResourceObject hoverResourceObject = (ResourceObject) hoverGO;
-                        if (!selectedEntity.isTargetInRange(hoverResourceObject))
-                            entityHandler.moveToNearestTile(selectedEntity, tileX, tileY);
-                        selectedEntity.setResourceToGather(hoverResourceObject);
+                        boolean isInActionRangeAndReachable = selectedEntity.isTargetInActionRangeAndReachable(hoverResourceObject);
+                        ArrayList<Point> path = null;
+                        if (!isInActionRangeAndReachable) {
+                            path = entityHandler.getPathToNearestTile(selectedEntity, tileX, tileY);
+                            if (path != null)
+                                selectedEntity.setPath(path);
+                        }
+                        if (isInActionRangeAndReachable || path != null)
+                            selectedEntity.setResourceToGather(hoverResourceObject);
                     }
                 }
             }
@@ -282,9 +315,16 @@ public class Play extends MapState implements Savable, Serializable {
             gameStatBar.mouseMoved(x, y);
 
         if (inGameArea) {
-            hoverGO = getGameObjectAt(x, y, false);
+            hoverGO = getGameObjectAt(x + (xTileOffset * TILE_SIZE), y + (yTileOffset * TILE_SIZE), false);
             determineAction();
         }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        super.keyPressed(e);
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+            selectedSGO = null;
     }
 
     public ActionBar getActionBar() {

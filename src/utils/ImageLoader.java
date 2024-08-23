@@ -33,6 +33,7 @@ public class ImageLoader {
     private static final String ORES = "ores.png";
     private static final String OVERLAY_BG = "overlay_bg.png";
     private static final String ROCKS = "rocks.png";
+    private static final String SELECT_INDICATOR = "select_indicator.png";
     private static final String SPRITE_BUTTON = "sprite_button.png";
     private static final String TEXT_BOX_BG = "text_box_bg.png";
     private static final String TEXT_BUTTON_LARGE = "text_button_large.png";
@@ -45,7 +46,7 @@ public class ImageLoader {
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
     public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, topBar;
-    public static BufferedImage[] actions, dropDownArrow, iconButton, icons, largeTextButton, ores, rocks, smallTextButton, spriteButton, textBoxBg, trees;
+    public static BufferedImage[] actions, dropDownArrow, iconButton, icons, largeTextButton, ores, rocks, selectIndicator, smallTextButton, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
     public static BufferedImage[][][] laborer;
 
@@ -56,6 +57,7 @@ public class ImageLoader {
         loadTerrainTiles();
         loadUIImages();
 
+        actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 8);
         dropDownArrow = getImageArray(DROP_DOWN_ARROW, 20, 12, 1, 2, 2);
         editorBarButtonSprites = new ArrayList<>(Arrays.asList(
                 tiles.get(GRASS).get(0),
@@ -67,7 +69,7 @@ public class ImageLoader {
                 ores[0]
         ));
         icons = getImageArray(ICONS, 16, 16, 4, 5, 16);
-        actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 8);
+        selectIndicator = getSpriteArray(SELECT_INDICATOR, 0, 0, 1, 4, 4);
     }
 
     private static void loadButtonImages() {
