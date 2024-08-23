@@ -127,6 +127,7 @@ public class Play extends MapState implements Savable, Serializable {
 
         buildingHandler.render(g, xTileOffset, yTileOffset);
         entityHandler.render(g, xTileOffset, yTileOffset);
+        resourceObjectHandler.render(g, xTileOffset, yTileOffset);
 
         highlightSelectedObject(g, xTileOffset, yTileOffset);
 
@@ -165,7 +166,7 @@ public class Play extends MapState implements Savable, Serializable {
     private void drawChunkBorders(Graphics g) {
         Chunk[][] chunks = map.getChunks();
         for (int y = 0; y < chunks.length; y++)
-            for (int x = 0; x < chunks.length; x++) {
+            for (int x = 0; x < chunks[y].length; x++) {
                 Rectangle bounds = chunks[y][x].getBounds();
                 g.setColor(new Color(255, 255, 0));
                 g.drawRect(bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), bounds.width, bounds.height);
@@ -278,14 +279,14 @@ public class Play extends MapState implements Savable, Serializable {
                         selectedEntity.setEntityToAttack(null);
                     } else if (action == CHOP || action == MINE) {
                         ResourceObject hoverResourceObject = (ResourceObject) hoverGO;
-                        boolean isInActionRangeAndReachable = selectedEntity.isTargetInActionRangeAndReachable(hoverResourceObject);
+                        boolean isInRangeAndReachable = selectedEntity.isTargetInRangeAndReachable(hoverResourceObject);
                         ArrayList<Point> path = null;
-                        if (!isInActionRangeAndReachable) {
+                        if (!isInRangeAndReachable) {
                             path = entityHandler.getPathToNearestTile(selectedEntity, tileX, tileY);
                             if (path != null)
                                 selectedEntity.setPath(path);
                         }
-                        if (isInActionRangeAndReachable || path != null)
+                        if (isInRangeAndReachable || path != null)
                             selectedEntity.setResourceToGather(hoverResourceObject);
                     }
                 }

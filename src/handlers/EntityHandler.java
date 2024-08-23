@@ -141,12 +141,14 @@ public class EntityHandler implements Serializable {
                     double xDist = start.getX() - target.getX();
                     double yDist = start.getY() - target.getY();
                     double cSquared = (xDist * xDist) + (yDist * yDist);
-
                     boolean isCardinal = (x == tileX || y == tileY);
+
+                    if (!isCardinal && !isDiagonalOpen(new Point(x, y), new Point(tileX, tileY)))
+                        continue;
+
                     double distance = Math.sqrt(cSquared);
                     if (!isCardinal)
                         distance *= 2;
-
                     openTiles.put(distance, target);
                 }
             }
@@ -168,6 +170,18 @@ public class EntityHandler implements Serializable {
             }
         }
         return null;
+    }
+
+    public boolean isDiagonalOpen(Point origin, Point target) {
+        // Check if point in vertical direction of target & cardinal of the origin is open
+        Point verticalPoint = new Point(origin.x, origin.y + (target.y - origin.y));
+        boolean isVerticalPointOpen = (play.getGameObjectAt(verticalPoint.x * TILE_SIZE, verticalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(verticalPoint, play));
+        if (isVerticalPointOpen)
+            return true;
+
+        // Check if point in horizontal direction of target & cardinal of the origin is open
+        Point horizontalPoint = new Point(origin.x + (target.x - origin.x), origin.y);
+        return (play.getGameObjectAt(horizontalPoint.x * TILE_SIZE, horizontalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(horizontalPoint, play));
     }
 
     public Entity getEntityAtCoord(int x, int y, boolean checkEntireTile) {

@@ -1,7 +1,7 @@
 package entities;
 
-import handlers.EntityHandler;
 import gamestates.Play;
+import handlers.EntityHandler;
 import objects.GameObject;
 import objects.SelectableGameObject;
 import objects.Player;
@@ -154,7 +154,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         }
     }
 
-    public boolean isTargetInActionRangeAndReachable(GameObject target) {
+    public boolean isTargetInRangeAndReachable(GameObject target) {
         double startX = x - actionRange * TILE_SIZE;
         double startY = y - actionRange * TILE_SIZE;
         double size = (actionRange * 2 + 1) * TILE_SIZE;
@@ -169,22 +169,8 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
             int targetTileY = (middleY - TOP_BAR_HEIGHT) / TILE_SIZE;
             int entityTileX = (int) (x / TILE_SIZE);
             int entityTileY = (int) ((y - TOP_BAR_HEIGHT) / TILE_SIZE);
-            if (targetTileX != entityTileX && targetTileY != entityTileY) {
-                Play play = entityHandler.getPlay();
-                // Check if point in vertical direction of target & cardinal of this entity is open
-                Point verticalPoint = new Point(entityTileX, entityTileY + (targetTileY - entityTileY));
-                boolean isVerticalPointOpen = (play.getGameObjectAt(verticalPoint.x * TILE_SIZE, verticalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(verticalPoint, play));
-                if (isVerticalPointOpen)
-                    return true;
-
-                // Check if point in horizontal direction of target & cardinal of this entity is open
-                Point horizontalPoint = new Point(entityTileX + (targetTileX - entityTileX), entityTileY);
-                boolean isHorizontalPointOpen = (play.getGameObjectAt(horizontalPoint.x * TILE_SIZE, horizontalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(horizontalPoint, play));
-                if (isHorizontalPointOpen)
-                    return true;
-                else
-                    return false;
-            }
+            if (targetTileX != entityTileX && targetTileY != entityTileY)
+                return entityHandler.isDiagonalOpen(new Point(entityTileX, entityTileY), new Point(targetTileX, targetTileY));
             return true;
         }
         return false;
