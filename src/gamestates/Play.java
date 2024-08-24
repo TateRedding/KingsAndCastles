@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import buildings.Building;
+import buildings.Farm;
 import entities.Entity;
 import handlers.BuildingHandler;
 import handlers.EntityHandler;
@@ -21,12 +22,14 @@ import utils.Savable;
 
 import static entities.Entity.*;
 import static main.Game.TILE_SIZE;
+import static objects.Tile.WATER_GRASS;
+import static objects.Tile.WATER_SAND;
 import static resources.ResourceObject.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class Play extends MapState implements Savable, Serializable {
 
-    // Actions
+    // Click actions
     public static final int SELECT = 0;
     private static final int MOVE = 1;
     private static final int CHOP = 2;
@@ -49,11 +52,15 @@ public class Play extends MapState implements Savable, Serializable {
 
     private String name;
     private long seed;
-    private int action = -1;
+    private int clickAction = -1;
 
-    private int selectIndicatorAnimationFrame = 0;
-    private int selectIndicatorAnimationTick = 0;
-    private int selectIndicatorAnimationTickMax = 15;
+    private boolean canBuildOnMouseTile = false;
+    private int selectedBuildingType = -1;
+    private int buildingID = 1;
+
+    private int indicatorAnimationFrame = 0;
+    private int indicatorAnimationTick = 0;
+    private int indicatorAnimationTickMax = 15;
 
     private boolean paused;
 
@@ -108,12 +115,12 @@ public class Play extends MapState implements Savable, Serializable {
         if (gameStatBar != null)
             gameStatBar.update();
 
-        selectIndicatorAnimationTick++;
-        if (selectIndicatorAnimationTick > selectIndicatorAnimationTickMax) {
-            selectIndicatorAnimationTick = 0;
-            selectIndicatorAnimationFrame++;
-            if (selectIndicatorAnimationFrame >= ImageLoader.selectIndicator.length)
-                selectIndicatorAnimationFrame = 0;
+        indicatorAnimationTick++;
+        if (indicatorAnimationTick > indicatorAnimationTickMax) {
+            indicatorAnimationTick = 0;
+            indicatorAnimationFrame++;
+            if (indicatorAnimationFrame >= ImageLoader.selectIndicator.length)
+                indicatorAnimationFrame = 0;
         }
 
     }
@@ -137,21 +144,32 @@ public class Play extends MapState implements Savable, Serializable {
         miniMap.render(g, xTileOffset, yTileOffset);
 
         if (inGameArea)
-            renderAction(g, xTileOffset, yTileOffset);
-
+            if (selectedBuildingType == -1)
+                renderAction(g, xTileOffset, yTileOffset);
+            else
+                renderSelectedBuilding(g);
     }
 
     private void renderAction(Graphics g, int xOffset, int yOffset) {
-        if (action != -1) {
+        if (clickAction != -1) {
             int x = gameX;
             int y = gameY;
-            if (action == SELECT && hoverGO.getType() == ENTITY) {
+            if (clickAction == SELECT && hoverGO.getType() == ENTITY) {
                 x = hoverGO.getHitbox().x;
                 y = hoverGO.getHitbox().y;
             }
-            g.drawImage(ImageLoader.actions[action], x - (xOffset * TILE_SIZE), y - (yOffset * TILE_SIZE), null);
+            g.drawImage(ImageLoader.actions[clickAction], x - (xOffset * TILE_SIZE), y - (yOffset * TILE_SIZE), null);
         }
 
+    }
+
+    private void renderSelectedBuilding(Graphics g) {
+        if (canBuildOnMouseTile)
+            g.setColor(new Color(0, 255, 0, 50));
+        else
+            g.setColor(new Color(255, 0, 0, 50));
+        g.drawImage(ImageLoader.buildings[selectedBuildingType], mouseX, mouseY, null);
+        g.fillRect(mouseX, mouseY, TILE_SIZE, TILE_SIZE);
     }
 
     private void highlightSelectedObject(Graphics g, int xTileOffset, int yTileOffset) {
@@ -159,7 +177,7 @@ public class Play extends MapState implements Savable, Serializable {
         if (selectedSGO != null)
             bounds = selectedSGO.getHitbox();
         if (bounds != null)
-            g.drawImage(ImageLoader.selectIndicator[selectIndicatorAnimationFrame], bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), null);
+            g.drawImage(ImageLoader.selectIndicator[indicatorAnimationFrame], bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), null);
 
     }
 
@@ -174,7 +192,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public void determineAction() {
-        action = -1;  // Default action
+        clickAction = -1;  // Default action
         int sgoType = (selectedSGO != null) ? selectedSGO.getType() : -1;
         int hoverType = (hoverGO != null) ? hoverGO.getType() : -1;
 
@@ -183,7 +201,7 @@ public class Play extends MapState implements Savable, Serializable {
 
         if (sgoType == BUILDING || sgoType == -1) {
             if (hoverType == ENTITY || hoverType == BUILDING) {
-                action = SELECT;
+                clickAction = SELECT;
             }
             return;
         }
@@ -192,7 +210,7 @@ public class Play extends MapState implements Savable, Serializable {
             Entity selectedEntity = (Entity) selectedSGO;
             if (selectedSGO.getPlayer().getPlayerNum() != 1) {
                 if (hoverType == ENTITY || hoverType == BUILDING) {
-                    action = SELECT;
+                    clickAction = SELECT;
                 }
             } else {
                 handlePlayerEntityAction(hoverType, selectedEntity);
@@ -204,9 +222,9 @@ public class Play extends MapState implements Savable, Serializable {
         int entityType = selectedEntity.getEntityType();
 
         if (entityType == LABORER && (hoverType == ENTITY || hoverType == BUILDING)) {
-            action = SELECT;
+            clickAction = SELECT;
         } else if (hoverType == -1) {
-            action = MOVE;
+            clickAction = MOVE;
         } else if (entityType == LABORER) {
             handleLaborerAction(hoverType);
         } else {
@@ -217,13 +235,13 @@ public class Play extends MapState implements Savable, Serializable {
     private void handleLaborerAction(int hoverType) {
         if (hoverType == RESOURCE) {
             ResourceObject resourceObject = (ResourceObject) hoverGO;
-            action = (resourceObject.getResourceType() == TREE) ? CHOP : MINE;
+            clickAction = (resourceObject.getResourceType() == TREE) ? CHOP : MINE;
         } else if (hoverType == BUILDING) {
             Building hoverBuilding = (Building) hoverGO;
             if (hoverBuilding.getBuildingType() == Building.FARM && hoverBuilding.getHealth() == hoverBuilding.getMaxHealth()) {
-                action = FARM;
+                clickAction = FARM;
             } else if (hoverBuilding.getHealth() < hoverBuilding.getMaxHealth()) {
-                action = REPAIR;
+                clickAction = REPAIR;
             }
         }
     }
@@ -233,7 +251,7 @@ public class Play extends MapState implements Savable, Serializable {
             Player player = ((SelectableGameObject) hoverGO).getPlayer();
             if (player.getPlayerNum() != 1) {
                 int attackStyle = getAttackStyle(selectedEntity.getEntityType());
-                action = (attackStyle == MELEE) ? ATTACK_MELEE : ATTACK_RANGED;
+                clickAction = (attackStyle == MELEE) ? ATTACK_MELEE : ATTACK_RANGED;
             }
         }
     }
@@ -254,6 +272,16 @@ public class Play extends MapState implements Savable, Serializable {
         return resourceObjectData[(y - TOP_BAR_HEIGHT) / TILE_SIZE][x / TILE_SIZE];
     }
 
+    private boolean isTileBuildable() {
+        if (getGameObjectAt(gameX, gameY, true) != null)
+            return false;
+
+        int tileX = gameX / TILE_SIZE;
+        int tileY = (gameY - TOP_BAR_HEIGHT) / TILE_SIZE;
+        int tileType = map.getTileData()[tileY][tileX].getTileType();
+        return (tileType != WATER_GRASS && tileType != WATER_SAND);
+    }
+
     @Override
     public void mousePressed(int x, int y, int button) {
         super.mousePressed(x, y, button);
@@ -268,16 +296,24 @@ public class Play extends MapState implements Savable, Serializable {
         super.mouseReleased(x, y, button);
         if (inGameArea) {
             if (button == MouseEvent.BUTTON1) {
-                if (action == SELECT) {
+                if (selectedBuildingType != -1 && canBuildOnMouseTile) {
+                    switch (selectedBuildingType) {
+                        case Building.FARM:
+                            buildingHandler.getBuildings().add(new Farm(players.get(1), buildingID++, gameX, gameY));
+                    }
+                }
+
+                if (clickAction == SELECT) {
                     selectedSGO = (SelectableGameObject) hoverGO;
-                    action = -1;
+                    clickAction = -1;
+                    selectedBuildingType = -1;
                 } else {
                     Entity selectedEntity = (Entity) selectedSGO;
-                    if (action == MOVE) {
+                    if (clickAction == MOVE) {
                         entityHandler.setPathToTile(selectedEntity, tileX, tileY);
                         selectedEntity.setResourceToGather(null);
                         selectedEntity.setEntityToAttack(null);
-                    } else if (action == CHOP || action == MINE) {
+                    } else if (clickAction == CHOP || clickAction == MINE) {
                         ResourceObject hoverResourceObject = (ResourceObject) hoverGO;
                         boolean isInRangeAndReachable = selectedEntity.isTargetInRangeAndReachable(hoverResourceObject);
                         ArrayList<Point> path = null;
@@ -316,16 +352,21 @@ public class Play extends MapState implements Savable, Serializable {
             gameStatBar.mouseMoved(x, y);
 
         if (inGameArea) {
-            hoverGO = getGameObjectAt(x + (xTileOffset * TILE_SIZE), y + (yTileOffset * TILE_SIZE), false);
-            determineAction();
+            if (selectedBuildingType == -1) {
+                hoverGO = getGameObjectAt(x + (xTileOffset * TILE_SIZE), y + (yTileOffset * TILE_SIZE), false);
+                determineAction();
+            } else
+                canBuildOnMouseTile = isTileBuildable();
         }
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
         super.keyPressed(e);
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             selectedSGO = null;
+            selectedBuildingType = -1;
+        }
     }
 
     public ActionBar getActionBar() {
@@ -358,6 +399,10 @@ public class Play extends MapState implements Savable, Serializable {
 
     public long getSeed() {
         return seed;
+    }
+
+    public void setSelectedBuildingType(int selectedBuildingType) {
+        this.selectedBuildingType = selectedBuildingType;
     }
 
     public SelectableGameObject getSelectedSGO() {

@@ -3,10 +3,13 @@ package handlers;
 import buildings.Building;
 import entities.Entity;
 import gamestates.Play;
+import utils.ImageLoader;
 
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import static main.Game.TILE_SIZE;
 
 public class BuildingHandler implements Serializable {
 
@@ -22,7 +25,8 @@ public class BuildingHandler implements Serializable {
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
-
+        for (Building b : buildings)
+            g.drawImage(ImageLoader.buildings[b.getBuildingType()], b.getHitbox().x - (xOffset * TILE_SIZE), b.getHitbox().y - (yOffset * TILE_SIZE), null);
     }
 
     public Building getBuildingAt(int x, int y) {
