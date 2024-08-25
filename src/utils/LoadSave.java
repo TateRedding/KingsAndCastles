@@ -19,6 +19,7 @@ import javax.imageio.ImageIO;
 import gamestates.Play;
 import main.Game;
 import objects.Map;
+import objects.SelectableGameObject;
 import ui.MiniMap;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
@@ -216,11 +217,18 @@ public class LoadSave {
         ActionBar actionBar = play.getActionBar();
         GameStatBar gameStatBar = play.getGameStatBar();
         MiniMap miniMap = play.getMiniMap();
+        int selectedBuildingType = play.getSelectedBuildingType();
+        SelectableGameObject selectedSGO = play.getSelectedSGO();
 
         play.setGame(null);
         play.setActionBar(null);
         play.setGameStatBar(null);
         play.setMiniMap(null);
+        play.setSelectedBuildingType(-1);
+        play.setSelectedSGO(null);
+
+        play.setClickAction(-1);
+        play.setBuildingSelection(null);
 
         try {
             FileOutputStream fileStream = new FileOutputStream(gameFile);
@@ -236,6 +244,8 @@ public class LoadSave {
         play.setActionBar(actionBar);
         play.setGameStatBar(gameStatBar);
         play.setMiniMap(miniMap);
+        play.setSelectedBuildingType(selectedBuildingType);
+        play.setSelectedSGO(selectedSGO);
     }
 
     public static void createGameFile(Play game, File gameFile) {

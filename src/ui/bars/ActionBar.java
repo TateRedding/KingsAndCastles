@@ -14,11 +14,14 @@ import objects.SelectableGameObject;
 import ui.buttons.Button;
 import ui.buttons.ImageButton;
 import ui.buttons.TextButton;
+import ui.overlays.BuildingSelection;
+import ui.overlays.Overlay;
 import utils.ImageLoader;
 import utils.RenderText;
 
 import static buildings.Building.*;
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
+import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 import static ui.buttons.Button.*;
 import static ui.buttons.Button.SPRITE;
 
@@ -41,11 +44,10 @@ public class ActionBar extends BottomBar {
         int xOffset = 128;
         float yOffset = (float) (BOTTOM_BAR_HEIGHT - (getButtonHeight(TEXT_SMALL_LONG) + getButtonHeight(SPRITE))) / 3;
 
-        BufferedImage sprite = getBuildingSprite(selectedBuildingType);
         int buildButtonXStart = xOffset + (getButtonWidth(TEXT_SMALL_LONG) - getButtonWidth(SPRITE)) / 2;
         float maxSize = 64.0f;
-        float scale = maxSize / Math.max((float) getBuildingWidth(selectedBuildingType) * TILE_SIZE, (float) getBuildingHeight(selectedBuildingType) * TILE_SIZE);
-        buildButton = new ImageButton(SPRITE, buildButtonXStart, BOTTOM_BAR_Y + (int) yOffset, sprite, scale);
+        float scale = maxSize / Math.max((float) getBuildingTileWidth(selectedBuildingType) * TILE_SIZE, (float) getBuildingTileHeight(selectedBuildingType) * TILE_SIZE);
+        buildButton = new ImageButton(SPRITE, buildButtonXStart, BOTTOM_BAR_Y + (int) yOffset, ImageLoader.buildings[selectedBuildingType], scale);
 
         buildingInterfaceButton = new TextButton(TEXT_SMALL_LONG, xOffset, BOTTOM_BAR_Y + getButtonHeight(SPRITE) + (int) (yOffset * 2), 24.0f, getBuildingName(selectedBuildingType));
 
@@ -145,8 +147,14 @@ public class ActionBar extends BottomBar {
                 play.setSelectedBuildingType(selectedBuildingType);
                 play.setSelectedSGO(null);
             }
-            if (buildingInterfaceButton.getBounds().contains(x, y) && buildingInterfaceButton.isMousePressed())
+            if (buildingInterfaceButton.getBounds().contains(x, y) && buildingInterfaceButton.isMousePressed()) {
+                if (play.getBuildingSelection() == null) {
+                    int xStart = (GAME_AREA_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_LARGE)) / 2;
+                    int yStart = TOP_BAR_HEIGHT + (GAME_AREA_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_LARGE)) / 2;
+                    play.setBuildingSelection(new BuildingSelection(xStart, yStart, play));
+                }
                 play.setShowBuildingSelection(true);
+            }
         }
         save.reset(x, y);
         for (Button b : buttons)

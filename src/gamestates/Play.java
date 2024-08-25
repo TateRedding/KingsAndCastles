@@ -115,10 +115,6 @@ public class Play extends MapState implements Savable, Serializable {
         this.entityHandler = new EntityHandler(this);
         this.gameStatBar = new GameStatBar(this);
         this.resourceObjectHandler = new ResourceObjectHandler(this);
-
-        int xStart = (GAME_AREA_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_LARGE) / 2);
-        int yStart = TOP_BAR_HEIGHT + (GAME_AREA_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_LARGE) / 2);
-        this.buildingSelection = new BuildingSelection(xStart, yStart, this);
     }
 
     @Override
@@ -139,7 +135,7 @@ public class Play extends MapState implements Savable, Serializable {
                 indicatorAnimationFrame = 0;
         }
 
-        if (showBuildingSelection)
+        if (showBuildingSelection && buildingSelection != null)
             buildingSelection.update();
 
     }
@@ -168,7 +164,7 @@ public class Play extends MapState implements Savable, Serializable {
             else
                 renderSelectedBuilding(g);
 
-        if (showBuildingSelection)
+        if (showBuildingSelection && buildingSelection != null)
             buildingSelection.render(g);
     }
 
@@ -279,18 +275,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public void saveGame() {
-        int sbt = selectedBuildingType;
-        SelectableGameObject sgo = selectedSGO;
-
-        selectedBuildingType = -1;
-        clickAction = -1;
-        selectedSGO = null;
-
         game.getSaveFileHandler().saveGame(this);
-
-        selectedBuildingType = sbt;
-        selectedSGO = sgo;
-
     }
 
     public GameObject getGameObjectAt(int x, int y, boolean checkEntireTile) {
@@ -347,9 +332,9 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mousePressed(int x, int y, int button) {
-        if (showBuildingSelection)
+        if (showBuildingSelection && buildingSelection != null)
             buildingSelection.mousePressed(x, y, button);
-        else
+        else if (!showBuildingSelection)
             super.mousePressed(x, y, button);
 
         if (actionBar.getBounds().contains(x, y))
@@ -360,9 +345,9 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mouseReleased(int x, int y, int button) {
-        if (showBuildingSelection)
+        if (showBuildingSelection && buildingSelection != null)
             buildingSelection.mouseReleased(x, y, button);
-        else {
+        else if (!showBuildingSelection) {
             super.mouseReleased(x, y, button);
             if (inGameArea) {
                 if (button == MouseEvent.BUTTON1) {
@@ -407,7 +392,7 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mouseDragged(int x, int y) {
-        if (showBuildingSelection)
+        if (showBuildingSelection && buildingSelection != null)
             return;
         super.mouseDragged(x, y);
         if (inGameArea) {
@@ -425,9 +410,9 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mouseMoved(int x, int y) {
-        if (showBuildingSelection)
+        if (showBuildingSelection && buildingSelection != null)
             buildingSelection.mouseMoved(x, y);
-        else {
+        else if (!showBuildingSelection) {
             super.mouseMoved(x, y);
             if (inGameArea) {
                 if (selectedBuildingType == -1) {
@@ -445,6 +430,13 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     @Override
+    public void mouseWheelMoved(int dir, int amt) {
+        super.mouseWheelMoved(dir, amt);
+        if (showBuildingSelection && buildingSelection != null)
+            buildingSelection.mouseWheelMoved(dir, amt);
+    }
+
+    @Override
     public void keyPressed(KeyEvent e) {
         super.keyPressed(e);
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
@@ -459,6 +451,18 @@ public class Play extends MapState implements Savable, Serializable {
 
     public void setActionBar(ActionBar actionBar) {
         this.actionBar = actionBar;
+    }
+
+    public BuildingSelection getBuildingSelection() {
+        return buildingSelection;
+    }
+
+    public void setBuildingSelection(BuildingSelection buildingSelection) {
+        this.buildingSelection = buildingSelection;
+    }
+
+    public void setClickAction(int clickAction) {
+        this.clickAction = clickAction;
     }
 
     public GameStatBar getGameStatBar() {
@@ -483,6 +487,10 @@ public class Play extends MapState implements Savable, Serializable {
 
     public long getSeed() {
         return seed;
+    }
+
+    public int getSelectedBuildingType() {
+        return selectedBuildingType;
     }
 
     public void setSelectedBuildingType(int selectedBuildingType) {

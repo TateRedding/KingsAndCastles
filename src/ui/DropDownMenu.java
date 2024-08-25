@@ -94,12 +94,13 @@ public class DropDownMenu {
         if (expanded) {
             g.drawImage(ImageLoader.dropDownBodyLarge, x, y + DD_TOP_HEIGHT, null);
             renderOptions(g);
-            renderScrollBar(g);
             if (hoverIndex != -1) {
                 Rectangle currRowBounds = rowBounds.get(hoverIndex);
                 g.setColor(new Color(0, 0, 0, 75));
                 g.fillRect(currRowBounds.x, currRowBounds.y, currRowBounds.width, currRowBounds.height);
             }
+            if (options.length > numRows)
+                renderScrollBar(g);
         }
     }
 
@@ -201,9 +202,8 @@ public class DropDownMenu {
 
     public void mouseWheelMoved(int dir, int amt) {
         if (dir == -1) {
-            if (startIndex > 0) {
+            if (startIndex > 0)
                 startIndex--;
-            }
         } else if (startIndex < maxStartIndex)
             startIndex++;
 

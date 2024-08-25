@@ -1,5 +1,6 @@
 package utils;
 
+import static main.Game.TILE_SIZE;
 import static objects.Tile.*;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static ui.TextBox.*;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
+import buildings.Building;
 import objects.Map;
 import objects.Tile;
 import ui.TextBox;
@@ -54,11 +56,22 @@ public class ImageLoader {
     public static BufferedImage[][][] laborer;
 
     public static void loadImages() {
+        loadBuildingImages();
         loadButtonImages();
         loadResourceImages();
         loadEntityImages();
         loadTerrainTiles();
         loadUIImages();
+    }
+
+    private static void loadBuildingImages() {
+        BufferedImage atlas = LoadSave.loadImage(BUILDINGS);
+        int maxBuildings = 8;
+        buildings = new BufferedImage[maxBuildings];
+        for (int i = 0; i < maxBuildings; i++) {
+            int width = Building.getBuildingTileWidth(i) * TILE_SIZE;
+            buildings[i] = atlas.getSubimage(i * TILE_SIZE * 2, 0, Building.getBuildingTileWidth(i) * TILE_SIZE, Building.getBuildingTileHeight(i) * TILE_SIZE);
+        }
     }
 
     private static void loadButtonImages() {
@@ -131,7 +144,6 @@ public class ImageLoader {
 
         // Misc
         actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 8);
-        buildings = getSpriteArray(BUILDINGS, 0, 0, 1, 1, 1);
         editorBarButtonSprites = new ArrayList<>(Arrays.asList(
                 tiles.get(GRASS).get(0),
                 tiles.get(DIRT).get(0),
@@ -219,39 +231,6 @@ public class ImageLoader {
                     temp[dir][y][x] = atlas.getSubimage(x * spriteSize, yStart + y * spriteSize, spriteSize, spriteSize);
             yStart += spriteSize * 4;
         }
-        return temp;
-    }
-
-    /*
-        private static BufferedImage[] getVerticalImageArray(String fileName, int xStart, int width, int height,
-                                                             int amount) {
-            BufferedImage atlas = LoadSave.loadImage(fileName);
-            BufferedImage[] temp = new BufferedImage[amount];
-
-            for (int i = 0; i < temp.length; i++) {
-                temp[i] = atlas.getSubimage(xStart, i * height, width, height);
-            }
-            return temp;
-        }
-
-        private static BufferedImage[] getHorizontalImageArray(String fileName, int yStart, int width, int height,
-                                                               int amount) {
-            BufferedImage atlas = LoadSave.loadImage(fileName);
-            BufferedImage[] temp = new BufferedImage[amount];
-
-            for (int i = 0; i < temp.length; i++) {
-                temp[i] = atlas.getSubimage(i * width, yStart, width, height);
-            }
-            return temp;
-        }
-    */
-    private static BufferedImage[][] get2DImageArray(String fileName, int width, int height, int cols, int rows) {
-        BufferedImage atlas = LoadSave.loadImage(fileName);
-        BufferedImage[][] temp = new BufferedImage[cols][rows];
-
-        for (int i = 0; i < temp.length; i++)
-            for (int j = 0; j < temp[0].length; j++)
-                temp[i][j] = atlas.getSubimage(i * width, j * height, width, height);
         return temp;
     }
 
