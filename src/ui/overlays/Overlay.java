@@ -3,8 +3,8 @@ package ui.overlays;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
-import ui.buttons.Button;
 import ui.buttons.ImageButton;
 import utils.ImageLoader;
 
@@ -12,19 +12,46 @@ import static ui.buttons.Button.*;
 
 public abstract class Overlay {
 
-    public static final int OVERLAY_HEIGHT = 288;
-    public static final int OVERLAY_WIDTH = 480;
+    public static final int OVERLAY_SMALL = 0;
+    public static final int OVERLAY_LARGE = 1;
 
     protected int x, y;
+    protected int size;
     protected Rectangle bounds;
     protected ImageButton exButton;
 
-    public Overlay(int x, int y) {
+    public Overlay(int size, int x, int y) {
+        this.size = size;
         this.x = x;
         this.y = y;
-        this.bounds = new Rectangle(x, y, OVERLAY_WIDTH, OVERLAY_HEIGHT);
+        int width = getOverlayWidth(size);
+        this.bounds = new Rectangle(x, y, width, getOverlayHeight(size));
         int offset = 10;
-        this.exButton = new ImageButton(ICON, x + OVERLAY_WIDTH - getButtonWidth(ICON) - offset, y + offset, ImageLoader.icons[ICON_EX], 1.0f);
+        this.exButton = new ImageButton(ICON, x + width - getButtonWidth(ICON) - offset, y + offset, ImageLoader.icons[ICON_EX], 1.0f);
+    }
+
+    public static int getOverlayHeight(int size) {
+        return switch (size) {
+            case OVERLAY_SMALL -> 288;
+            case OVERLAY_LARGE -> 576;
+            default -> 0;
+        };
+    }
+
+    public static int getOverlayWidth(int size) {
+        return switch (size) {
+            case OVERLAY_SMALL -> 480;
+            case OVERLAY_LARGE -> 800;
+            default -> 0;
+        };
+    }
+
+    public static BufferedImage getBackgroundImage(int size) {
+        return switch (size) {
+            case OVERLAY_SMALL -> ImageLoader.overlayBgSmall;
+            case OVERLAY_LARGE -> ImageLoader.overlayBgLarge;
+            default -> null;
+        };
     }
 
     public void update() {
@@ -32,7 +59,9 @@ public abstract class Overlay {
     }
 
     public void render(Graphics g) {
-        g.drawImage(ImageLoader.overlayBg, x, y, null);
+        BufferedImage bg = getBackgroundImage(size);
+        if (bg != null)
+            g.drawImage(bg, x, y, null);
         exButton.render(g);
     }
 

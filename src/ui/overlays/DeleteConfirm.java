@@ -22,7 +22,7 @@ public class DeleteConfirm extends Overlay {
     private int choice = -1;
 
     public DeleteConfirm(String deleteName, int x, int y) {
-        super(x, y);
+        super(OVERLAY_SMALL, x, y);
         this.deleteName = deleteName;
 
         float buttonFontSize = 62f;

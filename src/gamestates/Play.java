@@ -17,11 +17,13 @@ import objects.*;
 import resources.ResourceObject;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
+import ui.overlays.BuildingSelection;
+import ui.overlays.Overlay;
 import utils.ImageLoader;
 import utils.Savable;
 
 import static entities.Entity.*;
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
 import static resources.ResourceObject.*;
@@ -62,6 +64,9 @@ public class Play extends MapState implements Savable, Serializable {
     private int indicatorAnimationTick = 0;
     private int indicatorAnimationTickMax = 15;
 
+    private BuildingSelection buildingSelection;
+    private boolean showBuildingSelection;
+
     private boolean paused;
 
     public Play(Game game, Map map, String name) {
@@ -84,6 +89,10 @@ public class Play extends MapState implements Savable, Serializable {
         this.entityHandler = new EntityHandler(this);
         this.gameStatBar = new GameStatBar(this);
         this.resourceObjectHandler = new ResourceObjectHandler(this);
+
+        int xStart = (GAME_AREA_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_LARGE)) / 2;
+        int yStart = TOP_BAR_HEIGHT + (GAME_AREA_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_LARGE)) / 2;
+        this.buildingSelection = new BuildingSelection(xStart, yStart, this);
     }
 
     public Play(Game game, Map map, String name, long seed) {
@@ -106,6 +115,10 @@ public class Play extends MapState implements Savable, Serializable {
         this.entityHandler = new EntityHandler(this);
         this.gameStatBar = new GameStatBar(this);
         this.resourceObjectHandler = new ResourceObjectHandler(this);
+
+        int xStart = (GAME_AREA_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_LARGE) / 2);
+        int yStart = TOP_BAR_HEIGHT + (GAME_AREA_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_LARGE) / 2);
+        this.buildingSelection = new BuildingSelection(xStart, yStart, this);
     }
 
     @Override
@@ -125,6 +138,9 @@ public class Play extends MapState implements Savable, Serializable {
             if (indicatorAnimationFrame >= ImageLoader.selectIndicator.length)
                 indicatorAnimationFrame = 0;
         }
+
+        if (showBuildingSelection)
+            buildingSelection.update();
 
     }
 
@@ -151,6 +167,9 @@ public class Play extends MapState implements Savable, Serializable {
                 renderAction(g, xTileOffset, yTileOffset);
             else
                 renderSelectedBuilding(g);
+
+        if (showBuildingSelection)
+            buildingSelection.render(g);
     }
 
     private void renderAction(Graphics g, int xOffset, int yOffset) {
@@ -328,7 +347,11 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mousePressed(int x, int y, int button) {
-        super.mousePressed(x, y, button);
+        if (showBuildingSelection)
+            buildingSelection.mousePressed(x, y, button);
+        else
+            super.mousePressed(x, y, button);
+
         if (actionBar.getBounds().contains(x, y))
             actionBar.mousePressed(x, y, button);
         else if (gameStatBar.getBounds().contains(x, y))
@@ -337,35 +360,39 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mouseReleased(int x, int y, int button) {
-        super.mouseReleased(x, y, button);
-        if (inGameArea) {
-            if (button == MouseEvent.BUTTON1) {
-                if (selectedBuildingType != -1 && canBuildOnMouseTile && canAffordBuilding(selectedBuildingType)) {
-                    buildBuilding();
-                    selectedBuildingType = -1;
-                }
+        if (showBuildingSelection)
+            buildingSelection.mouseReleased(x, y, button);
+        else {
+            super.mouseReleased(x, y, button);
+            if (inGameArea) {
+                if (button == MouseEvent.BUTTON1) {
+                    if (selectedBuildingType != -1 && canBuildOnMouseTile && canAffordBuilding(selectedBuildingType)) {
+                        buildBuilding();
+                        selectedBuildingType = -1;
+                    }
 
-                if (clickAction == SELECT) {
-                    selectedSGO = (SelectableGameObject) hoverGO;
-                    clickAction = -1;
-                    selectedBuildingType = -1;
-                } else if (clickAction != -1) {
-                    Entity selectedEntity = (Entity) selectedSGO;
-                    if (clickAction == MOVE) {
-                        entityHandler.setPathToTile(selectedEntity, tileX, tileY);
-                        selectedEntity.setResourceToGather(null);
-                        selectedEntity.setEntityToAttack(null);
-                    } else if (clickAction == CHOP || clickAction == MINE) {
-                        ResourceObject hoverResourceObject = (ResourceObject) hoverGO;
-                        boolean isInRangeAndReachable = selectedEntity.isTargetInRangeAndReachable(hoverResourceObject);
-                        ArrayList<Point> path = null;
-                        if (!isInRangeAndReachable) {
-                            path = entityHandler.getPathToNearestTile(selectedEntity, tileX, tileY);
-                            if (path != null)
-                                selectedEntity.setPath(path);
+                    if (clickAction == SELECT) {
+                        selectedSGO = (SelectableGameObject) hoverGO;
+                        clickAction = -1;
+                        selectedBuildingType = -1;
+                    } else if (clickAction != -1) {
+                        Entity selectedEntity = (Entity) selectedSGO;
+                        if (clickAction == MOVE) {
+                            entityHandler.setPathToTile(selectedEntity, tileX, tileY);
+                            selectedEntity.setResourceToGather(null);
+                            selectedEntity.setEntityToAttack(null);
+                        } else if (clickAction == CHOP || clickAction == MINE) {
+                            ResourceObject hoverResourceObject = (ResourceObject) hoverGO;
+                            boolean isInRangeAndReachable = selectedEntity.isTargetInRangeAndReachable(hoverResourceObject);
+                            ArrayList<Point> path = null;
+                            if (!isInRangeAndReachable) {
+                                path = entityHandler.getPathToNearestTile(selectedEntity, tileX, tileY);
+                                if (path != null)
+                                    selectedEntity.setPath(path);
+                            }
+                            if (isInRangeAndReachable || path != null)
+                                selectedEntity.setResourceToGather(hoverResourceObject);
                         }
-                        if (isInRangeAndReachable || path != null)
-                            selectedEntity.setResourceToGather(hoverResourceObject);
                     }
                 }
             }
@@ -380,6 +407,8 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mouseDragged(int x, int y) {
+        if (showBuildingSelection)
+            return;
         super.mouseDragged(x, y);
         if (inGameArea) {
             if (selectedBuildingType == -1 && selectedSGO == null)
@@ -396,19 +425,23 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mouseMoved(int x, int y) {
-        super.mouseMoved(x, y);
+        if (showBuildingSelection)
+            buildingSelection.mouseMoved(x, y);
+        else {
+            super.mouseMoved(x, y);
+            if (inGameArea) {
+                if (selectedBuildingType == -1) {
+                    hoverGO = getGameObjectAt(x + (xTileOffset * TILE_SIZE), y + (yTileOffset * TILE_SIZE), false);
+                    determineAction();
+                } else
+                    canBuildOnMouseTile = isTileBuildable();
+            }
+        }
+
         if (actionBar.getBounds().contains(x, y))
             actionBar.mouseMoved(x, y);
         else if (gameStatBar.getBounds().contains(x, y))
             gameStatBar.mouseMoved(x, y);
-
-        if (inGameArea) {
-            if (selectedBuildingType == -1) {
-                hoverGO = getGameObjectAt(x + (xTileOffset * TILE_SIZE), y + (yTileOffset * TILE_SIZE), false);
-                determineAction();
-            } else
-                canBuildOnMouseTile = isTileBuildable();
-        }
     }
 
     @Override
@@ -466,4 +499,11 @@ public class Play extends MapState implements Savable, Serializable {
         this.selectedSGO = selectedSGO;
     }
 
+    public boolean isShowBuildingSelection() {
+        return showBuildingSelection;
+    }
+
+    public void setShowBuildingSelection(boolean showBuildingSelection) {
+        this.showBuildingSelection = showBuildingSelection;
+    }
 }

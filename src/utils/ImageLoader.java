@@ -32,7 +32,8 @@ public class ImageLoader {
     private static final String ICONS = "icons.png";
     private static final String LABORER = "laborer.png";
     private static final String ORES = "ores.png";
-    private static final String OVERLAY_BG = "overlay_bg.png";
+    private static final String OVERLAY_BG_LARGE = "overlay_bg_large.png";
+    private static final String OVERLAY_BG_SMALL = "overlay_bg_small.png";
     private static final String ROCKS = "rocks.png";
     private static final String SELECT_INDICATOR = "select_indicator.png";
     private static final String SPRITE_BUTTON = "sprite_button.png";
@@ -47,7 +48,7 @@ public class ImageLoader {
 
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
-    public static BufferedImage bottomBar, dropDownBodyLarge, dropDownBarLarge, dropDownBarSmall, overlayBg, topBar;
+    public static BufferedImage bottomBar, dropDownBodyLarge, dropDownBarLarge, dropDownBarSmall, overlayBgLarge, overlayBgSmall, topBar;
     public static BufferedImage[] actions, buildings, dropDownArrowLarge, iconButton, icons, largeTextButton, ores, rocks, selectIndicator, smallTextButtonLong, smallTextButtonShort, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
     public static BufferedImage[][][] laborer;
@@ -113,7 +114,8 @@ public class ImageLoader {
         // Main UI Background
         bottomBar = LoadSave.loadImage(BOTTOM_BAR);
         topBar = LoadSave.loadImage(TOP_BAR);
-        overlayBg = LoadSave.loadImage(OVERLAY_BG);
+        overlayBgLarge = LoadSave.loadImage(OVERLAY_BG_LARGE);
+        overlayBgSmall = LoadSave.loadImage(OVERLAY_BG_SMALL);
 
         // Text Boxes
         BufferedImage textBoxes = LoadSave.loadImage(TEXT_BOX_BG);

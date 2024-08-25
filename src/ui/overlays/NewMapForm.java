@@ -19,16 +19,17 @@ public class NewMapForm extends Overlay {
     private ArrayList<TextBox> textBoxes = new ArrayList<TextBox>();
     private int numRows = 7;
     private int numColumns = 5;
-    private float rowHeight = OVERLAY_HEIGHT / numRows;
-    private float columnWidth = OVERLAY_WIDTH / numColumns;
+    private float rowHeight, columnWidth;
 
     public NewMapForm(int x, int y) {
-        super(x, y);
+        super(OVERLAY_SMALL, x, y);
+        this.rowHeight = getOverlayHeight(size) / numRows;
+        this.columnWidth = getOverlayWidth(size) / numColumns;
         initTextBoxes();
     }
 
     private void initTextBoxes() {
-        int nameX = x + (OVERLAY_WIDTH - TextBox.getTextBoxWidth(TEXT)) / 2;
+        int nameX = x + (getOverlayWidth(size) - TextBox.getTextBoxWidth(TEXT)) / 2;
         int nameY = y + (int) (rowHeight * 2);
         mapName = new TextBox(TEXT, nameX, nameY);
         mapName.setFocus(true);
@@ -59,7 +60,7 @@ public class NewMapForm extends Overlay {
         String widthBounds = "(" + Map.MIN_WIDTH + " - " + Map.MAX_WIDTH + ")";
         String heightBounds = "(" + Map.MIN_HEIGHT + " - " + Map.MAX_HEIGHT + ")";
 
-        RenderText.renderText(g, "Map Name", RenderText.CENTER, RenderText.CENTER, x, y + (int) rowHeight, OVERLAY_WIDTH, (int) rowHeight);
+        RenderText.renderText(g, "Map Name", RenderText.CENTER, RenderText.CENTER, x, y + (int) rowHeight, getOverlayWidth(size), (int) rowHeight);
         RenderText.renderText(g, "Tile Width", RenderText.CENTER, RenderText.CENTER, x + (int) columnWidth, y + (int) rowHeight * 4, (int) columnWidth, (int) rowHeight);
         RenderText.renderText(g, "Tile Height", RenderText.CENTER, RenderText.CENTER, x + (int) columnWidth * 3, y + (int) rowHeight * 4, (int) columnWidth, (int) rowHeight);
 

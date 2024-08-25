@@ -23,12 +23,13 @@ public class NameGame extends Overlay {
     private int choice = -1;
     private int numRows = 7;
     private int numColumns = 5;
-    private float rowHeight = OVERLAY_HEIGHT / numRows;
-    private float columnWidth = OVERLAY_WIDTH / numColumns;
+
+    private float rowHeight, columnWidth;
 
     public NameGame(int x, int y) {
-        super(x, y);
-
+        super(OVERLAY_SMALL, x, y);
+        this.rowHeight = getOverlayHeight(size) / numRows;
+        this.columnWidth = getOverlayWidth(size) / numColumns;
         int nameX = x + (bounds.width - getTextBoxWidth(TEXT)) / 2;
         int nameY = y + (int) (rowHeight * 3) - TEXT_BOX_HEIGHT / 2;
         name = new TextBox(TEXT, nameX, nameY);
@@ -61,7 +62,7 @@ public class NameGame extends Overlay {
 
         int messageY = y + (int) rowHeight;
         g.setFont(Game.getGameFont(36f));
-        RenderText.renderText(g, "Enter a name for your game:", RenderText.CENTER, RenderText.CENTER, x, messageY, OVERLAY_WIDTH, (int) rowHeight);
+        RenderText.renderText(g, "Enter a name for your game:", RenderText.CENTER, RenderText.CENTER, x, messageY, getOverlayWidth(size), (int) rowHeight);
     }
 
     @Override

@@ -38,8 +38,8 @@ public abstract class FileSelect extends State {
         super(game);
         initButtons();
 
-        int dcX = (SCREEN_WIDTH - Overlay.OVERLAY_WIDTH) / 2;
-        int dcY = (SCREEN_HEIGHT - Overlay.OVERLAY_HEIGHT) / 2;
+        int dcX = (SCREEN_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_SMALL)) / 2;
+        int dcY = (SCREEN_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_SMALL)) / 2;
         deleteConfirm = new DeleteConfirm("", dcX, dcY);
     }
 

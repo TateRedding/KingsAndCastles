@@ -138,13 +138,15 @@ public class ActionBar extends BottomBar {
     @Override
     public void mouseReleased(int x, int y, int button) {
         super.mouseReleased(x, y, button);
-        if (button == MouseEvent.BUTTON1) {
+        if (button == MouseEvent.BUTTON1 && !play.isShowBuildingSelection()) {
             if (save.getBounds().contains(x, y) && save.isMousePressed())
                 play.saveGame();
             if (buildButton.getBounds().contains(x, y) && buildButton.isMousePressed()) {
                 play.setSelectedBuildingType(selectedBuildingType);
                 play.setSelectedSGO(null);
             }
+            if (buildingInterfaceButton.getBounds().contains(x, y) && buildingInterfaceButton.isMousePressed())
+                play.setShowBuildingSelection(true);
         }
         save.reset(x, y);
         for (Button b : buttons)

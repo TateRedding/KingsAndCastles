@@ -21,8 +21,8 @@ public class PlayMapSelect extends MapSelect {
 
     public PlayMapSelect(Game game) {
         super(game);
-        int ngX = (Game.SCREEN_WIDTH - Overlay.OVERLAY_WIDTH) / 2;
-        int ngY = (Game.SCREEN_HEIGHT - Overlay.OVERLAY_HEIGHT) / 2;
+        int ngX = (Game.SCREEN_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_SMALL)) / 2;
+        int ngY = (Game.SCREEN_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_SMALL)) / 2;
         nameGame = new NameGame(ngX, ngY);
     }
 

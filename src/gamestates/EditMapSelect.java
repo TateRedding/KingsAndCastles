@@ -27,8 +27,8 @@ public class EditMapSelect extends MapSelect {
     public EditMapSelect(Game game) {
         super(game);
 
-        int formX = (Game.SCREEN_WIDTH - Overlay.OVERLAY_WIDTH) / 2;
-        int formY = (Game.SCREEN_HEIGHT - Overlay.OVERLAY_HEIGHT) / 2;
+        int formX = (Game.SCREEN_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_SMALL)) / 2;
+        int formY = (Game.SCREEN_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_SMALL)) / 2;
         newMapForm = new NewMapForm(formX, formY);
 
         int buttonX = (SCREEN_WIDTH - getButtonWidth(TEXT_LARGE)) / 2;
