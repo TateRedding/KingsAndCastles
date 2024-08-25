@@ -8,20 +8,10 @@ import java.util.Arrays;
 import gamestates.Play;
 import main.Game;
 import objects.Player;
-import ui.buttons.Button;
 import utils.ImageLoader;
 import utils.RenderText;
 
 public class GameStatBar extends TopBar {
-
-    // Icons
-    public static final int ICON_POP = 10;
-    public static final int ICON_GOLD = 11;
-    public static final int ICON_FOOD = 12;
-    public static final int ICON_LOG = 13;
-    public static final int ICON_STONE = 14;
-    public static final int ICON_IRON = 15;
-    public static final int ICON_COAL = Button.ICON_RESOURCE;
 
     private Play play;
     private Player player;
@@ -61,7 +51,7 @@ public class GameStatBar extends TopBar {
                 String.valueOf(player.getPopulation()),
                 String.valueOf(player.getGold()),
                 String.valueOf(player.getFood()),
-                String.valueOf(player.getWood()),
+                String.valueOf(player.getLogs()),
                 String.valueOf(player.getStone()),
                 String.valueOf(player.getIron()),
                 String.valueOf(player.getCoal())

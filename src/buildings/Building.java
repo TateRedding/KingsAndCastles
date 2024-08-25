@@ -3,8 +3,10 @@ package buildings;
 import objects.GameObject;
 import objects.SelectableGameObject;
 import objects.Player;
+import utils.ImageLoader;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 import static main.Game.TILE_SIZE;
 
@@ -64,6 +66,32 @@ public abstract class Building extends SelectableGameObject {
         return switch (buildingType) {
             case FARM -> 15;
             default -> 0;
+        };
+    }
+
+    public static int getCostCoal(int buildingType) {
+        return switch (buildingType) {
+            default -> 0;
+        };
+    }
+
+    public static int getCostIron(int buildingType) {
+        return switch (buildingType) {
+            default -> 0;
+        };
+    }
+
+    public static String getBuildingName(int buildingType) {
+        return switch (buildingType) {
+            case FARM -> "Farm";
+            default -> "None";
+        };
+    }
+
+    public static BufferedImage getBuildingSprite(int buildingType) {
+        return switch (buildingType) {
+            case FARM -> ImageLoader.buildings[0];
+            default -> null;
         };
     }
 

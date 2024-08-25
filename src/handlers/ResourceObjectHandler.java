@@ -309,7 +309,7 @@ public class ResourceObjectHandler implements Serializable {
         int gatherAmt = Math.min(ResourceObject.getAmountPerAction(resourceType), currAmt);
         switch (resourceType) {
             case GOLD -> player.setGold(player.getGold() + gatherAmt);
-            case TREE -> player.setWood(player.getWood() + gatherAmt);
+            case TREE -> player.setLogs(player.getLogs() + gatherAmt);
             case ROCK -> player.setStone(player.getStone() + gatherAmt);
             case COAL -> player.setCoal(player.getCoal() + gatherAmt);
             case IRON -> player.setIron(player.getIron() + gatherAmt);

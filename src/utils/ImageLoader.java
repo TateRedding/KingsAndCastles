@@ -14,7 +14,6 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
-import entities.Entity;
 import objects.Map;
 import objects.Tile;
 import ui.TextBox;
@@ -25,9 +24,10 @@ public class ImageLoader {
     private static final String BOTTOM_BAR = "bottom_bar.png";
     private static final String BUILDINGS = "buildings.png";
     private static final String CASTLE_ZONE = "castle_zone.png";
-    private static final String DROP_DOWN_ARROW = "drop_down_arrow.png";
-    private static final String DROP_DOWN_BODY = "drop_down_body.png";
-    private static final String DROP_DOWN_TOP = "drop_down_top.png";
+    private static final String DROP_DOWN_ARROW_LARGE = "drop_down_arrow_large.png";
+    private static final String DROP_DOWN_BODY_LARGE = "drop_down_body_large.png";
+    private static final String DROP_DOWN_BAR_LARGE = "drop_down_bar_large.png";
+    private static final String DROP_DOWN_BAR_SMALL = "drop_down_bar_small.png";
     private static final String ICON_BUTTON = "icon_button.png";
     private static final String ICONS = "icons.png";
     private static final String LABORER = "laborer.png";
@@ -38,7 +38,8 @@ public class ImageLoader {
     private static final String SPRITE_BUTTON = "sprite_button.png";
     private static final String TEXT_BOX_BG = "text_box_bg.png";
     private static final String TEXT_BUTTON_LARGE = "text_button_large.png";
-    private static final String TEXT_BUTTON_SMALL = "text_button_small.png";
+    private static final String TEXT_BUTTON_SMALL_LONG = "text_button_small_long.png";
+    private static final String TEXT_BUTTON_SMALL_SHORT = "text_button_small_short.png";
     private static final String TILE_MAP = "tile_map.png";
     private static final String TOP_BAR = "top_bar.png";
     private static final String TREES = "trees.png";
@@ -46,8 +47,8 @@ public class ImageLoader {
 
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
-    public static BufferedImage bottomBar, dropDownBody, dropDownTop, overlayBg, topBar;
-    public static BufferedImage[] actions, buildings, dropDownArrow, iconButton, icons, largeTextButton, ores, rocks, selectIndicator, smallTextButton, spriteButton, textBoxBg, trees;
+    public static BufferedImage bottomBar, dropDownBodyLarge, dropDownBarLarge, dropDownBarSmall, overlayBg, topBar;
+    public static BufferedImage[] actions, buildings, dropDownArrowLarge, iconButton, icons, largeTextButton, ores, rocks, selectIndicator, smallTextButtonLong, smallTextButtonShort, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
     public static BufferedImage[][][] laborer;
 
@@ -57,21 +58,6 @@ public class ImageLoader {
         loadEntityImages();
         loadTerrainTiles();
         loadUIImages();
-
-        actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 8);
-        buildings = getSpriteArray(BUILDINGS, 0, 0, 1, 1, 1);
-        dropDownArrow = getImageArray(DROP_DOWN_ARROW, 20, 12, 1, 2, 2);
-        editorBarButtonSprites = new ArrayList<>(Arrays.asList(
-                tiles.get(GRASS).get(0),
-                tiles.get(DIRT).get(0),
-                tiles.get(SAND).get(0),
-                tiles.get(WATER_GRASS).get(0),
-                tiles.get(WATER_SAND).get(0),
-                getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0),
-                ores[0]
-        ));
-        icons = getImageArray(ICONS, 16, 16, 4, 5, 16);
-        selectIndicator = getSpriteArray(SELECT_INDICATOR, 0, 0, 1, 4, 4);
     }
 
     private static void loadButtonImages() {
@@ -80,7 +66,8 @@ public class ImageLoader {
         int cols = 1;
         iconButton = getImageArray(ICON_BUTTON, getButtonWidth(ICON), getButtonHeight(ICON), rows, cols, amount);
         largeTextButton = getImageArray(TEXT_BUTTON_LARGE, getButtonWidth(TEXT_LARGE), getButtonHeight(TEXT_LARGE), rows, cols, amount);
-        smallTextButton = getImageArray(TEXT_BUTTON_SMALL, getButtonWidth(TEXT_SMALL), getButtonHeight(TEXT_SMALL), rows, cols, amount);
+        smallTextButtonLong = getImageArray(TEXT_BUTTON_SMALL_LONG, getButtonWidth(TEXT_SMALL_LONG), getButtonHeight(TEXT_SMALL_LONG), rows, cols, amount);
+        smallTextButtonShort = getImageArray(TEXT_BUTTON_SMALL_SHORT, getButtonWidth(TEXT_SMALL_SHORT), getButtonHeight(TEXT_SMALL_SHORT), rows, cols, amount);
         spriteButton = getImageArray(SPRITE_BUTTON, getButtonWidth(SPRITE), getButtonHeight(SPRITE), rows, cols, amount);
     }
 
@@ -123,17 +110,37 @@ public class ImageLoader {
     }
 
     private static void loadUIImages() {
+        // Main UI Background
         bottomBar = LoadSave.loadImage(BOTTOM_BAR);
         topBar = LoadSave.loadImage(TOP_BAR);
         overlayBg = LoadSave.loadImage(OVERLAY_BG);
 
+        // Text Boxes
         BufferedImage textBoxes = LoadSave.loadImage(TEXT_BOX_BG);
         textBoxBg = new BufferedImage[2];
         textBoxBg[NUMBER] = textBoxes.getSubimage(0, 0, 144, 48);
         textBoxBg[TEXT] = textBoxes.getSubimage(TextBox.getTextBoxWidth(NUMBER), 0, 384, 48);
 
-        dropDownBody = LoadSave.loadImage(DROP_DOWN_BODY);
-        dropDownTop = LoadSave.loadImage(DROP_DOWN_TOP);
+        // Drop Down Menus
+        dropDownArrowLarge = getImageArray(DROP_DOWN_ARROW_LARGE, 20, 12, 1, 2, 2);
+        dropDownBodyLarge = LoadSave.loadImage(DROP_DOWN_BODY_LARGE);
+        dropDownBarLarge = LoadSave.loadImage(DROP_DOWN_BAR_LARGE);
+        dropDownBarSmall = LoadSave.loadImage(DROP_DOWN_BAR_SMALL);
+
+        // Misc
+        actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 8);
+        buildings = getSpriteArray(BUILDINGS, 0, 0, 1, 1, 1);
+        editorBarButtonSprites = new ArrayList<>(Arrays.asList(
+                tiles.get(GRASS).get(0),
+                tiles.get(DIRT).get(0),
+                tiles.get(SAND).get(0),
+                tiles.get(WATER_GRASS).get(0),
+                tiles.get(WATER_SAND).get(0),
+                getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0),
+                ores[0]
+        ));
+        icons = getImageArray(ICONS, 16, 16, 4, 5, 16);
+        selectIndicator = getSpriteArray(SELECT_INDICATOR, 0, 0, 1, 4, 4);
     }
 
     public static void createMapPreviewImage(Map map) {

@@ -38,7 +38,7 @@ public class Menu extends State {
         editMap = new TextButton(TEXT_LARGE, x, y += buttonHeight + yOffset, fontSize, "Edit Map");
 
         int offset = 48;
-        quit = new TextButton(TEXT_SMALL, SCREEN_WIDTH - getButtonWidth(TEXT_SMALL) - offset, offset, 28f, "Quit");
+        quit = new TextButton(TEXT_SMALL_SHORT, SCREEN_WIDTH - getButtonWidth(TEXT_SMALL_SHORT) - offset, offset, 28f, "Quit");
         buttons.addAll(Arrays.asList(newGame, loadGame, editMap, quit));
     }
 

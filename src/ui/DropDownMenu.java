@@ -45,7 +45,7 @@ public class DropDownMenu {
         this.rowWidth = DD_WIDTH - rowXOffset * 2;
         this.rowX = x + rowXOffset;
         this.bounds = new Rectangle(x, y, DD_WIDTH, DD_TOP_HEIGHT);
-        this.ddButton = new ImageButton(DROP_DOWN, x + bounds.width - getButtonWidth(DROP_DOWN), y, ImageLoader.dropDownArrow[DD_DOWN], 1.0f);
+        this.ddButton = new ImageButton(DROP_DOWN, x + bounds.width - getButtonWidth(DROP_DOWN), y, ImageLoader.dropDownArrowLarge[DD_DOWN], 1.0f);
 
         int unselectX = bounds.x + (bounds.height - getButtonWidth(ICON)) / 2;
         int unselectY = bounds.y + (bounds.height - getButtonHeight(ICON)) / 2;
@@ -73,7 +73,7 @@ public class DropDownMenu {
     }
 
     public void render(Graphics g) {
-        g.drawImage(ImageLoader.dropDownTop, x, y, null);
+        g.drawImage(ImageLoader.dropDownBarLarge, x, y, null);
         g.setColor(Color.BLACK);
         if (selectedIndex != -1) {
             String option = options[selectedIndex];
@@ -92,7 +92,7 @@ public class DropDownMenu {
             unselect.render(g);
 
         if (expanded) {
-            g.drawImage(ImageLoader.dropDownBody, x, y + DD_TOP_HEIGHT, null);
+            g.drawImage(ImageLoader.dropDownBodyLarge, x, y + DD_TOP_HEIGHT, null);
             renderOptions(g);
             renderScrollBar(g);
             if (hoverIndex != -1) {
@@ -147,9 +147,9 @@ public class DropDownMenu {
 
     private void setButtonDirection() {
         if (expanded)
-            ddButton.setDisplayImage(ImageLoader.dropDownArrow[DD_UP]);
+            ddButton.setDisplayImage(ImageLoader.dropDownArrowLarge[DD_UP]);
         else
-            ddButton.setDisplayImage(ImageLoader.dropDownArrow[DD_DOWN]);
+            ddButton.setDisplayImage(ImageLoader.dropDownArrowLarge[DD_DOWN]);
     }
 
     public void resetIndicies() {

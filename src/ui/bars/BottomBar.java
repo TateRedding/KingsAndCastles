@@ -2,7 +2,7 @@ package ui.bars;
 
 import static main.Game.GAME_AREA_HEIGHT;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
-import static ui.buttons.Button.TEXT_SMALL;
+import static ui.buttons.Button.TEXT_SMALL_SHORT;
 import static objects.Tile.GRASS;
 
 import java.awt.Graphics;
@@ -25,8 +25,8 @@ public abstract class BottomBar extends UIBar {
         bounds = new Rectangle(X, BOTTOM_BAR_Y, UI_WIDTH, BOTTOM_BAR_HEIGHT);
         int offset = 16;
         float fontSize = 28f;
-        menu = new TextButton(TEXT_SMALL, X + offset, BOTTOM_BAR_Y + offset, fontSize, "Menu");
-        save = new TextButton(TEXT_SMALL, menu.getBounds().x, menu.getBounds().y + menu.getBounds().height + offset / 2, fontSize, "Save");
+        menu = new TextButton(TEXT_SMALL_SHORT, X + offset, BOTTOM_BAR_Y + offset, fontSize, "Menu");
+        save = new TextButton(TEXT_SMALL_SHORT, menu.getBounds().x, menu.getBounds().y + menu.getBounds().height + offset / 2, fontSize, "Save");
 
     }
 

@@ -11,7 +11,8 @@ public class Button {
     public static final int ICON = 1;
     public static final int SPRITE = 2;
     public static final int TEXT_LARGE = 3;
-    public static final int TEXT_SMALL = 4;
+    public static final int TEXT_SMALL_LONG = 4;
+    public static final int TEXT_SMALL_SHORT = 5;
 
     // Icons
     public static final int ICON_EX = 0;
@@ -53,7 +54,8 @@ public class Button {
             case ICON -> ImageLoader.iconButton;
             case SPRITE -> ImageLoader.spriteButton;
             case TEXT_LARGE -> ImageLoader.largeTextButton;
-            case TEXT_SMALL -> ImageLoader.smallTextButton;
+            case TEXT_SMALL_LONG -> ImageLoader.smallTextButtonLong;
+            case TEXT_SMALL_SHORT -> ImageLoader.smallTextButtonShort;
             default -> null;
         };
     }
@@ -64,7 +66,8 @@ public class Button {
             case ICON -> 24;
             case SPRITE -> 76;
             case TEXT_LARGE -> 168;
-            case TEXT_SMALL -> 56;
+            case TEXT_SMALL_LONG -> 112;
+            case TEXT_SMALL_SHORT -> 56;
             default -> 0;
         };
     }
@@ -72,7 +75,7 @@ public class Button {
     public static int getButtonHeight(int buttonType) {
         return switch (buttonType) {
             case DROP_DOWN -> 48;
-            case ICON, TEXT_SMALL -> 27;
+            case ICON, TEXT_SMALL_LONG, TEXT_SMALL_SHORT -> 27;
             case SPRITE -> 83;
             case TEXT_LARGE -> 81;
             default -> 0;
@@ -81,7 +84,7 @@ public class Button {
 
     protected int getButtonOffset(int buttonType) {
         return switch (buttonType) {
-            case ICON, TEXT_SMALL -> 3;
+            case ICON, TEXT_SMALL_LONG, TEXT_SMALL_SHORT -> 3;
             case SPRITE, TEXT_LARGE -> 7;
             default -> 0;
         };

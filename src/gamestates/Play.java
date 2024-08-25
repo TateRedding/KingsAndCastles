@@ -70,7 +70,10 @@ public class Play extends MapState implements Savable, Serializable {
         this.seed = System.currentTimeMillis();
         this.actionBar = new ActionBar(this);
         int numPlayers = map.getNumPlayers();
-        // Player 1 will always be human
+
+        // Player 1 will always be human, and will always be the human player in control of this Play object.
+        // In the future, this wil need to be taken into consideration when ingesting network packets.
+        // Perhaps each player can have a unique ID (username?) to identify them by
         players.add(new Player(this, 1, true));
 
         // Until multiplayer is introduced, the rest of the players will always be AI
@@ -164,7 +167,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private void renderSelectedBuilding(Graphics g) {
-        if (canBuildOnMouseTile)
+        if (canBuildOnMouseTile && canAffordBuilding(selectedBuildingType))
             g.setColor(new Color(0, 255, 0, 50));
         else
             g.setColor(new Color(255, 0, 0, 50));
@@ -257,7 +260,18 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public void saveGame() {
+        int sbt = selectedBuildingType;
+        SelectableGameObject sgo = selectedSGO;
+
+        selectedBuildingType = -1;
+        clickAction = -1;
+        selectedSGO = null;
+
         game.getSaveFileHandler().saveGame(this);
+
+        selectedBuildingType = sbt;
+        selectedSGO = sgo;
+
     }
 
     public GameObject getGameObjectAt(int x, int y, boolean checkEntireTile) {
@@ -282,6 +296,36 @@ public class Play extends MapState implements Savable, Serializable {
         return (tileType != WATER_GRASS && tileType != WATER_SAND);
     }
 
+    private boolean canAffordBuilding(int buildingType) {
+        // Assumes this is only being called for the active player
+        Player player = players.get(0);
+        if (!(player.getCoal() >= Building.getCostCoal(buildingType)))
+            return false;
+
+        if (!(player.getGold() >= Building.getCostGold(buildingType)))
+            return false;
+
+        if (!(player.getIron() >= Building.getCostIron(buildingType)))
+            return false;
+
+        if (!(player.getStone() >= Building.getCostStone(buildingType)))
+            return false;
+
+        return player.getLogs() >= Building.getCostLogs(buildingType);
+    }
+
+    private void buildBuilding() {
+        // Assumes this is only being called for the active player
+        Player player = players.get(0);
+        switch (selectedBuildingType) {
+            case Building.FARM:
+                buildingHandler.getBuildings().add(new Farm(player, buildingID++, gameX, gameY));
+        }
+
+        player.buildBuilding(selectedBuildingType);
+
+    }
+
     @Override
     public void mousePressed(int x, int y, int button) {
         super.mousePressed(x, y, button);
@@ -296,18 +340,16 @@ public class Play extends MapState implements Savable, Serializable {
         super.mouseReleased(x, y, button);
         if (inGameArea) {
             if (button == MouseEvent.BUTTON1) {
-                if (selectedBuildingType != -1 && canBuildOnMouseTile) {
-                    switch (selectedBuildingType) {
-                        case Building.FARM:
-                            buildingHandler.getBuildings().add(new Farm(players.get(1), buildingID++, gameX, gameY));
-                    }
+                if (selectedBuildingType != -1 && canBuildOnMouseTile && canAffordBuilding(selectedBuildingType)) {
+                    buildBuilding();
+                    selectedBuildingType = -1;
                 }
 
                 if (clickAction == SELECT) {
                     selectedSGO = (SelectableGameObject) hoverGO;
                     clickAction = -1;
                     selectedBuildingType = -1;
-                } else {
+                } else if (clickAction != -1) {
                     Entity selectedEntity = (Entity) selectedSGO;
                     if (clickAction == MOVE) {
                         entityHandler.setPathToTile(selectedEntity, tileX, tileY);
@@ -339,8 +381,17 @@ public class Play extends MapState implements Savable, Serializable {
     @Override
     public void mouseDragged(int x, int y) {
         super.mouseDragged(x, y);
-        if (inGameArea)
-            dragScreen(x, y);
+        if (inGameArea) {
+            if (selectedBuildingType == -1 && selectedSGO == null)
+                dragScreen(x, y);
+
+            int mouseDownTileX = mouseDownX / TILE_SIZE;
+            int mouseDownTileY = (mouseDownY - TOP_BAR_HEIGHT) / TILE_SIZE;
+            int currTileX = x / TILE_SIZE;
+            int currTileY = (y - TOP_BAR_HEIGHT) / TILE_SIZE;
+            if (mouseDownTileX != currTileX || mouseDownTileY != currTileY)
+                clickAction = -1;
+        }
     }
 
     @Override
@@ -403,9 +454,16 @@ public class Play extends MapState implements Savable, Serializable {
 
     public void setSelectedBuildingType(int selectedBuildingType) {
         this.selectedBuildingType = selectedBuildingType;
+        if (selectedBuildingType != -1)
+            clickAction = -1;
     }
 
     public SelectableGameObject getSelectedSGO() {
         return selectedSGO;
     }
+
+    public void setSelectedSGO(SelectableGameObject selectedSGO) {
+        this.selectedSGO = selectedSGO;
+    }
+
 }

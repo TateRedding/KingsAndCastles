@@ -1,5 +1,6 @@
 package objects;
 
+import buildings.Building;
 import gamestates.Play;
 
 import java.io.Serializable;
@@ -15,7 +16,7 @@ public class Player implements Serializable {
     private int iron = 0;
     private int population = 2;
     private int stone = 250;
-    private int wood = 500;
+    private int logs = 500;
 
     private boolean isHuman;
 
@@ -23,6 +24,14 @@ public class Player implements Serializable {
         this.play = play;
         this.playerNum = playerNum;
         this.isHuman = isHuman;
+    }
+
+    public void buildBuilding(int buildingType) {
+        coal -= Building.getCostCoal(buildingType);
+        gold -= Building.getCostGold(buildingType);
+        iron -= Building.getCostIron(buildingType);
+        stone -= Building.getCostStone(buildingType);
+        logs -= Building.getCostLogs(buildingType);
     }
 
     public int getCoal() {
@@ -81,11 +90,11 @@ public class Player implements Serializable {
         this.stone = stone;
     }
 
-    public int getWood() {
-        return wood;
+    public int getLogs() {
+        return logs;
     }
 
-    public void setWood(int wood) {
-        this.wood = wood;
+    public void setLogs(int logs) {
+        this.logs = logs;
     }
 }
