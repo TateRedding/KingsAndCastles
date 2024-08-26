@@ -323,7 +323,7 @@ public class Play extends MapState implements Savable, Serializable {
         Player player = players.get(0);
         switch (selectedBuildingType) {
             case Building.FARM:
-                buildingHandler.getBuildings().add(new Farm(player, buildingID++, gameX, gameY));
+                buildingHandler.getBuildings().add(new Farm(player, buildingID++, gameX, gameY, false));
         }
 
         player.buildBuilding(selectedBuildingType);

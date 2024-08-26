@@ -66,12 +66,10 @@ public class ImageLoader {
 
     private static void loadBuildingImages() {
         BufferedImage atlas = LoadSave.loadImage(BUILDINGS);
-        int maxBuildings = 8;
+        int maxBuildings = 11;
         buildings = new BufferedImage[maxBuildings];
-        for (int i = 0; i < maxBuildings; i++) {
-            int width = Building.getBuildingTileWidth(i) * TILE_SIZE;
+        for (int i = 0; i < maxBuildings; i++)
             buildings[i] = atlas.getSubimage(i * TILE_SIZE * 2, 0, Building.getBuildingTileWidth(i) * TILE_SIZE, Building.getBuildingTileHeight(i) * TILE_SIZE);
-        }
     }
 
     private static void loadButtonImages() {
