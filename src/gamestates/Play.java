@@ -6,8 +6,7 @@ import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import buildings.Building;
-import buildings.Farm;
+import buildings.*;
 import entities.Entity;
 import handlers.BuildingHandler;
 import handlers.EntityHandler;
@@ -22,6 +21,7 @@ import ui.overlays.Overlay;
 import utils.ImageLoader;
 import utils.Savable;
 
+import static buildings.Building.*;
 import static entities.Entity.*;
 import static main.Game.*;
 import static objects.Tile.WATER_GRASS;
@@ -56,7 +56,7 @@ public class Play extends MapState implements Savable, Serializable {
     private long seed;
     private int clickAction = -1;
 
-    private boolean canBuildOnMouseTile = false;
+    private boolean canBuild = false;
     private int selectedBuildingType = -1;
     private int buildingID = 1;
 
@@ -182,7 +182,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private void renderSelectedBuilding(Graphics g) {
-        if (canBuildOnMouseTile && canAffordBuilding(selectedBuildingType))
+        if (canBuild && canAffordBuilding(selectedBuildingType))
             g.setColor(new Color(0, 255, 0, 50));
         else
             g.setColor(new Color(255, 0, 0, 50));
@@ -290,13 +290,33 @@ public class Play extends MapState implements Savable, Serializable {
         return resourceObjectData[(y - TOP_BAR_HEIGHT) / TILE_SIZE][x / TILE_SIZE];
     }
 
-    private boolean isTileBuildable() {
-        if (getGameObjectAt(gameX, gameY, true) != null)
-            return false;
+    private boolean canBuildAtMouseTile() {
+        if (selectedBuildingType == CASTLE_TURRET) {
+            Building b = buildingHandler.getBuildingAt(gameX, gameY);
+            return b != null && b.getBuildingType() == CASTLE_WALL;
+        } else {
+            int tileX = gameX / TILE_SIZE;
+            int tileY = (gameY - TOP_BAR_HEIGHT) / TILE_SIZE;
+            ArrayList<Point> tiles = new ArrayList<Point>();
+            for (int y = tileY; y < tileY + getBuildingTileHeight(selectedBuildingType); y++)
+                for (int x = tileX; x < tileX + getBuildingTileWidth(selectedBuildingType); x++)
+                    tiles.add(new Point(x, y));
 
-        int tileX = gameX / TILE_SIZE;
-        int tileY = (gameY - TOP_BAR_HEIGHT) / TILE_SIZE;
-        int tileType = map.getTileData()[tileY][tileX].getTileType();
+            for (Point p : tiles) {
+                if (selectedBuildingType == THRONE_ROOM || selectedBuildingType == CASTLE_WALL)
+                    if (!map.getCastleZones().get(0).contains(p))
+                        return false;
+                if (!isTileBuildable(p))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isTileBuildable(Point tile) {
+        if (getGameObjectAt(tile.x * TILE_SIZE, tile.y * TILE_SIZE + TOP_BAR_HEIGHT, true) != null)
+            return false;
+        int tileType = map.getTileData()[tile.y][tile.x].getTileType();
         return (tileType != WATER_GRASS && tileType != WATER_SAND);
     }
 
@@ -319,16 +339,31 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private void buildBuilding() {
-        // Assumes this is only being called for the active player
         Player player = players.get(0);
-        switch (selectedBuildingType) {
-            case Building.FARM:
-                buildingHandler.getBuildings().add(new Farm(player, buildingID++, gameX, gameY, false));
+        Building building = createBuilding(player, selectedBuildingType, buildingID++, gameX, gameY);
+        if (building != null) {
+            buildingHandler.getBuildings().add(building);
+            player.buildBuilding(selectedBuildingType);
         }
-
-        player.buildBuilding(selectedBuildingType);
-
     }
+
+    private Building createBuilding(Player player, int buildingType, int id, int x, int y) {
+        return switch (buildingType) {
+            case Building.THRONE_ROOM -> new ThroneRoom(player, id, x, y);
+            case Building.CASTLE_WALL -> new CastleWall(player, id, x, y);
+            case Building.CASTLE_TURRET -> new CastleTurret(player, id, x, y);
+            case Building.VILLAGE -> new Village(player, id, x, y);
+            case Building.STORAGE_HUT -> new StorageHut(player, id, x, y);
+            case Building.REFINERY -> new Refinery(player, id, x, y);
+            case Building.FARM -> new Farm(player, id, x, y, false);
+            case Building.FARM_ROTATED -> new Farm(player, id, x, y, true);
+            case Building.BARRACKS_TIER_1 -> new Barracks(player, id, x, y, 1);
+            case Building.BARRACKS_TIER_2 -> new Barracks(player, id, x, y, 2);
+            case Building.BARRACKS_TIER_3 -> new Barracks(player, id, x, y, 3);
+            default -> null;
+        };
+    }
+
 
     @Override
     public void mousePressed(int x, int y, int button) {
@@ -351,7 +386,7 @@ public class Play extends MapState implements Savable, Serializable {
             super.mouseReleased(x, y, button);
             if (inGameArea) {
                 if (button == MouseEvent.BUTTON1) {
-                    if (selectedBuildingType != -1 && canBuildOnMouseTile && canAffordBuilding(selectedBuildingType)) {
+                    if (selectedBuildingType != -1 && canBuild && canAffordBuilding(selectedBuildingType)) {
                         buildBuilding();
                         selectedBuildingType = -1;
                     }
@@ -419,7 +454,7 @@ public class Play extends MapState implements Savable, Serializable {
                     hoverGO = getGameObjectAt(x + (xTileOffset * TILE_SIZE), y + (yTileOffset * TILE_SIZE), false);
                     determineAction();
                 } else
-                    canBuildOnMouseTile = isTileBuildable();
+                    canBuild = canBuildAtMouseTile();
             }
         }
 

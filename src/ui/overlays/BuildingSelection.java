@@ -264,6 +264,7 @@ public class BuildingSelection extends Overlay {
         Arrays.fill(startingIndecies, 0);
         selectedBuildingType = -1;
         selectButton.setDisabled(true);
+        showCostWarning = false;
     }
 
     @Override

@@ -10,10 +10,10 @@ public class Player implements Serializable {
     private Play play;
     private int playerNum;
 
-    private int coal = 0;
+    private int coal = 1000;
     private int food = 100;
     private int gold = 10000;
-    private int iron = 0;
+    private int iron = 1000;
     private int population = 2;
     private int stone = 250;
     private int logs = 500;
