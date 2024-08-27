@@ -24,6 +24,7 @@ public class ImageLoader {
 
     private static final String ACTIONS = "actions.png";
     private static final String BOTTOM_BAR = "bottom_bar.png";
+    private static final String BUILD_INDICATORS = "build_indicators.png";
     private static final String BUILDINGS = "buildings.png";
     private static final String CASTLE_ZONE = "castle_zone.png";
     private static final String DROP_DOWN_ARROW_LARGE = "drop_down_arrow_large.png";
@@ -51,7 +52,7 @@ public class ImageLoader {
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
     public static BufferedImage bottomBar, dropDownBodyLarge, dropDownBarLarge, dropDownBarSmall, overlayBgLarge, overlayBgSmall, topBar;
-    public static BufferedImage[] actions, buildings, dropDownArrowLarge, iconButton, icons, largeTextButton, ores, rocks, selectIndicator, smallTextButtonLong, smallTextButtonShort, spriteButton, textBoxBg, trees;
+    public static BufferedImage[] actions, buildIndicators, buildings, dropDownArrowLarge, iconButton, icons, largeTextButton, ores, rocks, selectIndicator, smallTextButtonLong, smallTextButtonShort, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
     public static BufferedImage[][][] laborer;
 
@@ -142,6 +143,7 @@ public class ImageLoader {
 
         // Misc
         actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 8);
+        buildIndicators = getSpriteArray(BUILD_INDICATORS, 0, 0, 1, 2, 2);
         editorBarButtonSprites = new ArrayList<>(Arrays.asList(
                 tiles.get(GRASS).get(0),
                 tiles.get(DIRT).get(0),

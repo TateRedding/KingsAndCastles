@@ -37,4 +37,8 @@ public class ImageButton extends Button {
     public void setDisplayImage(BufferedImage displayImage) {
         this.displayImage = displayImage;
     }
+
+    public void setImageScale(float imageScale) {
+        this.imageScale = imageScale;
+    }
 }

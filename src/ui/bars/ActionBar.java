@@ -27,9 +27,11 @@ import static ui.buttons.Button.SPRITE;
 
 public class ActionBar extends BottomBar {
 
+    private static final float MAX_BUTTON_SPRITE_SIZE = TILE_SIZE * 2;
+
     private Play play;
 
-    private int selectedBuildingType = FARM;
+    private int selectedBuildingType = VILLAGE;
 
     private TextButton buildingInterfaceButton;
     private ImageButton buildButton;
@@ -45,11 +47,10 @@ public class ActionBar extends BottomBar {
         float yOffset = (float) (BOTTOM_BAR_HEIGHT - (getButtonHeight(TEXT_SMALL_LONG) + getButtonHeight(SPRITE))) / 3;
 
         int buildButtonXStart = xOffset + (getButtonWidth(TEXT_SMALL_LONG) - getButtonWidth(SPRITE)) / 2;
-        float maxSize = 64.0f;
-        float scale = maxSize / Math.max((float) getBuildingTileWidth(selectedBuildingType) * TILE_SIZE, (float) getBuildingTileHeight(selectedBuildingType) * TILE_SIZE);
+        float scale = MAX_BUTTON_SPRITE_SIZE / Math.max((float) getBuildingTileWidth(selectedBuildingType) * TILE_SIZE, (float) getBuildingTileHeight(selectedBuildingType) * TILE_SIZE);
         buildButton = new ImageButton(SPRITE, buildButtonXStart, BOTTOM_BAR_Y + (int) yOffset, ImageLoader.buildings[selectedBuildingType], scale);
 
-        buildingInterfaceButton = new TextButton(TEXT_SMALL_LONG, xOffset, BOTTOM_BAR_Y + getButtonHeight(SPRITE) + (int) (yOffset * 2), 24.0f, getBuildingName(selectedBuildingType));
+        buildingInterfaceButton = new TextButton(TEXT_SMALL_LONG, xOffset, BOTTOM_BAR_Y + getButtonHeight(SPRITE) + (int) (yOffset * 2), 22f, "Choose Building");
 
         buttons.addAll(Arrays.asList(buildingInterfaceButton, buildButton));
     }
@@ -177,7 +178,8 @@ public class ActionBar extends BottomBar {
 
     public void setSelectedBuildingType(int selectedBuildingType) {
         this.selectedBuildingType = selectedBuildingType;
+        float scale = MAX_BUTTON_SPRITE_SIZE / Math.max((float) getBuildingTileWidth(selectedBuildingType) * TILE_SIZE, (float) getBuildingTileHeight(selectedBuildingType) * TILE_SIZE);
         buildButton.setDisplayImage(ImageLoader.buildings[selectedBuildingType]);
-        buildingInterfaceButton.setText(getBuildingName(selectedBuildingType));
+        buildButton.setImageScale(scale);
     }
 }

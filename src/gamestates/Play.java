@@ -162,7 +162,7 @@ public class Play extends MapState implements Savable, Serializable {
             if (selectedBuildingType == -1)
                 renderAction(g, xTileOffset, yTileOffset);
             else
-                renderSelectedBuilding(g);
+                renderSelectedBuilding(g, xTileOffset, yTileOffset);
 
         if (showBuildingSelection && buildingSelection != null)
             buildingSelection.render(g);
@@ -181,13 +181,21 @@ public class Play extends MapState implements Savable, Serializable {
 
     }
 
-    private void renderSelectedBuilding(Graphics g) {
-        if (canBuild && canAffordBuilding(selectedBuildingType))
-            g.setColor(new Color(0, 255, 0, 50));
-        else
-            g.setColor(new Color(255, 0, 0, 50));
-        g.drawImage(ImageLoader.buildings[selectedBuildingType], mouseX, mouseY, null);
-        g.fillRect(mouseX, mouseY, TILE_SIZE, TILE_SIZE);
+    private void renderSelectedBuilding(Graphics g, int xOffset, int yOffset) {
+        ArrayList<Point> tiles = getBuildingTiles(gameX, gameY);
+        g.drawImage(ImageLoader.buildings[selectedBuildingType], (tiles.get(0).x - xOffset) * TILE_SIZE, (tiles.get(0).y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, null);
+
+        for (Point p : tiles) {
+            int currTileX = p.x * TILE_SIZE;
+            int currTileY = p.y * TILE_SIZE + TOP_BAR_HEIGHT;
+            boolean canBuildOnTile = canBuildHere(currTileX, currTileY, false);
+            int xStart = currTileX - (xOffset * TILE_SIZE);
+            int yStart = currTileY - (yOffset * TILE_SIZE);
+            if (canBuildOnTile)
+                g.drawImage(ImageLoader.buildIndicators[0], xStart, yStart, null);
+            else
+                g.drawImage(ImageLoader.buildIndicators[1], xStart, yStart, null);
+        }
     }
 
     private void highlightSelectedObject(Graphics g, int xTileOffset, int yTileOffset) {
@@ -196,7 +204,6 @@ public class Play extends MapState implements Savable, Serializable {
             bounds = selectedSGO.getHitbox();
         if (bounds != null)
             g.drawImage(ImageLoader.selectIndicator[indicatorAnimationFrame], bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), null);
-
     }
 
     private void drawChunkBorders(Graphics g) {
@@ -290,17 +297,18 @@ public class Play extends MapState implements Savable, Serializable {
         return resourceObjectData[(y - TOP_BAR_HEIGHT) / TILE_SIZE][x / TILE_SIZE];
     }
 
-    private boolean canBuildAtMouseTile() {
+    private boolean canBuildHere(int x, int y, boolean checkAllBuildingTiles) {
         if (selectedBuildingType == CASTLE_TURRET) {
             Building b = buildingHandler.getBuildingAt(gameX, gameY);
             return b != null && b.getBuildingType() == CASTLE_WALL;
         } else {
-            int tileX = gameX / TILE_SIZE;
-            int tileY = (gameY - TOP_BAR_HEIGHT) / TILE_SIZE;
+            int tileX = x / TILE_SIZE;
+            int tileY = (y - TOP_BAR_HEIGHT) / TILE_SIZE;
             ArrayList<Point> tiles = new ArrayList<Point>();
-            for (int y = tileY; y < tileY + getBuildingTileHeight(selectedBuildingType); y++)
-                for (int x = tileX; x < tileX + getBuildingTileWidth(selectedBuildingType); x++)
-                    tiles.add(new Point(x, y));
+            if (checkAllBuildingTiles)
+                tiles = getBuildingTiles(x, y);
+            else
+                tiles.add(new Point(tileX, tileY));
 
             for (Point p : tiles) {
                 if (selectedBuildingType == THRONE_ROOM || selectedBuildingType == CASTLE_WALL)
@@ -311,6 +319,26 @@ public class Play extends MapState implements Savable, Serializable {
             }
         }
         return true;
+    }
+
+    private ArrayList<Point> getBuildingTiles(int x, int y) {
+        int buildingTileWidth = getBuildingTileWidth(selectedBuildingType);
+        int buildingTileHeight = getBuildingTileHeight(selectedBuildingType);
+        int maxTileX = map.getTileData()[0].length - buildingTileWidth;
+        int maxTileY = map.getTileData().length - buildingTileHeight;
+        int tileX = gameX / TILE_SIZE;
+        if (tileX > maxTileX)
+            tileX = maxTileX;
+        int tileY = (gameY - TOP_BAR_HEIGHT) / TILE_SIZE;
+        if (tileY > maxTileY)
+            tileY = maxTileY;
+
+        ArrayList<Point> tiles = new ArrayList<>();
+        for (int currY = tileY; currY < tileY + buildingTileHeight; currY++)
+            for (int currX = tileX; currX < tileX + buildingTileWidth; currX++)
+                tiles.add(new Point(currX, currY));
+
+        return tiles;
     }
 
     private boolean isTileBuildable(Point tile) {
@@ -340,7 +368,16 @@ public class Play extends MapState implements Savable, Serializable {
 
     private void buildBuilding() {
         Player player = players.get(0);
-        Building building = createBuilding(player, selectedBuildingType, buildingID++, gameX, gameY);
+        int maxX = (map.getTileData()[0].length - getBuildingTileWidth(selectedBuildingType)) * TILE_SIZE;
+        int maxY = (map.getTileData().length - getBuildingTileHeight(selectedBuildingType)) * TILE_SIZE + TOP_BAR_HEIGHT;
+        int tileX = gameX;
+        if (tileX > maxX)
+            tileX = maxX;
+        int tileY = gameY;
+        if (tileY > maxY)
+            tileY = maxY;
+
+        Building building = createBuilding(player, selectedBuildingType, buildingID++, tileX, tileY);
         if (building != null) {
             buildingHandler.getBuildings().add(building);
             player.buildBuilding(selectedBuildingType);
@@ -454,7 +491,7 @@ public class Play extends MapState implements Savable, Serializable {
                     hoverGO = getGameObjectAt(x + (xTileOffset * TILE_SIZE), y + (yTileOffset * TILE_SIZE), false);
                     determineAction();
                 } else
-                    canBuild = canBuildAtMouseTile();
+                    canBuild = canBuildHere(gameX, gameY, true);
             }
         }
 
