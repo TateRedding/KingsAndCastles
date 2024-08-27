@@ -159,7 +159,8 @@ public abstract class Building extends SelectableGameObject {
                     "general population",
                     "",
                     "Villages are required",
-                    "to increase your population",
+                    "to increase",
+                    "your population",
                     "",
                     "Each village can",
                     "hold ?? population"

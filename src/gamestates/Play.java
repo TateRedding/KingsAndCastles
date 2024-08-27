@@ -300,7 +300,7 @@ public class Play extends MapState implements Savable, Serializable {
         return (tileType != WATER_GRASS && tileType != WATER_SAND);
     }
 
-    private boolean canAffordBuilding(int buildingType) {
+    public boolean canAffordBuilding(int buildingType) {
         // Assumes this is only being called for the active player
         Player player = players.get(0);
         if (!(player.getCoal() >= Building.getCostCoal(buildingType)))

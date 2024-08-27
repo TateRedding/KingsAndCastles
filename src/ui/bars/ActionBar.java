@@ -175,4 +175,9 @@ public class ActionBar extends BottomBar {
         return play;
     }
 
+    public void setSelectedBuildingType(int selectedBuildingType) {
+        this.selectedBuildingType = selectedBuildingType;
+        buildButton.setDisplayImage(ImageLoader.buildings[selectedBuildingType]);
+        buildingInterfaceButton.setText(getBuildingName(selectedBuildingType));
+    }
 }
