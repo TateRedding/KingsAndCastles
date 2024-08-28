@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class Player implements Serializable {
 
     private Play play;
-    private int playerNum;
+    private long playerID;
 
     private int coal = 1000;
     private int food = 100;
@@ -20,9 +20,9 @@ public class Player implements Serializable {
 
     private boolean isHuman;
 
-    public Player(Play play, int playerNum, boolean isHuman) {
+    public Player(Play play, long playerID, boolean isHuman) {
         this.play = play;
-        this.playerNum = playerNum;
+        this.playerID = playerID;
         this.isHuman = isHuman;
     }
 
@@ -70,8 +70,8 @@ public class Player implements Serializable {
         return play;
     }
 
-    public int getPlayerNum() {
-        return playerNum;
+    public long getPlayerID() {
+        return playerID;
     }
 
     public int getPopulation() {

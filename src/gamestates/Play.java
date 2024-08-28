@@ -54,6 +54,8 @@ public class Play extends MapState implements Savable, Serializable {
 
     private String name;
     private long seed;
+    private long activePlayerID;
+
     private int clickAction = -1;
 
     private boolean canBuild = false;
@@ -69,21 +71,23 @@ public class Play extends MapState implements Savable, Serializable {
 
     private boolean paused;
 
-    public Play(Game game, Map map, String name) {
+    public Play(Game game, Map map, String name, long playerID) {
         super(game, map);
         this.name = name;
         this.seed = System.currentTimeMillis();
+        this.activePlayerID = playerID;
         this.actionBar = new ActionBar(this);
         int numPlayers = map.getNumPlayers();
 
-        // Player 1 will always be human, and will always be the human player in control of this Play object.
-        // In the future, this wil need to be taken into consideration when ingesting network packets.
-        // Perhaps each player can have a unique ID (username?) to identify them by
-        players.add(new Player(this, 1, true));
+        // Add the human player to the array
+        // In the future, when accounts are implemented, the playerID will be generated and used here
+        // In testing, or with 'guest accounts' this can be the nano-time
+        players.add(new Player(this, playerID, true));
 
         // Until multiplayer is introduced, the rest of the players will always be AI
+        // AI players can use the nano-time as a player ID
         for (int i = 1; i < numPlayers; i++)
-            players.add(new Player(this, i + 1, false));
+            players.add(new Player(this, System.nanoTime(), false));
 
         this.buildingHandler = new BuildingHandler(this);
         this.entityHandler = new EntityHandler(this);
@@ -95,21 +99,25 @@ public class Play extends MapState implements Savable, Serializable {
         this.buildingSelection = new BuildingSelection(xStart, yStart, this);
     }
 
-    public Play(Game game, Map map, String name, long seed) {
+    public Play(Game game, Map map, String name, long seed, int playerID) {
         super(game, map);
         this.name = name;
         this.seed = seed;
+        this.activePlayerID = playerID;
         this.actionBar = new ActionBar(this);
         this.gameStatBar = new GameStatBar(this);
 
         int numPlayers = map.getNumPlayers();
-        // Player 1 will always be human, and will always be the displayed & actioned Player
-        players.add(new Player(this, 1, true));
+
+        // Add the human player to the array
+        // In the future, when accounts are implemented, the playerID will be generated and used here
+        // In testing, or with 'guest accounts' this can be the nano-time
+        players.add(new Player(this, playerID, true));
 
         // Until multiplayer is introduced, the rest of the players will always be AI
-        // In multiplayer, these will be actioned through networking packets
+        // AI players can use the nano-time as a player ID
         for (int i = 1; i < numPlayers; i++)
-            players.add(new Player(this, i + 1, false));
+            players.add(new Player(this, System.nanoTime(), false));
 
         this.buildingHandler = new BuildingHandler(this);
         this.entityHandler = new EntityHandler(this);
@@ -233,7 +241,7 @@ public class Play extends MapState implements Savable, Serializable {
 
         if (sgoType == ENTITY) {
             Entity selectedEntity = (Entity) selectedSGO;
-            if (selectedSGO.getPlayer().getPlayerNum() != 1) {
+            if (selectedSGO.getPlayer().getPlayerID() != activePlayerID) {
                 if (hoverType == ENTITY || hoverType == BUILDING) {
                     clickAction = SELECT;
                 }
@@ -274,7 +282,7 @@ public class Play extends MapState implements Savable, Serializable {
     private void handleCombatAction(int hoverType, Entity selectedEntity) {
         if (hoverType == ENTITY || hoverType == BUILDING) {
             Player player = ((SelectableGameObject) hoverGO).getPlayer();
-            if (player.getPlayerNum() != 1) {
+            if (player.getPlayerID() != activePlayerID) {
                 int attackStyle = getAttackStyle(selectedEntity.getEntityType());
                 clickAction = (attackStyle == MELEE) ? ATTACK_MELEE : ATTACK_RANGED;
             }
@@ -349,40 +357,54 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public boolean canAffordBuilding(int buildingType) {
-        // Assumes this is only being called for the active player
-        Player player = players.get(0);
-        if (!(player.getCoal() >= Building.getCostCoal(buildingType)))
-            return false;
+        Player player = getPlayerByID(activePlayerID);
+        if (player != null) {
+            if (!(player.getCoal() >= Building.getCostCoal(buildingType)))
+                return false;
 
-        if (!(player.getGold() >= Building.getCostGold(buildingType)))
-            return false;
+            if (!(player.getGold() >= Building.getCostGold(buildingType)))
+                return false;
 
-        if (!(player.getIron() >= Building.getCostIron(buildingType)))
-            return false;
+            if (!(player.getIron() >= Building.getCostIron(buildingType)))
+                return false;
 
-        if (!(player.getStone() >= Building.getCostStone(buildingType)))
-            return false;
+            if (!(player.getStone() >= Building.getCostStone(buildingType)))
+                return false;
 
-        return player.getLogs() >= Building.getCostLogs(buildingType);
+            return player.getLogs() >= Building.getCostLogs(buildingType);
+        }
+        return false;
     }
 
     private void buildBuilding() {
-        Player player = players.get(0);
-        int maxX = (map.getTileData()[0].length - getBuildingTileWidth(selectedBuildingType)) * TILE_SIZE;
-        int maxY = (map.getTileData().length - getBuildingTileHeight(selectedBuildingType)) * TILE_SIZE + TOP_BAR_HEIGHT;
-        int tileX = gameX;
-        if (tileX > maxX)
-            tileX = maxX;
-        int tileY = gameY;
-        if (tileY > maxY)
-            tileY = maxY;
+        Player player = getPlayerByID(activePlayerID);
+        if (player != null) {
 
-        Building building = createBuilding(player, selectedBuildingType, buildingID++, tileX, tileY);
-        if (building != null) {
-            buildingHandler.getBuildings().add(building);
-            player.buildBuilding(selectedBuildingType);
+            int maxX = (map.getTileData()[0].length - getBuildingTileWidth(selectedBuildingType)) * TILE_SIZE;
+            int maxY = (map.getTileData().length - getBuildingTileHeight(selectedBuildingType)) * TILE_SIZE + TOP_BAR_HEIGHT;
+            int tileX = gameX;
+            if (tileX > maxX)
+                tileX = maxX;
+            int tileY = gameY;
+            if (tileY > maxY)
+                tileY = maxY;
+
+            Building building = createBuilding(player, selectedBuildingType, buildingID++, tileX, tileY);
+            if (building != null) {
+                buildingHandler.getBuildings().add(building);
+                player.buildBuilding(selectedBuildingType);
+            }
         }
     }
+
+    private Player getPlayerByID(long playerID) {
+        for (Player p : players)
+            if (p.getPlayerID() == playerID)
+                return p;
+        return null;
+    }
+
+    ;
 
     private Building createBuilding(Player player, int buildingType, int id, int x, int y) {
         return switch (buildingType) {

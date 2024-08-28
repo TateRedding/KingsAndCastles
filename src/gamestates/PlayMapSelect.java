@@ -49,8 +49,9 @@ public class PlayMapSelect extends MapSelect {
     }
 
     private void startNewGame(String name) {
+        // The use of nanotime() is a placeholder until/if accounts are ever created
         if (selectedFile instanceof Map selectedMap) {
-            Play newGame = new Play(game, selectedMap, name);
+            Play newGame = new Play(game, selectedMap, name, System.nanoTime());
             LoadSave.saveGame(newGame);
             game.startGame(newGame);
             game.getSaveFileHandler().getGames().add(0, newGame);
