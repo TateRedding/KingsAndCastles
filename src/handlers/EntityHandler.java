@@ -1,5 +1,6 @@
 package handlers;
 
+import entities.Brute;
 import entities.Entity;
 import entities.Laborer;
 import gamestates.Play;
@@ -60,7 +61,8 @@ public class EntityHandler implements Serializable {
 
             // Debugging
             drawPath(e, g, xOffset, yOffset);
-//            drawHitbox(e, g, xOffset, yOffset);
+            drawHitbox(e, g, xOffset, yOffset);
+            drawTargetHitbox(e, g, xOffset, yOffset);
         }
     }
 
@@ -73,9 +75,13 @@ public class EntityHandler implements Serializable {
             int maxStartingEntities = Math.min(players.get(i).getPopulation(), castleZones.get(i).size());
             ArrayList<Point> spawnPoints = new ArrayList<>(castleZones.get(i));
             Collections.shuffle(spawnPoints, random);
-            for (int j = 0; j < maxStartingEntities; j++) {
+            for (int j = 0; j < maxStartingEntities + 1; j++) {
                 Point spawn = spawnPoints.get(j);
-                entities.add(new Laborer(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
+                // Debugging - Starting with one Brute each. Remove this check and just spawn laborers for production
+                if (j == maxStartingEntities)
+                    entities.add(new Brute(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
+                else
+                    entities.add(new Laborer(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
             }
         }
     }
@@ -93,6 +99,15 @@ public class EntityHandler implements Serializable {
         g.setColor(Color.RED);
         Rectangle bounds = e.getHitbox();
         g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
+
+    private void drawTargetHitbox(Entity e, Graphics g, int xOffset, int yOffset) {
+        GameObject go = e.getResourceToGather() == null ? e.getEntityToAttack() : e.getResourceToGather();
+        if (go != null) {
+            g.setColor(Color.BLUE);
+            Rectangle bounds = go.getHitbox();
+            g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        }
     }
 
     private void attack(Entity attacker, Entity target) {
@@ -133,10 +148,8 @@ public class EntityHandler implements Serializable {
             for (int y = tileY - 1; y < tileY + 2; y++) {
                 if (x < 0 || y < 0 || x >= play.getMap().getTileData()[0].length || y >= play.getMap().getTileData().length)
                     continue;
-                int pixelX = x * TILE_SIZE;
-                int pixelY = y * TILE_SIZE + TOP_BAR_HEIGHT;
                 int tileType = play.getMap().getTileData()[y][x].getTileType();
-                if (play.getGameObjectAt(pixelX, pixelY, true) == null && tileType != WATER_SAND && tileType != WATER_GRASS) {
+                if (play.getGameObjectAt(x * TILE_SIZE, y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && tileType != WATER_SAND && tileType != WATER_GRASS) {
                     Point target = new Point(x, y);
                     double xDist = start.getX() - target.getX();
                     double yDist = start.getY() - target.getY();
@@ -173,6 +186,9 @@ public class EntityHandler implements Serializable {
     }
 
     public boolean isDiagonalOpen(Point origin, Point target) {
+        // This helper method assumes the target is within 1 tile of the origin.
+        // Otherwise, this should not be used.
+
         // Check if point in vertical direction of target & cardinal of the origin is open
         Point verticalPoint = new Point(origin.x, origin.y + (target.y - origin.y));
         boolean isVerticalPointOpen = (play.getGameObjectAt(verticalPoint.x * TILE_SIZE, verticalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(verticalPoint, play));

@@ -2,22 +2,19 @@ package entities;
 
 import handlers.EntityHandler;
 import objects.Player;
-import resources.ResourceObject;
 
-public class Laborer extends Entity {
+public class Brute extends Entity {
 
-    // Laborer Specific States
-    public static final int CHOPPING = 3;
-    public static final int MINING = 4;
+    // Brute Specific States
+    public static final int ATTACKING = 3;
 
-    public Laborer(Player player, int x, int y, int id, EntityHandler entityHandler) {
-        super(player, x, y, LABORER, id, entityHandler);
+    public Brute(Player player, int x, int y, int id, EntityHandler entityHandler) {
+        super(player, x, y, BRUTE, id, entityHandler);
     }
 
     private int getNumberOfFrames(int state) {
         return switch (state) {
-            case IDLE, WALKING -> 4;
-            case CHOPPING, MINING -> 5;
+            case IDLE, WALKING, ATTACKING -> 4;
             default -> 1;
         };
     }
@@ -25,7 +22,7 @@ public class Laborer extends Entity {
     private int getMaxAnimationTicks(int state) {
         return switch (state) {
             case IDLE -> 25;
-            case WALKING, CHOPPING, MINING -> 15;
+            case WALKING, ATTACKING -> 15;
             default -> 20;
         };
     }
@@ -40,10 +37,10 @@ public class Laborer extends Entity {
                 animationFrame = 0;
         }
 
-        if (resourceToGather != null) {
+        if (entityToAttack != null) {
             if (state == IDLE)
-                setState((resourceToGather.getResourceType() == ResourceObject.TREE) ? CHOPPING : MINING);
-        } else if (state == CHOPPING || state == MINING)
+                setState(ATTACKING);
+        } else if (state == ATTACKING)
             setState(IDLE);
     }
 }

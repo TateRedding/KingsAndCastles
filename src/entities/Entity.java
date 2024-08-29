@@ -29,6 +29,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
 
     // Entity Types
     public static final int LABORER = 0;
+    public static final int BRUTE = 1;
 
     // Cardinal Directions
     public static final int UP = 0;
@@ -85,13 +86,14 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static int getDefaultMaxHealth(int entityType) {
         return switch (entityType) {
             case LABORER -> 50;
+            case BRUTE -> 100;
             default -> 0;
         };
     }
 
     public static int getDefaultDamage(int entityType) {
         return switch (entityType) {
-            case LABORER -> 0;
+            case BRUTE -> 10;
             default -> 0;
         };
     }
@@ -99,6 +101,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static int getDefaultActionSpeed(int entityType) {
         return switch (entityType) {
             case LABORER -> 50;
+            case BRUTE -> 25;
             default -> 0;
         };
     }
@@ -106,6 +109,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static float getDefaultMoveSpeed(int entityType) {
         return switch (entityType) {
             case LABORER -> 0.8f;
+            case BRUTE -> 1.0f;
             default -> 0.0f;
         };
     }
@@ -113,14 +117,15 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static int getDefaultActionRange(int entityType) {
 
         return switch (entityType) {
-            case LABORER -> 1;
+            case LABORER, BRUTE -> 1;
             default -> 0;
         };
     }
 
     public static int getDefaultSightRange(int entityType) {
         return switch (entityType) {
-            case LABORER -> 1;
+            case LABORER -> 2;
+            case BRUTE -> 5;
             default -> 0;
         };
     }
@@ -128,6 +133,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static BufferedImage getSprite(int entityType, int state, int dir, int frame) {
         return switch (entityType) {
             case LABORER -> ImageLoader.laborer[state][dir][frame];
+            case BRUTE -> ImageLoader.brute[state][dir][frame];
             default -> null;
         };
     }
@@ -135,6 +141,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static int getAttackStyle(int entityType) {
         return switch (entityType) {
             case LABORER -> NONE;
+            case BRUTE -> MELEE;
             default -> -1;
         };
     }
@@ -308,6 +315,14 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         hitbox.y = (int) y;
     }
 
+    public int getActionRange() {
+        return actionRange;
+    }
+
+    public void setActionRange(int actionRange) {
+        this.actionRange = actionRange;
+    }
+
     public int getActionTickMax() {
         return actionTickMax;
     }
@@ -376,6 +391,10 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
 
     public int getEntityType() {
         return entityType;
+    }
+
+    public int getSightRange() {
+        return sightRange;
     }
 
     public ArrayList<Point> getPath() {

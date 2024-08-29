@@ -24,6 +24,7 @@ public class ImageLoader {
 
     private static final String ACTIONS = "actions.png";
     private static final String BOTTOM_BAR = "bottom_bar.png";
+    private static final String BRUTE = "brute.png";
     private static final String BUILD_INDICATORS = "build_indicators.png";
     private static final String BUILDINGS = "buildings.png";
     private static final String CASTLE_ZONE = "castle_zone.png";
@@ -54,7 +55,7 @@ public class ImageLoader {
     public static BufferedImage bottomBar, dropDownBodyLarge, dropDownBarLarge, dropDownBarSmall, overlayBgLarge, overlayBgSmall, topBar;
     public static BufferedImage[] actions, buildIndicators, buildings, dropDownArrowLarge, iconButton, icons, largeTextButton, ores, rocks, selectIndicator, smallTextButtonLong, smallTextButtonShort, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
-    public static BufferedImage[][][] laborer;
+    public static BufferedImage[][][] brute, laborer;
 
     public static void loadImages() {
         loadBuildingImages();
@@ -99,6 +100,7 @@ public class ImageLoader {
     }
 
     private static void loadEntityImages() {
+        brute = getEntityAnimationArray(BRUTE, 4, 4);
         laborer = getEntityAnimationArray(LABORER, 5, 5);
     }
 

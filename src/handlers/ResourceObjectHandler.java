@@ -15,7 +15,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static entities.Laborer.GATHER_RANGE;
 import static main.Game.TILE_SIZE;
 import static objects.Chunk.MAX_CHUNK_SIZE;
 import static resources.ResourceObject.*;
@@ -336,9 +335,11 @@ public class ResourceObjectHandler implements Serializable {
                         }
 
             // Locate the nearest resource of the same type that can be pathed to
-            for (int radius = 1; radius <= GATHER_RANGE; radius++)
+            for (int radius = 1; radius <= laborer.getSightRange(); radius++)
                 for (int y = laborerTileY - radius; y <= laborerTileY + radius; y++)
                     for (int x = laborerTileX - radius; x <= laborerTileX + radius; x++) {
+
+                        // Skip inner loops when radius > 1
                         if (Math.abs(x - laborerTileX) != radius && Math.abs(y - laborerTileY) != radius) continue;
                         if (y >= 0 && y < tileData.length && x >= 0 && x < tileData[0].length) {
                             ResourceObject currRO = map.getResourceObjectData()[y][x];
