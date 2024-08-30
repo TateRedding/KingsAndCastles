@@ -180,7 +180,7 @@ public class Play extends MapState implements Savable, Serializable {
         if (clickAction != -1) {
             int x = gameX;
             int y = gameY;
-            if (clickAction == SELECT && hoverGO.getType() == ENTITY) {
+            if (clickAction == SELECT && hoverGO.getGameObjectType() == ENTITY) {
                 x = hoverGO.getHitbox().x;
                 y = hoverGO.getHitbox().y;
             }
@@ -226,8 +226,8 @@ public class Play extends MapState implements Savable, Serializable {
 
     public void determineAction() {
         clickAction = -1;  // Default action
-        int sgoType = (selectedSGO != null) ? selectedSGO.getType() : -1;
-        int hoverType = (hoverGO != null) ? hoverGO.getType() : -1;
+        int sgoType = (selectedSGO != null) ? selectedSGO.getGameObjectType() : -1;
+        int hoverType = (hoverGO != null) ? hoverGO.getGameObjectType() : -1;
 
         if (sgoType == hoverType && selectedSGO != null && hoverGO != null && selectedSGO.getId() == hoverGO.getId())
             return;
@@ -471,6 +471,17 @@ public class Play extends MapState implements Savable, Serializable {
                             }
                             if (isInRangeAndReachable || path != null)
                                 selectedEntity.setResourceToGather(hoverResourceObject);
+                        } else if (clickAction == ATTACK_MELEE) {
+                            Entity hoverEntity = (Entity) hoverGO;
+                            boolean isInRangeAndReachable = (selectedEntity.isTargetInRange(hoverEntity, selectedEntity.getActionRange()) && (selectedEntity.isLineOfSightOpen(hoverEntity)));
+                            ArrayList<Point> path = null;
+                            if (!isInRangeAndReachable) {
+                                path = entityHandler.getPathToNearestAdjacentTile(selectedEntity, tileX, tileY);
+                                if (path != null)
+                                    selectedEntity.setPath(path);
+                            }
+                            if (isInRangeAndReachable || path != null)
+                                selectedEntity.setEntityToAttack(hoverEntity);
                         }
                     }
                 }

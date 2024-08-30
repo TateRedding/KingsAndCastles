@@ -34,33 +34,44 @@ public class EntityHandler implements Serializable {
 
     public void update() {
         for (Entity e : entities) {
-            e.update();
+            if (e.isAlive()) {
+                e.update();
+                int entityType = e.getEntityType();
 
-            if (e.getActionTick() >= e.getActionTickMax()) {
-                if (e.getEntityType() == LABORER) {
-                    play.getResourceObjectHandler().gatherResource(e.getPlayer(), e.getResourceToGather(), (Laborer) e);
-                } else {
-                    attack(e, e.getEntityToAttack());
+                // Auto-attack
+                if (entityType != LABORER && e.getState() == IDLE && e.getEntityToAttack() == null)
+                    findEntityToAttack(e);
+
+                if (e.getActionTick() >= e.getActionTickMax()) {
+                    if (entityType == LABORER)
+                        play.getResourceObjectHandler().gatherResource(e.getPlayer(), e.getResourceToGather(), (Laborer) e);
+                    else
+                        attack(e, e.getEntityToAttack());
+                    e.setActionTick(0);
                 }
-                e.setActionTick(0);
             }
         }
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Entity e : entities) {
-            int dir = e.getDirection();
-            if (dir == UP_LEFT || dir == DOWN_LEFT)
-                dir = LEFT;
-            else if (dir == UP_RIGHT || dir == DOWN_RIGHT)
-                dir = RIGHT;
+            if (e.isAlive()) {
+                int dir = e.getDirection();
+                if (dir == UP_LEFT || dir == DOWN_LEFT)
+                    dir = LEFT;
+                else if (dir == UP_RIGHT || dir == DOWN_RIGHT)
+                    dir = RIGHT;
 
-            g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), dir, e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
+                g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), dir, e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
 
-            // Debugging
-            drawPath(e, g, xOffset, yOffset);
-            drawHitbox(e, g, xOffset, yOffset);
-            drawTargetHitbox(e, g, xOffset, yOffset);
+                if (e.getHealth() < e.getMaxHealth())
+                    e.drawHealthBar(g, e.getHealth(), e.getMaxHealth(), xOffset, yOffset);
+
+                // Debugging
+                drawPath(e, g, xOffset, yOffset);
+                drawHitbox(e, g, xOffset, yOffset);
+                drawTargetHitbox(e, g, xOffset, yOffset);
+            }
         }
     }
 
@@ -108,15 +119,41 @@ public class EntityHandler implements Serializable {
         }
     }
 
-    private void attack(Entity attacker, Entity target) {
-        target.setHealth(target.getHealth() - attacker.getDamage());
-        if (target.getHealth() <= 0) {
-            target.setAlive(false);
-            for (Entity e : entities)
-                if (e.getId() == target.getId()) {
-                    entities.remove(e);
+    private void findEntityToAttack(Entity attacker) {
+        for (Entity target : entities) {
+            if (target.getPlayer().getPlayerID() != attacker.getPlayer().getPlayerID() && attacker.isTargetInRange(target, attacker.getSightRange())) {
+                if (attacker.isTargetInRange(target, attacker.getActionRange()) && attacker.isLineOfSightOpen(target)) {
+                    attacker.setEntityToAttack(target);
                     return;
                 }
+
+                Point targetTile;
+                ArrayList<Point> targetPath = target.getPath();
+                if (targetPath != null && !targetPath.isEmpty())
+                    targetTile = targetPath.get(0);
+                else
+                    targetTile = new Point(target.getHitbox().x / TILE_SIZE, (target.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+                ArrayList<Point> path = attacker.getEntityHandler().getPathToNearestAdjacentTile(attacker, targetTile.x, targetTile.y);
+                if (path != null) {
+                    attacker.setPath(path);
+                    attacker.setEntityToAttack(target);
+                    return;
+                }
+            }
+        }
+    }
+
+    private void attack(Entity attacker, Entity target) {
+        target.setHealth(target.getHealth() - attacker.getDamage());
+
+        // Auto-retaliate
+        if (target.getEntityType() != LABORER && target.getEntityToAttack() == null && target.getState() == IDLE)
+            target.setEntityToAttack(attacker);
+
+        if (target.getHealth() <= 0) {
+            target.setAlive(false);
+            attacker.setState(IDLE);
+            attacker.setEntityToAttack(null);
         }
     }
 
@@ -196,11 +233,11 @@ public class EntityHandler implements Serializable {
         if (checkEntireTile) {
             Rectangle tileBounds = new Rectangle(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             for (Entity e : entities)
-                if (e.getHitbox().intersects(tileBounds))
+                if (e.isAlive() && e.getHitbox().intersects(tileBounds))
                     return e;
         } else
             for (Entity e : entities)
-                if (e.getHitbox().contains(x, y))
+                if (e.isAlive() && e.getHitbox().contains(x, y))
                     return e;
         return null;
     }

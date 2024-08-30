@@ -47,12 +47,13 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static final int DEAD = 0;
     public static final int IDLE = 1;
     public static final int WALKING = 2;
+    public static final int ATTACKING = 3;
 
     protected ArrayList<Point> path;
     protected EntityHandler entityHandler;
 
     protected int entityType;
-    protected int health, maxHealth, damage;
+    protected int damage;
     protected int actionTick = 0;
     protected int actionTickMax;
     protected int actionRange, sightRange;
@@ -93,15 +94,15 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
 
     public static int getDefaultDamage(int entityType) {
         return switch (entityType) {
-            case BRUTE -> 10;
+            case BRUTE -> 5;
             default -> 0;
         };
     }
 
     public static int getDefaultActionSpeed(int entityType) {
         return switch (entityType) {
-            case LABORER -> 50;
-            case BRUTE -> 25;
+            case LABORER -> Laborer.getMaxAnimationTick(CHOPPING) * Laborer.getNumberOfFrames(CHOPPING);
+            case BRUTE -> Brute.getMaxAnimationTick(ATTACKING) * Brute.getNumberOfFrames(ATTACKING);
             default -> 0;
         };
     }
@@ -146,13 +147,38 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         };
     }
 
+    public static int getActionFrameIndex(int entityType, int state) {
+        // Which animation frame should the action be performed on?
+        return switch (entityType) {
+            case LABORER -> Laborer.getActionFrameIndex(state);
+            case BRUTE -> Brute.getActionFrameIndex(state);
+            default -> 0;
+        };
+    }
+
+    private static int getNumberOfFrames(int entityType, int state) {
+        return switch (entityType) {
+            case LABORER -> Laborer.getNumberOfFrames(state);
+            case BRUTE -> Brute.getNumberOfFrames(state);
+            default -> 0;
+        };
+    }
+
+    private static int getMaxAnimationTick(int entityType, int state) {
+        return switch (entityType) {
+            case LABORER -> Laborer.getMaxAnimationTick(state);
+            case BRUTE -> Brute.getMaxAnimationTick(state);
+            default -> 0;
+        };
+    }
+
     public void update() {
         if (isAlive) {
             if (path != null && !path.isEmpty())
                 move();
             // Below will need to check if an entity is also in a combat state if entityToAttack is not null.
             // It may also need to ensure the target is still within attacking range, should the target be moving.
-            if ((resourceToGather != null && (state == CHOPPING || state == MINING)) || entityToAttack != null) {
+            if ((resourceToGather != null && (state == CHOPPING || state == MINING)) || (entityToAttack != null && state == ATTACKING)) {
                 if (state != WALKING && state != IDLE)
                     turnTowardsTarget();
                 actionTick++;
@@ -183,7 +209,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
             entityTile = new Point(hitbox.x / TILE_SIZE, (hitbox.y - TOP_BAR_HEIGHT) / TILE_SIZE); // Default to entity's current tile
         }
 
-        if (target.getType() == ENTITY && ((Entity) target).getPath() != null && !(((Entity) target).getPath().isEmpty())) {
+        if (target.getGameObjectType() == ENTITY && ((Entity) target).getPath() != null && !(((Entity) target).getPath().isEmpty())) {
             targetTile = ((Entity) target).getPath().get(0);
         } else {
             targetTile = new Point(target.getHitbox().x / TILE_SIZE, (target.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE); // Default to target's current tile
@@ -405,6 +431,10 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         return actionTick;
     }
 
+    public boolean isAlive() {
+        return isAlive;
+    }
+
     public void setAlive(boolean alive) {
         isAlive = alive;
     }
@@ -432,6 +462,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public void setState(int state) {
         this.state = state;
         this.animationFrame = 0;
+        this.actionTick = getMaxAnimationTick(entityType, state) * (getNumberOfFrames(entityType, state) - getActionFrameIndex(entityType, state));
         this.animationTick = 0;
     }
 

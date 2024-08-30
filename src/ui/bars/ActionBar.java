@@ -74,9 +74,9 @@ public class ActionBar extends BottomBar {
         SelectableGameObject sgo = play.getSelectedSGO();
         if (sgo != null) {
             BufferedImage sprite = null;
-            if (sgo.getType() == GameObject.ENTITY)
+            if (sgo.getGameObjectType() == GameObject.ENTITY)
                 sprite = Entity.getSprite(((Entity) sgo).getEntityType(), Entity.IDLE, Entity.DOWN, 0);
-            else if (sgo.getType() == GameObject.BUILDING) {
+            else if (sgo.getGameObjectType() == GameObject.BUILDING) {
                 //sprite = building sprite
             }
             renderSelection(g, sprite);

@@ -5,21 +5,18 @@ import objects.Player;
 
 public class Brute extends Entity {
 
-    // Brute Specific States
-    public static final int ATTACKING = 3;
-
     public Brute(Player player, int x, int y, int id, EntityHandler entityHandler) {
         super(player, x, y, BRUTE, id, entityHandler);
     }
 
-    private int getNumberOfFrames(int state) {
+    public static int getNumberOfFrames(int state) {
         return switch (state) {
             case IDLE, WALKING, ATTACKING -> 4;
             default -> 1;
         };
     }
 
-    private int getMaxAnimationTicks(int state) {
+    public static int getMaxAnimationTick(int state) {
         return switch (state) {
             case IDLE -> 25;
             case WALKING, ATTACKING -> 15;
@@ -27,10 +24,17 @@ public class Brute extends Entity {
         };
     }
 
+    public static int getActionFrameIndex(int state) {
+        return switch (state) {
+            case ATTACKING -> 3;
+            default -> getNumberOfFrames(state);
+        };
+    }
+
     public void update() {
         super.update();
         animationTick++;
-        if (animationTick >= getMaxAnimationTicks(state)) {
+        if (animationTick >= getMaxAnimationTick(state)) {
             animationTick = 0;
             animationFrame++;
             if (animationFrame >= getNumberOfFrames(state))

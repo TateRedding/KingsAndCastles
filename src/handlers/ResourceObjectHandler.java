@@ -39,35 +39,12 @@ public class ResourceObjectHandler implements Serializable {
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
-        for (int y = 0; y < resourceObjectData.length; y++) {
+        for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
-                if (currRO != null && currRO.getCurrentAmount() < currRO.getTotalAmount()) {
-                    drawAmountBar(g, currRO, xOffset, yOffset);
-                }
+                if (currRO != null && currRO.getCurrentAmount() < currRO.getTotalAmount())
+                    currRO.drawHealthBar(g, currRO.getCurrentAmount(), currRO.getTotalAmount(), xOffset, yOffset);
             }
-        }
-    }
-
-    private void drawAmountBar(Graphics g, ResourceObject ro, int xOffset, int yOffset) {
-        Rectangle bounds = ro.getHitbox();
-        int xStart = (bounds.x + (bounds.width - AMOUNT_BAR_MAX_WIDTH) / 2) - xOffset * TILE_SIZE;
-        int yStart = (bounds.y + 3) - yOffset * TILE_SIZE;
-        int fillWidth = (int) (((float) ro.getCurrentAmount() / (float) ro.getTotalAmount()) * AMOUNT_BAR_MAX_WIDTH);
-
-        g.setColor(new Color(64, 27, 0));
-        g.drawRect(xStart - 3, yStart - 3, AMOUNT_BAR_MAX_WIDTH + 6, 8);
-        g.drawRect(xStart - 1, yStart - 1, AMOUNT_BAR_MAX_WIDTH + 2, 4);
-
-        g.setColor(new Color(255, 201, 128));
-        g.drawRect(xStart - 2, yStart - 2, AMOUNT_BAR_MAX_WIDTH + 4, 6);
-
-        g.setColor(new Color(136, 33, 42));
-        g.drawRect(xStart, yStart, fillWidth, 1);
-
-        g.setColor(new Color(189, 79, 79));
-        g.drawRect(xStart, yStart + 1, fillWidth, 1);
-
     }
 
     private void generateResourceObjects() {
@@ -344,25 +321,15 @@ public class ResourceObjectHandler implements Serializable {
                         if (y >= 0 && y < tileData.length && x >= 0 && x < tileData[0].length) {
                             ResourceObject currRO = map.getResourceObjectData()[y][x];
                             if (currRO != null && currRO.getResourceType() == resourceType) {
-                                if (laborer.isTargetInRange(currRO, laborer.getActionRange())) {
-                                    if (laborer.isLineOfSightOpen(currRO)) {
-                                        laborer.setResourceToGather(currRO);
-                                        return;
-                                    } else {
-                                        ArrayList<Point> path = laborer.getEntityHandler().getPathToNearestAdjacentTile(laborer, currRO.getTileX(), currRO.getTileY());
-                                        if (path != null) {
-                                            laborer.setPath(path);
-                                            laborer.setResourceToGather(currRO);
-                                            return;
-                                        }
-                                    }
-                                } else {
-                                    ArrayList<Point> pathToTarget = laborer.getEntityHandler().getPathToNearestAdjacentTile(laborer, currRO.getTileX(), currRO.getTileY());
-                                    if (pathToTarget != null) {
-                                        laborer.setPath(pathToTarget);
-                                        laborer.setResourceToGather(currRO);
-                                        return;
-                                    }
+                                if (laborer.isTargetInRange(currRO, laborer.getActionRange()) && laborer.isLineOfSightOpen(currRO)) {
+                                    laborer.setResourceToGather(currRO);
+                                    return;
+                                }
+                                ArrayList<Point> path = laborer.getEntityHandler().getPathToNearestAdjacentTile(laborer, currRO.getTileX(), currRO.getTileY());
+                                if (path != null) {
+                                    laborer.setPath(path);
+                                    laborer.setResourceToGather(currRO);
+                                    return;
                                 }
                             }
                         }
