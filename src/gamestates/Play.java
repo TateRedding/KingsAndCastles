@@ -462,10 +462,10 @@ public class Play extends MapState implements Savable, Serializable {
                             selectedEntity.setEntityToAttack(null);
                         } else if (clickAction == CHOP || clickAction == MINE) {
                             ResourceObject hoverResourceObject = (ResourceObject) hoverGO;
-                            boolean isInRangeAndReachable = selectedEntity.isTargetInRangeAndReachable(hoverResourceObject);
+                            boolean isInRangeAndReachable = (selectedEntity.isTargetInRange(hoverResourceObject, selectedEntity.getActionRange()) && (selectedEntity.isLineOfSightOpen(hoverResourceObject)));
                             ArrayList<Point> path = null;
                             if (!isInRangeAndReachable) {
-                                path = entityHandler.getPathToNearestTile(selectedEntity, tileX, tileY);
+                                path = entityHandler.getPathToNearestAdjacentTile(selectedEntity, tileX, tileY);
                                 if (path != null)
                                     selectedEntity.setPath(path);
                             }

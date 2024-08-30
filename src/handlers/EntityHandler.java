@@ -17,8 +17,6 @@ import java.util.Random;
 
 import static entities.Entity.*;
 import static main.Game.TILE_SIZE;
-import static objects.Tile.WATER_GRASS;
-import static objects.Tile.WATER_SAND;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class EntityHandler implements Serializable {
@@ -136,7 +134,7 @@ public class EntityHandler implements Serializable {
         }
     }
 
-    public ArrayList<Point> getPathToNearestTile(Entity e, int tileX, int tileY) {
+    public ArrayList<Point> getPathToNearestAdjacentTile(Entity e, int tileX, int tileY) {
         HashMap<Double, Point> openTiles = new HashMap<Double, Point>();
         Point start;
         if (e.getPath() != null && !e.getPath().isEmpty())
@@ -148,21 +146,18 @@ public class EntityHandler implements Serializable {
             for (int y = tileY - 1; y < tileY + 2; y++) {
                 if (x < 0 || y < 0 || x >= play.getMap().getTileData()[0].length || y >= play.getMap().getTileData().length)
                     continue;
-                int tileType = play.getMap().getTileData()[y][x].getTileType();
-                if (play.getGameObjectAt(x * TILE_SIZE, y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && tileType != WATER_SAND && tileType != WATER_GRASS) {
-                    Point target = new Point(x, y);
-                    double xDist = start.getX() - target.getX();
-                    double yDist = start.getY() - target.getY();
-                    double cSquared = (xDist * xDist) + (yDist * yDist);
+                Point currTarget = new Point(x, y);
+                if (AStar.isPointOpen(currTarget, play)) {
                     boolean isCardinal = (x == tileX || y == tileY);
 
-                    if (!isCardinal && !isDiagonalOpen(new Point(x, y), new Point(tileX, tileY)))
+                    if (!isCardinal && !isAdjacentDiagonalOpen(new Point(x, y), new Point(tileX, tileY)))
                         continue;
 
-                    double distance = Math.sqrt(cSquared);
+                    double distance = AStar.getDistance(start, currTarget);
+
                     if (!isCardinal)
                         distance *= 2;
-                    openTiles.put(distance, target);
+                    openTiles.put(distance, currTarget);
                 }
             }
 
@@ -185,19 +180,16 @@ public class EntityHandler implements Serializable {
         return null;
     }
 
-    public boolean isDiagonalOpen(Point origin, Point target) {
-        // This helper method assumes the target is within 1 tile of the origin.
-        // Otherwise, this should not be used.
-
+    public boolean isAdjacentDiagonalOpen(Point origin, Point target) {
         // Check if point in vertical direction of target & cardinal of the origin is open
         Point verticalPoint = new Point(origin.x, origin.y + (target.y - origin.y));
-        boolean isVerticalPointOpen = (play.getGameObjectAt(verticalPoint.x * TILE_SIZE, verticalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(verticalPoint, play));
+        boolean isVerticalPointOpen = (play.getGameObjectAt(verticalPoint.x * TILE_SIZE, verticalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointOpen(verticalPoint, play));
         if (isVerticalPointOpen)
             return true;
 
         // Check if point in horizontal direction of target & cardinal of the origin is open
         Point horizontalPoint = new Point(origin.x + (target.x - origin.x), origin.y);
-        return (play.getGameObjectAt(horizontalPoint.x * TILE_SIZE, horizontalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointWalkable(horizontalPoint, play));
+        return (play.getGameObjectAt(horizontalPoint.x * TILE_SIZE, horizontalPoint.y * TILE_SIZE + TOP_BAR_HEIGHT, true) == null && AStar.isPointOpen(horizontalPoint, play));
     }
 
     public Entity getEntityAtCoord(int x, int y, boolean checkEntireTile) {

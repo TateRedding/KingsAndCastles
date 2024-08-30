@@ -344,13 +344,22 @@ public class ResourceObjectHandler implements Serializable {
                         if (y >= 0 && y < tileData.length && x >= 0 && x < tileData[0].length) {
                             ResourceObject currRO = map.getResourceObjectData()[y][x];
                             if (currRO != null && currRO.getResourceType() == resourceType) {
-                                if (laborer.isTargetInRangeAndReachable(currRO)) {
-                                    laborer.setResourceToGather(currRO);
-                                    return;
+                                if (laborer.isTargetInRange(currRO, laborer.getActionRange())) {
+                                    if (laborer.isLineOfSightOpen(currRO)) {
+                                        laborer.setResourceToGather(currRO);
+                                        return;
+                                    } else {
+                                        ArrayList<Point> path = laborer.getEntityHandler().getPathToNearestAdjacentTile(laborer, currRO.getTileX(), currRO.getTileY());
+                                        if (path != null) {
+                                            laborer.setPath(path);
+                                            laborer.setResourceToGather(currRO);
+                                            return;
+                                        }
+                                    }
                                 } else {
-                                    // Attempt to locate a path to the resource
-                                    laborer.setPath(laborer.getEntityHandler().getPathToNearestTile(laborer, currRO.getTileX(), currRO.getTileY()));
-                                    if (laborer.getPath() != null) {
+                                    ArrayList<Point> pathToTarget = laborer.getEntityHandler().getPathToNearestAdjacentTile(laborer, currRO.getTileX(), currRO.getTileY());
+                                    if (pathToTarget != null) {
+                                        laborer.setPath(pathToTarget);
                                         laborer.setResourceToGather(currRO);
                                         return;
                                     }

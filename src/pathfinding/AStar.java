@@ -88,73 +88,69 @@ public class AStar {
         // Cardinal Directions (Up, Right, Down, Left)
         if (parent.y > 0) {
             Point above = new Point(parent.x, parent.y - 1);
-            isUpOpen = isPointWalkable(above, play);
+            isUpOpen = isPointOpen(above, play);
             if (isUpOpen) neighbors.add(above);
         }
 
         if (parent.x < gridWidth - 1) {
             Point right = new Point(parent.x + 1, parent.y);
-            isRightOpen = isPointWalkable(right, play);
+            isRightOpen = isPointOpen(right, play);
             if (isRightOpen) neighbors.add(right);
         }
 
         if (parent.y < gridHeight - 1) {
             Point below = new Point(parent.x, parent.y + 1);
-            isDownOpen = isPointWalkable(below, play);
+            isDownOpen = isPointOpen(below, play);
             if (isDownOpen) neighbors.add(below);
         }
 
         if (parent.x > 0) {
             Point left = new Point(parent.x - 1, parent.y);
-            isLeftOpen = isPointWalkable(left, play);
+            isLeftOpen = isPointOpen(left, play);
             if (isLeftOpen) neighbors.add(left);
         }
 
         // Diagonal Directions (Top-left, Top-right, Bottom-left, Bottom-right)
         if (parent.y > 0 && parent.x > 0) {
             Point topLeft = new Point(parent.x - 1, parent.y - 1);
-            if (isPointWalkable(topLeft, play) && (isUpOpen || isLeftOpen))
+            if (isPointOpen(topLeft, play) && (isUpOpen || isLeftOpen))
                 neighbors.add(topLeft);
         }
 
         if (parent.y > 0 && parent.x < gridWidth - 1) {
             Point topRight = new Point(parent.x + 1, parent.y - 1);
-            if (isPointWalkable(topRight, play) && (isUpOpen || isRightOpen))
+            if (isPointOpen(topRight, play) && (isUpOpen || isRightOpen))
                 neighbors.add(topRight);
         }
 
         if (parent.y < gridHeight - 1 && parent.x > 0) {
             Point bottomLeft = new Point(parent.x - 1, parent.y + 1);
-            if (isPointWalkable(bottomLeft, play) && (isDownOpen || isLeftOpen))
+            if (isPointOpen(bottomLeft, play) && (isDownOpen || isLeftOpen))
                 neighbors.add(bottomLeft);
         }
 
         if (parent.y < gridHeight - 1 && parent.x < gridWidth - 1) {
             Point bottomRight = new Point(parent.x + 1, parent.y + 1);
-            if (isPointWalkable(bottomRight, play) && (isDownOpen || isRightOpen))
+            if (isPointOpen(bottomRight, play) && (isDownOpen || isRightOpen))
                 neighbors.add(bottomRight);
         }
 
         return neighbors;
     }
 
-    public static boolean isPointWalkable(Point point, Play play) {
+    public static boolean isPointOpen(Point point, Play play) {
         int x = point.x * TILE_SIZE;
         int y = point.y * TILE_SIZE + TOP_BAR_HEIGHT;
         int tileType = play.getMap().getTileData()[point.y][point.x].getTileType();
         return (tileType != WATER_GRASS && tileType != WATER_SAND && play.getGameObjectAt(x, y, true) == null);
     }
 
-    private static double getDistance(Point from, Point to) {
+    public static double getDistance(Point from, Point to) {
         double xDist = from.getX() - to.getX();
         double yDist = from.getY() - to.getY();
 
-        // If moving diagonally, use a different calculation
-        if (Math.abs(xDist) > 0 && Math.abs(yDist) > 0) {
-            return Math.sqrt(2); // Approximate diagonal movement distance
-        }
-
-        return Math.abs(xDist) + Math.abs(yDist);
+        // Calculate the Euclidean distance for any diagonal movement
+        return Math.sqrt(xDist * xDist + yDist * yDist);
     }
 
     private static ArrayList<Point> reverse(ArrayList<Point> path) {

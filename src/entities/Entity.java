@@ -161,26 +161,96 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         }
     }
 
-    public boolean isTargetInRangeAndReachable(GameObject target) {
-        double startX = x - actionRange * TILE_SIZE;
-        double startY = y - actionRange * TILE_SIZE;
-        double size = (actionRange * 2 + 1) * TILE_SIZE;
+    public boolean isTargetInRange(GameObject target, int tileRange) {
+        float startX = x - tileRange * TILE_SIZE;
+        float startY = y - tileRange * TILE_SIZE;
+        float size = (tileRange * 2 + 1) * TILE_SIZE;
         Ellipse2D range = new Ellipse2D.Double(startX, startY, size, size);
         Rectangle targetBounds = target.getHitbox();
         int middleX = targetBounds.x + targetBounds.width / 2;
         int middleY = targetBounds.y + targetBounds.height / 2;
-        boolean isInRange = range.contains(middleX, middleY);
-        if (isInRange) {
-            // Check if target is diagonal from this entity
-            int targetTileX = middleX / TILE_SIZE;
-            int targetTileY = (middleY - TOP_BAR_HEIGHT) / TILE_SIZE;
-            int entityTileX = (int) (x / TILE_SIZE);
-            int entityTileY = (int) ((y - TOP_BAR_HEIGHT) / TILE_SIZE);
-            if (targetTileX != entityTileX && targetTileY != entityTileY)
-                return entityHandler.isDiagonalOpen(new Point(entityTileX, entityTileY), new Point(targetTileX, targetTileY));
-            return true;
+        return range.contains(middleX, middleY);
+    }
+
+    public boolean isLineOfSightOpen(GameObject target) {
+        Point entityTile;
+        Point targetTile;
+        Play play = entityHandler.getPlay();
+
+        if (path != null && !path.isEmpty()) {
+            entityTile = path.get(0);
+        } else {
+            entityTile = new Point(hitbox.x / TILE_SIZE, (hitbox.y - TOP_BAR_HEIGHT) / TILE_SIZE); // Default to entity's current tile
         }
-        return false;
+
+        if (target.getType() == ENTITY && ((Entity) target).getPath() != null && !(((Entity) target).getPath().isEmpty())) {
+            targetTile = ((Entity) target).getPath().get(0);
+        } else {
+            targetTile = new Point(target.getHitbox().x / TILE_SIZE, (target.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE); // Default to target's current tile
+        }
+
+        Point currentTile = entityTile;
+
+        while (!currentTile.equals(targetTile)) {
+            ArrayList<Point> neighbors = getTilesClosestToTarget(currentTile, targetTile, play);
+
+            if (neighbors.isEmpty())
+                return false;
+
+            Point nextTile = null;
+            for (Point neighbor : neighbors) {
+                if (neighbor.equals(targetTile))
+                    return true;
+
+                if (AStar.isPointOpen(neighbor, play)) {
+                    nextTile = neighbor;
+                    break;
+                }
+            }
+
+            if (nextTile != null)
+                currentTile = nextTile;
+            else
+                return false;
+        }
+        return true;
+    }
+
+
+    private ArrayList<Point> getTilesClosestToTarget(Point start, Point target, Play play) {
+        double lowestDist = Double.POSITIVE_INFINITY;
+        int gridWidth = play.getMap().getTileData()[0].length;
+        int gridHeight = play.getMap().getTileData().length;
+
+        ArrayList<Point> closestTiles = new ArrayList<>();
+        ArrayList<Point> allCardinalTiles = new ArrayList<>();
+
+        if (start.y > 0)
+            allCardinalTiles.add(new Point(start.x, start.y - 1));
+
+        if (start.x < gridWidth - 1)
+            allCardinalTiles.add(new Point(start.x + 1, start.y));
+
+
+        if (start.y < gridHeight - 1)
+            allCardinalTiles.add(new Point(start.x, start.y + 1));
+
+        if (start.x > 0)
+            allCardinalTiles.add(new Point(start.x - 1, start.y));
+
+        for (Point p : allCardinalTiles) {
+            double dist = AStar.getDistance(p, target);
+            if (dist == lowestDist)
+                closestTiles.add(p);
+            else if (dist < lowestDist) {
+                lowestDist = dist;
+                closestTiles.clear();
+                closestTiles.add(p);
+            }
+        }
+
+        return closestTiles;
+
     }
 
     protected void turnTowardsTarget() {
