@@ -121,7 +121,7 @@ public class EntityHandler implements Serializable {
 
     private void findEntityToAttack(Entity attacker) {
         for (Entity target : entities) {
-            if (target.getPlayer().getPlayerID() != attacker.getPlayer().getPlayerID() && attacker.isTargetInRange(target, attacker.getSightRange())) {
+            if (target.isAlive() && target.getPlayer().getPlayerID() != attacker.getPlayer().getPlayerID() && attacker.isTargetInRange(target, attacker.getSightRange())) {
                 if (attacker.isTargetInRange(target, attacker.getActionRange()) && attacker.isLineOfSightOpen(target)) {
                     attacker.setEntityToAttack(target);
                     return;
