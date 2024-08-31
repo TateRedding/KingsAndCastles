@@ -47,7 +47,7 @@ public class ActionBar extends BottomBar {
         float yOffset = (float) (BOTTOM_BAR_HEIGHT - (getButtonHeight(TEXT_SMALL_LONG) + getButtonHeight(SPRITE))) / 3;
 
         int buildButtonXStart = xOffset + (getButtonWidth(TEXT_SMALL_LONG) - getButtonWidth(SPRITE)) / 2;
-        float scale = MAX_BUTTON_SPRITE_SIZE / Math.max((float) getBuildingTileWidth(selectedBuildingType) * TILE_SIZE, (float) getBuildingTileHeight(selectedBuildingType) * TILE_SIZE);
+        float scale = getSelectedBuildingSpriteScale();
         buildButton = new ImageButton(SPRITE, buildButtonXStart, BOTTOM_BAR_Y + (int) yOffset, ImageLoader.buildings[selectedBuildingType], scale);
 
         buildingInterfaceButton = new TextButton(TEXT_SMALL_LONG, xOffset, BOTTOM_BAR_Y + getButtonHeight(SPRITE) + (int) (yOffset * 2), 22f, "Choose Building");
@@ -130,6 +130,10 @@ public class ActionBar extends BottomBar {
         }
     }
 
+    private float getSelectedBuildingSpriteScale() {
+        return MAX_BUTTON_SPRITE_SIZE / Math.max((float) getBuildingTileWidth(selectedBuildingType) * TILE_SIZE, (float) getBuildingTileHeight(selectedBuildingType) * TILE_SIZE);
+    }
+
     @Override
     public void mousePressed(int x, int y, int button) {
         super.mousePressed(x, y, button);
@@ -178,7 +182,7 @@ public class ActionBar extends BottomBar {
 
     public void setSelectedBuildingType(int selectedBuildingType) {
         this.selectedBuildingType = selectedBuildingType;
-        float scale = MAX_BUTTON_SPRITE_SIZE / Math.max((float) getBuildingTileWidth(selectedBuildingType) * TILE_SIZE, (float) getBuildingTileHeight(selectedBuildingType) * TILE_SIZE);
+        float scale = getSelectedBuildingSpriteScale();
         buildButton.setDisplayImage(ImageLoader.buildings[selectedBuildingType]);
         buildButton.setImageScale(scale);
     }

@@ -66,7 +66,7 @@ public class ResourceObjectHandler implements Serializable {
         for (Chunk[] row : chunks)
             for (Chunk c : row) {
                 ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c);
-                double chunkSize = c.getWidth() * c.getHeight();
+                double chunkSize = c.getTileWdith() * c.getTileHeight();
                 double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
                 double percentage = chunkSize / maxSize;
                 int maxCoal = (int) Math.max(Math.round(getMaxPerChunk(COAL) * percentage), 1);
@@ -114,7 +114,7 @@ public class ResourceObjectHandler implements Serializable {
         for (Chunk[] row : chunks)
             for (Chunk c : row) {
                 ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c);
-                double chunkSize = c.getWidth() * c.getHeight();
+                double chunkSize = c.getTileWdith() * c.getTileHeight();
                 double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
                 double percentage = chunkSize / maxSize;
                 int maxIron = (int) Math.max(Math.round(getMaxPerChunk(IRON) * percentage), 1);
@@ -175,7 +175,7 @@ public class ResourceObjectHandler implements Serializable {
         for (Chunk[] row : chunks)
             for (Chunk c : row) {
                 ArrayList<Point> spawnablePoints = getResourceSpawnablePoints(c);
-                double chunkSize = c.getWidth() * c.getHeight();
+                double chunkSize = c.getTileWdith() * c.getTileHeight();
                 double maxSize = MAX_CHUNK_SIZE * MAX_CHUNK_SIZE;
                 double percentage = chunkSize / maxSize;
                 int max = (int) Math.min(Math.max(Math.round(getMaxPerChunk(ROCK) * percentage), 1), spawnablePoints.size());
@@ -216,10 +216,10 @@ public class ResourceObjectHandler implements Serializable {
 
     private ArrayList<Point> getResourceSpawnablePoints(Chunk chunk) {
         ArrayList<Point> resourceSpawnablePoints = new ArrayList<>();
-        int startY = chunk.getStartY();
-        int startX = chunk.getStartX();
-        for (int y = startY; y < startY + chunk.getHeight(); y++)
-            for (int x = startX; x < startX + chunk.getWidth(); x++)
+        int startY = chunk.getyStart();
+        int startX = chunk.getxStart();
+        for (int y = startY; y < startY + chunk.getTileHeight(); y++)
+            for (int x = startX; x < startX + chunk.getTileWdith(); x++)
                 if (chunk.getMap().isFreeLand(x, y) && resourceObjectData[y][x] == null)
                     resourceSpawnablePoints.add(new Point(x, y));
         return resourceSpawnablePoints;

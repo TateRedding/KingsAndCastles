@@ -194,11 +194,11 @@ public class Play extends MapState implements Savable, Serializable {
         g.drawImage(ImageLoader.buildings[selectedBuildingType], (tiles.get(0).x - xOffset) * TILE_SIZE, (tiles.get(0).y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, null);
 
         for (Point p : tiles) {
-            int currTileX = p.x * TILE_SIZE;
-            int currTileY = p.y * TILE_SIZE + TOP_BAR_HEIGHT;
-            boolean canBuildOnTile = canBuildHere(currTileX, currTileY, false);
-            int xStart = currTileX - (xOffset * TILE_SIZE);
-            int yStart = currTileY - (yOffset * TILE_SIZE);
+            int currPixelX = toPixelX(p.x);
+            int currPixelY = toPixelY(p.y);
+            boolean canBuildOnTile = canBuildHere(currPixelX, currPixelY, false);
+            int xStart = currPixelX - (xOffset * TILE_SIZE);
+            int yStart = currPixelY - (yOffset * TILE_SIZE);
             if (canBuildOnTile)
                 g.drawImage(ImageLoader.buildIndicators[0], xStart, yStart, null);
             else
@@ -302,7 +302,7 @@ public class Play extends MapState implements Savable, Serializable {
         if (b != null)
             return b;
 
-        return resourceObjectData[(y - TOP_BAR_HEIGHT) / TILE_SIZE][x / TILE_SIZE];
+        return resourceObjectData[toTileY(y)][toTileX(x)];
     }
 
     private boolean canBuildHere(int x, int y, boolean checkAllBuildingTiles) {
@@ -310,8 +310,8 @@ public class Play extends MapState implements Savable, Serializable {
             Building b = buildingHandler.getBuildingAt(gameX, gameY);
             return b != null && b.getBuildingType() == CASTLE_WALL;
         } else {
-            int tileX = x / TILE_SIZE;
-            int tileY = (y - TOP_BAR_HEIGHT) / TILE_SIZE;
+            int tileX = toTileX(x);
+            int tileY = toTileY(y);
             ArrayList<Point> tiles = new ArrayList<Point>();
             if (checkAllBuildingTiles)
                 tiles = getBuildingTiles(x, y);
@@ -334,10 +334,10 @@ public class Play extends MapState implements Savable, Serializable {
         int buildingTileHeight = getBuildingTileHeight(selectedBuildingType);
         int maxTileX = map.getTileData()[0].length - buildingTileWidth;
         int maxTileY = map.getTileData().length - buildingTileHeight;
-        int tileX = gameX / TILE_SIZE;
+        int tileX = toTileX(gameX);
         if (tileX > maxTileX)
             tileX = maxTileX;
-        int tileY = (gameY - TOP_BAR_HEIGHT) / TILE_SIZE;
+        int tileY = toTileY(gameY);
         if (tileY > maxTileY)
             tileY = maxTileY;
 
@@ -350,7 +350,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private boolean isTileBuildable(Point tile) {
-        if (getGameObjectAt(tile.x * TILE_SIZE, tile.y * TILE_SIZE + TOP_BAR_HEIGHT, true) != null)
+        if (getGameObjectAt(toPixelX(tile.x), toPixelY(tile.y), true) != null)
             return false;
         int tileType = map.getTileData()[tile.y][tile.x].getTileType();
         return (tileType != WATER_GRASS && tileType != WATER_SAND);
@@ -380,8 +380,8 @@ public class Play extends MapState implements Savable, Serializable {
         Player player = getPlayerByID(activePlayerID);
         if (player != null) {
 
-            int maxX = (map.getTileData()[0].length - getBuildingTileWidth(selectedBuildingType)) * TILE_SIZE;
-            int maxY = (map.getTileData().length - getBuildingTileHeight(selectedBuildingType)) * TILE_SIZE + TOP_BAR_HEIGHT;
+            int maxX = toPixelX(map.getTileData()[0].length - getBuildingTileWidth(selectedBuildingType));
+            int maxY = toPixelY(map.getTileData().length - getBuildingTileHeight(selectedBuildingType));
             int tileX = gameX;
             if (tileX > maxX)
                 tileX = maxX;
@@ -504,10 +504,10 @@ public class Play extends MapState implements Savable, Serializable {
             if (selectedBuildingType == -1 && selectedSGO == null)
                 dragScreen(x, y);
 
-            int mouseDownTileX = mouseDownX / TILE_SIZE;
-            int mouseDownTileY = (mouseDownY - TOP_BAR_HEIGHT) / TILE_SIZE;
-            int currTileX = x / TILE_SIZE;
-            int currTileY = (y - TOP_BAR_HEIGHT) / TILE_SIZE;
+            int mouseDownTileX = toTileX(mouseDownX);
+            int mouseDownTileY = toTileY(mouseDownY);
+            int currTileX = toTileX(x);
+            int currTileY = toTileY(y);
             if (mouseDownTileX != currTileX || mouseDownTileY != currTileY)
                 clickAction = -1;
         }

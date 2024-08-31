@@ -68,6 +68,22 @@ public class Game extends JFrame implements Runnable {
         game.start();
     }
 
+    public static int toPixelX(int tileX) {
+        return tileX * TILE_SIZE;
+    }
+
+    public static int toTileX(int pixelX) {
+        return pixelX / TILE_SIZE;
+    }
+
+    public static int toPixelY(int tileY) {
+        return tileY * TILE_SIZE + TOP_BAR_HEIGHT;
+    }
+
+    public static int toTileY(int pixelY) {
+        return (pixelY - TOP_BAR_HEIGHT) / TILE_SIZE;
+    }
+
     private void start() {
         gameThread = new Thread(this);
         gameThread.start();

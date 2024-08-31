@@ -3,11 +3,9 @@ package resources;
 import java.awt.Rectangle;
 import java.io.Serializable;
 
-import main.Game;
 import objects.GameObject;
-import ui.bars.TopBar;
 
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 
 public abstract class ResourceObject extends GameObject implements Serializable {
 
@@ -17,8 +15,6 @@ public abstract class ResourceObject extends GameObject implements Serializable 
     public static final int ROCK = 2;
     public static final int COAL = 3;
     public static final int IRON = 4;
-
-    public static final int AMOUNT_BAR_MAX_WIDTH = TILE_SIZE / 4 * 3;
 
     protected int resourceType;
     protected int tileX, tileY, spriteId;
@@ -33,7 +29,7 @@ public abstract class ResourceObject extends GameObject implements Serializable 
         this.totalAmount = getStartingTotal(resourceType);
         this.currentAmount = totalAmount;
 
-        hitbox = new Rectangle(tileX * TILE_SIZE, tileY * TILE_SIZE + TopBar.TOP_BAR_HEIGHT, TILE_SIZE, TILE_SIZE);
+        hitbox = new Rectangle(toPixelX(tileX), toPixelY(tileY), TILE_SIZE, TILE_SIZE);
     }
 
     public static int getStartingTotal(int resourceType) {

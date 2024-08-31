@@ -1,9 +1,8 @@
 package pathfinding;
 
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
-import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -139,8 +138,8 @@ public class AStar {
     }
 
     public static boolean isPointOpen(Point point, Play play) {
-        int x = point.x * TILE_SIZE;
-        int y = point.y * TILE_SIZE + TOP_BAR_HEIGHT;
+        int x = toPixelX(point.x);
+        int y = toPixelY(point.y);
         int tileType = play.getMap().getTileData()[point.y][point.x].getTileType();
         return (tileType != WATER_GRASS && tileType != WATER_SAND && play.getGameObjectAt(x, y, true) == null);
     }

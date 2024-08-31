@@ -3,24 +3,23 @@ package objects;
 import java.awt.*;
 import java.io.Serializable;
 
-import static main.Game.TILE_SIZE;
-import static ui.bars.TopBar.TOP_BAR_HEIGHT;
+import static main.Game.*;
 
 public class Chunk implements Serializable {
 
     public static final int MAX_CHUNK_SIZE = 32;
 
     private Map map;
-    private int startX, startY, width, height;
+    private int xStart, yStart, tileWdith, tileHeight;
     private Rectangle bounds;
 
-    public Chunk(Map map, int startX, int startY, int width, int height) {
+    public Chunk(Map map, int xStart, int yStart, int tileWidth, int tileHeight) {
         this.map = map;
-        this.startX = startX;
-        this.startY = startY;
-        this.width = width;
-        this.height = height;
-        this.bounds = new Rectangle(startX * TILE_SIZE, startY * TILE_SIZE + TOP_BAR_HEIGHT, width * TILE_SIZE, height * TILE_SIZE);
+        this.xStart = xStart;
+        this.yStart = yStart;
+        this.tileWdith = tileWidth;
+        this.tileHeight = tileHeight;
+        this.bounds = new Rectangle(toPixelX(xStart), toPixelY(yStart), tileWidth * TILE_SIZE, tileHeight * TILE_SIZE);
     }
 
     public Rectangle getBounds() {
@@ -31,20 +30,20 @@ public class Chunk implements Serializable {
         return map;
     }
 
-    public int getStartX() {
-        return startX;
+    public int getxStart() {
+        return xStart;
     }
 
-    public int getStartY() {
-        return startY;
+    public int getyStart() {
+        return yStart;
     }
 
-    public int getWidth() {
-        return width;
+    public int getTileWdith() {
+        return tileWdith;
     }
 
-    public int getHeight() {
-        return height;
+    public int getTileHeight() {
+        return tileHeight;
     }
 
 }

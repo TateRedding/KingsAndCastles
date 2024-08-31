@@ -4,13 +4,14 @@ import java.awt.*;
 import java.io.Serializable;
 
 import static main.Game.TILE_SIZE;
-import static resources.ResourceObject.AMOUNT_BAR_MAX_WIDTH;
 
 public abstract class GameObject implements Serializable {
 
     public static final int BUILDING = 0;
     public static final int ENTITY = 1;
     public static final int RESOURCE = 2;
+
+    public static final int HEALTH_BAR_MAX_WIDTH = TILE_SIZE / 4 * 3;
 
     protected Rectangle hitbox;
     protected int id;
@@ -22,17 +23,17 @@ public abstract class GameObject implements Serializable {
     }
 
     public void drawHealthBar(Graphics g, int current, int max, int xOffset, int yOffset) {
-        int xStart = (hitbox.x + (hitbox.width - AMOUNT_BAR_MAX_WIDTH) / 2) - xOffset * TILE_SIZE;
+        int xStart = (hitbox.x + (hitbox.width - HEALTH_BAR_MAX_WIDTH) / 2) - xOffset * TILE_SIZE;
         int yStart = (hitbox.y + 3) - yOffset * TILE_SIZE;
 
-        int fillWidth = (int) (((float) current / (float) max) * AMOUNT_BAR_MAX_WIDTH);
+        int fillWidth = (int) (((float) current / (float) max) * HEALTH_BAR_MAX_WIDTH);
 
         g.setColor(new Color(64, 27, 0));
-        g.drawRect(xStart - 3, yStart - 3, AMOUNT_BAR_MAX_WIDTH + 6, 8);
-        g.drawRect(xStart - 1, yStart - 1, AMOUNT_BAR_MAX_WIDTH + 2, 4);
+        g.drawRect(xStart - 3, yStart - 3, HEALTH_BAR_MAX_WIDTH + 6, 8);
+        g.drawRect(xStart - 1, yStart - 1, HEALTH_BAR_MAX_WIDTH + 2, 4);
 
         g.setColor(new Color(255, 201, 128));
-        g.drawRect(xStart - 2, yStart - 2, AMOUNT_BAR_MAX_WIDTH + 4, 6);
+        g.drawRect(xStart - 2, yStart - 2, HEALTH_BAR_MAX_WIDTH + 4, 6);
 
         g.setColor(new Color(136, 33, 42));
         g.drawRect(xStart, yStart, fillWidth, 1);

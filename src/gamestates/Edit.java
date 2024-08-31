@@ -64,8 +64,8 @@ public class Edit extends MapState {
             int xMax = squareBounds.x + squareBounds.width;
             for (int y = squareBounds.y; y < yMax; y += TILE_SIZE)
                 for (int x = squareBounds.x; x < xMax; x += TILE_SIZE) {
-                    int pY = (int) Math.floor((float) y / TILE_SIZE);
-                    int pX = (int) Math.floor((float) x / TILE_SIZE);
+                    int pY = (int) ((float) y / TILE_SIZE);
+                    int pX = (int) ((float) x / TILE_SIZE);
                     squareBrushPoints.add(new Point(pX, pY));
                     if (circleBounds.contains(y + TILE_SIZE / 2, x + TILE_SIZE / 2))
                         circleBrushPoints.add(new Point(pX, pY));

@@ -1,8 +1,6 @@
 package gamestates;
 
-import static main.Game.GAME_AREA_TILE_HEIGHT;
-import static main.Game.GAME_AREA_TILE_WIDTH;
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 import java.awt.Color;
@@ -116,10 +114,10 @@ public abstract class MapState extends State implements Serializable {
     protected void updateCoords(int x, int y) {
         gameX = ((x + (xTileOffset * TILE_SIZE)) / TILE_SIZE) * TILE_SIZE;
         gameY = (((y - TOP_BAR_HEIGHT) + (yTileOffset * TILE_SIZE)) / TILE_SIZE) * TILE_SIZE + TOP_BAR_HEIGHT;
-        tileX = gameX / TILE_SIZE;
-        tileY = (gameY - TOP_BAR_HEIGHT) / TILE_SIZE;
-        mouseX = (x / Game.TILE_SIZE) * Game.TILE_SIZE;
-        mouseY = (y / Game.TILE_SIZE) * Game.TILE_SIZE;
+        tileX = toTileX(gameX);
+        tileY = toTileY(gameY);
+        mouseX = (x / TILE_SIZE) * TILE_SIZE;
+        mouseY = (y / TILE_SIZE) * TILE_SIZE;
     }
 
     private boolean checkIfInGameArea(int x, int y) {

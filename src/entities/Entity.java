@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 import static entities.Laborer.CHOPPING;
 import static entities.Laborer.MINING;
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public abstract class Entity extends SelectableGameObject implements Serializable {
@@ -203,17 +203,15 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         Point targetTile;
         Play play = entityHandler.getPlay();
 
-        if (path != null && !path.isEmpty()) {
+        if (path != null && !path.isEmpty())
             entityTile = path.get(0);
-        } else {
-            entityTile = new Point(hitbox.x / TILE_SIZE, (hitbox.y - TOP_BAR_HEIGHT) / TILE_SIZE); // Default to entity's current tile
-        }
+        else
+            entityTile = new Point(toTileX(hitbox.x), toTileY(hitbox.y)); // Default to entity's current tile
 
-        if (target.getGameObjectType() == ENTITY && ((Entity) target).getPath() != null && !(((Entity) target).getPath().isEmpty())) {
+        if (target.getGameObjectType() == ENTITY && ((Entity) target).getPath() != null && !(((Entity) target).getPath().isEmpty()))
             targetTile = ((Entity) target).getPath().get(0);
-        } else {
-            targetTile = new Point(target.getHitbox().x / TILE_SIZE, (target.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE); // Default to target's current tile
-        }
+        else
+            targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y)); // Default to target's current tile
 
         Point currentTile = entityTile;
 
@@ -282,15 +280,15 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     protected void turnTowardsTarget() {
         int targetX = 0;
         int targetY = 0;
-        int entityX = (int) (x / TILE_SIZE);
-        int entityY = (int) ((y - TOP_BAR_HEIGHT) / TILE_SIZE);
+        int entityX = toTileX((int) x);
+        int entityY = toTileY((int) y);
 
         if (resourceToGather != null) {
             targetX = resourceToGather.getTileX();
             targetY = resourceToGather.getTileY();
         } else if (entityToAttack != null) {
-            targetX = (int) (entityToAttack.getHitbox().x / TILE_SIZE);
-            targetY = (int) ((entityToAttack.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+            targetX = toTileX(entityToAttack.getHitbox().x);
+            targetY = toTileY(entityToAttack.getHitbox().y);
         }
 
         if (targetY < entityY)
@@ -308,8 +306,8 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         if (state != WALKING)
             setState(WALKING);
         // Check if Entity has reached the current path point based on movement speed
-        int currentX = path.get(0).x * TILE_SIZE;
-        int currentY = path.get(0).y * TILE_SIZE + TOP_BAR_HEIGHT;
+        int currentX = toPixelX(path.get(0).x);
+        int currentY = toPixelY(path.get(0).y);
 
         // Round to two decimal places to get rid of any floating point errors
         float roundX = Math.round(x * 100) / 100.0f;
@@ -323,9 +321,9 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
             path.remove(0);
             if (!path.isEmpty()) {
                 Point next = path.get(0);
-                Entity e = entityHandler.getEntityAtCoord(next.x * TILE_SIZE, next.y * TILE_SIZE + TOP_BAR_HEIGHT, true);
+                Entity e = entityHandler.getEntityAtCoord(toPixelX(next.x), toPixelY(next.y), true);
                 if (e != null) {
-                    Point start = new Point(hitbox.x / TILE_SIZE, (hitbox.y - TOP_BAR_HEIGHT) / TILE_SIZE);
+                    Point start = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
                     path = AStar.pathFind(start, path.get(path.size() - 1), entityHandler.getPlay());
                 }
             }
@@ -341,8 +339,8 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     }
 
     protected void setDirectionWithPath(Point point) {
-        int pX = point.x * TILE_SIZE;
-        int pY = point.y * TILE_SIZE + TOP_BAR_HEIGHT;
+        int pX = toPixelX(point.x);
+        int pY = toPixelY(point.y);
 
         // Diagonal Directions
         if (pX < x && pY < y)
