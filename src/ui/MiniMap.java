@@ -204,8 +204,8 @@ public class MiniMap implements Serializable {
     private void drawMapHighlight(Graphics g, int xOffset, int yOffset) {
         int hlWidth = (int) (GAME_AREA_TILE_WIDTH * scale);
         int hlHeight = (int) (GAME_AREA_TILE_HEIGHT * scale);
-        int hlX = mmX + (int) (xOffset * scale);
-        int hlY = mmY + (int) (yOffset * scale);
+        int hlX = mmX + (int) ((xOffset / TILE_SIZE) * scale);
+        int hlY = mmY + (int) ((yOffset / TILE_SIZE) * scale);
 
         g.setColor(Color.GRAY);
         g.drawRect(hlX, hlY, hlWidth - 1, hlHeight - 1);
@@ -226,16 +226,16 @@ public class MiniMap implements Serializable {
         if (tileX < minX)
             mapState.setXTileOffset(0);
         else if (tileX > maxX)
-            mapState.setXTileOffset(mapState.getMaxXTileOffset());
+            mapState.setXTileOffset(mapState.getMaxMapXOffset());
         else
-            mapState.setXTileOffset(tileX - minX);
+            mapState.setXTileOffset((tileX - minX) * TILE_SIZE);
 
         if (tileY < minY)
             mapState.setYTileOffset(0);
         else if (tileY > maxY)
-            mapState.setYTileOffset(mapState.getMaxYTileOffset());
+            mapState.setYTileOffset(mapState.getMaxMapYOffset());
         else
-            mapState.setYTileOffset(tileY - minY);
+            mapState.setYTileOffset((tileY - minY) * TILE_SIZE);
     }
 
     public void mousePressed(int x, int y, int button) {

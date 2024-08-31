@@ -155,22 +155,22 @@ public class Play extends MapState implements Savable, Serializable {
         // Debugging
         drawChunkBorders(g);
 
-        buildingHandler.render(g, xTileOffset, yTileOffset);
-        entityHandler.render(g, xTileOffset, yTileOffset);
-        resourceObjectHandler.render(g, xTileOffset, yTileOffset);
+        buildingHandler.render(g, mapXOffset, mapYOffset);
+        entityHandler.render(g, mapXOffset, mapYOffset);
+        resourceObjectHandler.render(g, mapXOffset, mapYOffset);
 
-        highlightSelectedObject(g, xTileOffset, yTileOffset);
+        highlightSelectedObject(g, mapXOffset, mapYOffset);
 
         actionBar.render(g);
         gameStatBar.render(g);
 
-        miniMap.render(g, xTileOffset, yTileOffset);
+        miniMap.render(g, mapXOffset, mapYOffset);
 
         if (inGameArea)
             if (selectedBuildingType == -1)
-                renderAction(g, xTileOffset, yTileOffset);
+                renderAction(g, mapXOffset, mapYOffset);
             else
-                renderSelectedBuilding(g, xTileOffset, yTileOffset);
+                renderSelectedBuilding(g, mapXOffset, mapYOffset);
 
         if (showBuildingSelection && buildingSelection != null)
             buildingSelection.render(g);
@@ -184,21 +184,21 @@ public class Play extends MapState implements Savable, Serializable {
                 x = hoverGO.getHitbox().x;
                 y = hoverGO.getHitbox().y;
             }
-            g.drawImage(ImageLoader.actions[clickAction], x - (xOffset * TILE_SIZE), y - (yOffset * TILE_SIZE), null);
+            g.drawImage(ImageLoader.actions[clickAction], x - xOffset, y - yOffset, null);
         }
 
     }
 
     private void renderSelectedBuilding(Graphics g, int xOffset, int yOffset) {
         ArrayList<Point> tiles = getBuildingTiles(gameX, gameY);
-        g.drawImage(ImageLoader.buildings[selectedBuildingType], (tiles.get(0).x - xOffset) * TILE_SIZE, (tiles.get(0).y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, null);
+        g.drawImage(ImageLoader.buildings[selectedBuildingType], toPixelX(tiles.get(0).x) - xOffset, toPixelY(tiles.get(0).y) - yOffset, null);
 
         for (Point p : tiles) {
             int currPixelX = toPixelX(p.x);
             int currPixelY = toPixelY(p.y);
             boolean canBuildOnTile = canBuildHere(currPixelX, currPixelY, false);
-            int xStart = currPixelX - (xOffset * TILE_SIZE);
-            int yStart = currPixelY - (yOffset * TILE_SIZE);
+            int xStart = currPixelX - xOffset;
+            int yStart = currPixelY - yOffset;
             if (canBuildOnTile)
                 g.drawImage(ImageLoader.buildIndicators[0], xStart, yStart, null);
             else
@@ -206,12 +206,12 @@ public class Play extends MapState implements Savable, Serializable {
         }
     }
 
-    private void highlightSelectedObject(Graphics g, int xTileOffset, int yTileOffset) {
+    private void highlightSelectedObject(Graphics g, int xOffset, int yOffset) {
         Rectangle bounds = null;
         if (selectedSGO != null)
             bounds = selectedSGO.getHitbox();
         if (bounds != null)
-            g.drawImage(ImageLoader.selectIndicator[indicatorAnimationFrame], bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), null);
+            g.drawImage(ImageLoader.selectIndicator[indicatorAnimationFrame], bounds.x - xOffset, bounds.y - yOffset, null);
     }
 
     private void drawChunkBorders(Graphics g) {
@@ -220,7 +220,7 @@ public class Play extends MapState implements Savable, Serializable {
             for (int x = 0; x < chunks[y].length; x++) {
                 Rectangle bounds = chunks[y][x].getBounds();
                 g.setColor(new Color(255, 255, 0));
-                g.drawRect(bounds.x - (xTileOffset * TILE_SIZE), bounds.y - (yTileOffset * TILE_SIZE), bounds.width, bounds.height);
+                g.drawRect(bounds.x - mapXOffset, bounds.y - mapYOffset, bounds.width, bounds.height);
             }
     }
 
@@ -521,7 +521,7 @@ public class Play extends MapState implements Savable, Serializable {
             super.mouseMoved(x, y);
             if (inGameArea) {
                 if (selectedBuildingType == -1) {
-                    hoverGO = getGameObjectAt(x + (xTileOffset * TILE_SIZE), y + (yTileOffset * TILE_SIZE), false);
+                    hoverGO = getGameObjectAt(x + mapXOffset, y + mapYOffset, false);
                     determineAction();
                 } else
                     canBuild = canBuildHere(gameX, gameY, true);

@@ -23,8 +23,8 @@ public abstract class GameObject implements Serializable {
     }
 
     public void drawHealthBar(Graphics g, int current, int max, int xOffset, int yOffset) {
-        int xStart = (hitbox.x + (hitbox.width - HEALTH_BAR_MAX_WIDTH) / 2) - xOffset * TILE_SIZE;
-        int yStart = (hitbox.y + 3) - yOffset * TILE_SIZE;
+        int xStart = (hitbox.x + (hitbox.width - HEALTH_BAR_MAX_WIDTH) / 2) - xOffset;
+        int yStart = (hitbox.y + 3) - yOffset;
 
         int fillWidth = (int) (((float) current / (float) max) * HEALTH_BAR_MAX_WIDTH);
 

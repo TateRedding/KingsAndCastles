@@ -41,8 +41,8 @@ public abstract class MapState extends State implements Serializable {
     // Tile coordinates of the tile the cursor is in
     protected int tileX, tileY;
 
-    protected int xTileOffset, yTileOffset;
-    protected int maxXTileOffset, maxYTileOffset;
+    protected int mapXOffset, mapYOffset;
+    protected int maxMapXOffset, maxMapYOffset;
     protected int mouseDownX, mouseDownY;
     protected boolean inGameArea;
 
@@ -52,8 +52,8 @@ public abstract class MapState extends State implements Serializable {
         this.tileData = map.getTileData();
         this.resourceObjectData = map.getResourceObjectData();
         this.miniMap = new MiniMap(this, tileData);
-        this.maxXTileOffset = map.getTileData()[0].length - GAME_AREA_TILE_WIDTH;
-        this.maxYTileOffset = map.getTileData().length - GAME_AREA_TILE_HEIGHT;
+        this.maxMapXOffset = (map.getTileData()[0].length - GAME_AREA_TILE_WIDTH) * TILE_SIZE;
+        this.maxMapYOffset = (map.getTileData().length - GAME_AREA_TILE_HEIGHT) * TILE_SIZE;
         this.gameBounds = new Rectangle(0, TopBar.TOP_BAR_HEIGHT, Game.GAME_AREA_WIDTH, Game.GAME_AREA_HEIGHT);
     }
 
@@ -65,9 +65,9 @@ public abstract class MapState extends State implements Serializable {
 
     @Override
     public void render(Graphics g) {
-        game.getTileHandler().drawTiles(tileData, g, xTileOffset, yTileOffset);
-        drawCastleZones(g, xTileOffset, yTileOffset);
-        drawResourceObjects(g, xTileOffset, yTileOffset);
+        game.getTileHandler().drawTiles(tileData, g, mapXOffset, mapYOffset);
+        drawCastleZones(g, mapXOffset, mapYOffset);
+        drawResourceObjects(g, mapXOffset, mapYOffset);
     }
 
     private void drawCastleZones(Graphics g, int xOffset, int yOffset) {
@@ -77,43 +77,42 @@ public abstract class MapState extends State implements Serializable {
         for (int i = 0; i < castleZones.size(); i++) {
             g.setColor(new Color(colors.get(i).getRed(), colors.get(i).getGreen(), colors.get(i).getBlue(), alpha));
             for (Point p : castleZones.get(i))
-                g.fillRect((p.x - xOffset) * TILE_SIZE, (p.y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, TILE_SIZE, TILE_SIZE);
+                g.fillRect(toPixelX(p.x) - xOffset, toPixelY(p.y) - yOffset, TILE_SIZE, TILE_SIZE);
         }
     }
 
     private void drawResourceObjects(Graphics g, int xOffset, int yOffset) {
-        int yStart = TopBar.TOP_BAR_HEIGHT / Game.TILE_SIZE;
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
                 if (currRO != null)
-                    g.drawImage(ImageLoader.resourceObjects[currRO.getResourceType()][currRO.getSpriteId()], (x - xOffset) * Game.TILE_SIZE,
-                            (y + yStart - yOffset) * Game.TILE_SIZE, null);
+                    g.drawImage(ImageLoader.resourceObjects[currRO.getResourceType()][currRO.getSpriteId()], toPixelX(x) - xOffset,
+                            toPixelY(y) - yOffset, null);
             }
     }
 
     protected void dragScreen(int x, int y) {
-        if (x - mouseDownX > 15 && xTileOffset > 0) {
-            xTileOffset--;
+        if (x - mouseDownX > 15 && mapXOffset > 0) {
+            mapXOffset -= TILE_SIZE;
             mouseDownX = x;
         }
-        if (mouseDownX - x > 15 && xTileOffset < maxXTileOffset) {
-            xTileOffset++;
+        if (mouseDownX - x > 15 && mapXOffset < maxMapXOffset) {
+            mapXOffset += TILE_SIZE;
             mouseDownX = x;
         }
-        if (y - mouseDownY > 15 && yTileOffset > 0) {
-            yTileOffset--;
+        if (y - mouseDownY > 15 && mapYOffset > 0) {
+            mapYOffset -= TILE_SIZE;
             mouseDownY = y;
         }
-        if (mouseDownY - y > 15 && yTileOffset < maxYTileOffset) {
-            yTileOffset++;
+        if (mouseDownY - y > 15 && mapYOffset < maxMapYOffset) {
+            mapYOffset += TILE_SIZE;
             mouseDownY = y;
         }
     }
 
     protected void updateCoords(int x, int y) {
-        gameX = ((x + (xTileOffset * TILE_SIZE)) / TILE_SIZE) * TILE_SIZE;
-        gameY = (((y - TOP_BAR_HEIGHT) + (yTileOffset * TILE_SIZE)) / TILE_SIZE) * TILE_SIZE + TOP_BAR_HEIGHT;
+        gameX = toTileX(x + mapXOffset) * TILE_SIZE;
+        gameY = toTileY(y + mapYOffset) * TILE_SIZE + TOP_BAR_HEIGHT;
         tileX = toTileX(gameX);
         tileY = toTileY(gameY);
         mouseX = (x / TILE_SIZE) * TILE_SIZE;
@@ -166,25 +165,25 @@ public abstract class MapState extends State implements Serializable {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            if (xTileOffset <= 0)
-                xTileOffset = 0;
+            if (mapXOffset <= 0)
+                mapXOffset = 0;
             else
-                xTileOffset--;
+                mapXOffset -= TILE_SIZE;
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            if (xTileOffset >= maxXTileOffset)
-                xTileOffset = maxXTileOffset;
+            if (mapXOffset >= maxMapXOffset)
+                mapXOffset = maxMapXOffset;
             else
-                xTileOffset++;
+                mapXOffset += TILE_SIZE;
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-            if (yTileOffset <= 0)
-                yTileOffset = 0;
+            if (mapYOffset <= 0)
+                mapYOffset = 0;
             else
-                yTileOffset--;
+                mapYOffset -= TILE_SIZE;
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            if (yTileOffset >= maxYTileOffset)
-                yTileOffset = maxYTileOffset;
+            if (mapYOffset >= maxMapYOffset)
+                mapYOffset = maxMapYOffset;
             else
-                yTileOffset++;
+                mapYOffset += TILE_SIZE;
         }
 
     }
@@ -193,20 +192,20 @@ public abstract class MapState extends State implements Serializable {
         return map;
     }
 
-    public void setXTileOffset(int xTileOffset) {
-        this.xTileOffset = xTileOffset;
+    public void setXTileOffset(int mapXOffset) {
+        this.mapXOffset = mapXOffset;
     }
 
-    public void setYTileOffset(int yTileOffset) {
-        this.yTileOffset = yTileOffset;
+    public void setYTileOffset(int mapYOffset) {
+        this.mapYOffset = mapYOffset;
     }
 
-    public int getMaxXTileOffset() {
-        return maxXTileOffset;
+    public int getMaxMapXOffset() {
+        return maxMapXOffset;
     }
 
-    public int getMaxYTileOffset() {
-        return maxYTileOffset;
+    public int getMaxMapYOffset() {
+        return maxMapYOffset;
     }
 
     public MiniMap getMiniMap() {

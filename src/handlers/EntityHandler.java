@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 import static entities.Entity.*;
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class EntityHandler implements Serializable {
@@ -62,7 +62,7 @@ public class EntityHandler implements Serializable {
                 else if (dir == UP_RIGHT || dir == DOWN_RIGHT)
                     dir = RIGHT;
 
-                g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), dir, e.getAnimationFrame()), e.getHitbox().x - (xOffset * TILE_SIZE), e.getHitbox().y - (yOffset * TILE_SIZE), null);
+                g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), dir, e.getAnimationFrame()), e.getHitbox().x - xOffset, e.getHitbox().y - yOffset, null);
 
                 if (e.getHealth() < e.getMaxHealth())
                     e.drawHealthBar(g, e.getHealth(), e.getMaxHealth(), xOffset, yOffset);
@@ -99,7 +99,7 @@ public class EntityHandler implements Serializable {
         if (e.getPath() != null && !e.getPath().isEmpty()) {
             g.setColor(new Color(255, 0, 255, 100));
             for (Point p : e.getPath()) {
-                g.fillRect((p.x - xOffset) * TILE_SIZE, (p.y - yOffset) * TILE_SIZE + TOP_BAR_HEIGHT, TILE_SIZE, TILE_SIZE);
+                g.fillRect(toPixelX(p.x) - xOffset, toPixelY(p.y) - yOffset, TILE_SIZE, TILE_SIZE);
             }
         }
     }
@@ -107,7 +107,7 @@ public class EntityHandler implements Serializable {
     private void drawHitbox(Entity e, Graphics g, int xOffset, int yOffset) {
         g.setColor(Color.RED);
         Rectangle bounds = e.getHitbox();
-        g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        g.drawRect(bounds.x - xOffset, bounds.y - yOffset, bounds.width, bounds.height);
     }
 
     private void drawTargetHitbox(Entity e, Graphics g, int xOffset, int yOffset) {
@@ -115,7 +115,7 @@ public class EntityHandler implements Serializable {
         if (go != null) {
             g.setColor(Color.BLUE);
             Rectangle bounds = go.getHitbox();
-            g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            g.drawRect(bounds.x - xOffset, bounds.y - yOffset, bounds.width, bounds.height);
         }
     }
 

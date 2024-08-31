@@ -9,6 +9,9 @@ import main.Game;
 import objects.Tile;
 import ui.bars.TopBar;
 
+import static main.Game.toPixelX;
+import static main.Game.toPixelY;
+
 public class TileHandler {
 
     private Game game;
@@ -21,15 +24,13 @@ public class TileHandler {
     }
 
     public void drawTiles(Tile[][] tileData, Graphics g, int xOffset, int yOffset) {
-        int yStart = TopBar.TOP_BAR_HEIGHT / Game.TILE_SIZE;
         for (int y = 0; y < tileData.length; y++)
             for (int x = 0; x < tileData[y].length; x++) {
                 Tile currTile = tileData[y][x];
                 int idx = bitmaskIds.indexOf(currTile.getBitmaskId());
                 if (idx == -1)
                     continue;
-                g.drawImage(ImageLoader.tiles.get(currTile.getTileType()).get(idx), (x - xOffset) * Game.TILE_SIZE,
-                        (y + yStart - yOffset) * Game.TILE_SIZE, null);
+                g.drawImage(ImageLoader.tiles.get(currTile.getTileType()).get(idx), toPixelX(x) - xOffset, toPixelY(y) - yOffset, null);
             }
     }
 

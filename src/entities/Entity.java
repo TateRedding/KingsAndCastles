@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import static entities.Laborer.CHOPPING;
 import static entities.Laborer.MINING;
 import static main.Game.*;
-import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public abstract class Entity extends SelectableGameObject implements Serializable {
 

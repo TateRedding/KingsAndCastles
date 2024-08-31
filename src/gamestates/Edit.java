@@ -96,7 +96,7 @@ public class Edit extends MapState {
 
         editorBar.render(g);
         mapStatBar.render(g);
-        miniMap.render(g, xTileOffset, yTileOffset);
+        miniMap.render(g, mapXOffset, mapYOffset);
     }
 
     private void drawSelectedType(Graphics g) {
