@@ -7,7 +7,7 @@ import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import resources.ResourceObject;
+import entities.resources.ResourceObject;
 import utils.LoadSave;
 import utils.Savable;
 

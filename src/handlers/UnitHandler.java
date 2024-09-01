@@ -1,9 +1,9 @@
 package handlers;
 
-import resources.ResourceObject;
-import units.Brute;
-import units.Unit;
-import units.Laborer;
+import entities.resources.ResourceObject;
+import entities.units.Brute;
+import entities.units.Unit;
+import entities.units.Laborer;
 import gamestates.Play;
 import objects.Entity;
 import objects.Player;
@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
-import static units.Unit.*;
+import static entities.units.Unit.*;
 import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
@@ -34,9 +34,9 @@ public class UnitHandler implements Serializable {
 
     public void update() {
         for (Unit u : units) {
-            if (u.isAlive() && u.getUnitType() != -1) {
+            if (u.isAlive()) {
                 u.update();
-                int unitType = u.getUnitType();
+                int unitType = u.getSubType();
 
                 // Auto-attack
                 if (unitType != LABORER && u.getState() == IDLE && u.getTargetEntity() == null)
@@ -62,7 +62,7 @@ public class UnitHandler implements Serializable {
                 else if (dir == UP_RIGHT || dir == DOWN_RIGHT)
                     dir = RIGHT;
 
-                g.drawImage(Unit.getSprite(u.getUnitType(), u.getState(), dir, u.getAnimationFrame()), u.getHitbox().x - xOffset, u.getHitbox().y - yOffset, null);
+                g.drawImage(Unit.getSprite(u.getSubType(), u.getState(), dir, u.getAnimationFrame()), u.getHitbox().x - xOffset, u.getHitbox().y - yOffset, null);
 
                 if (u.getHealth() < u.getMaxHealth())
                     u.drawHealthBar(g, u.getHealth(), u.getMaxHealth(), xOffset, yOffset);
@@ -144,13 +144,13 @@ public class UnitHandler implements Serializable {
     }
 
     private void attack(Unit attacker, Unit target) {
-        if (attacker.getUnitType() == -1 || target.getUnitType() == -1)
+        if (attacker.getSubType() == -1 || target.getSubType() == -1)
             return;
 
         target.setHealth(target.getHealth() - attacker.getDamage());
 
         // Auto-retaliate
-        if (target.getUnitType() != LABORER && target.getTargetEntity() == null && target.getState() == IDLE)
+        if (target.getSubType() != LABORER && target.getTargetEntity() == null && target.getState() == IDLE)
             target.setTargetEntity(attacker);
 
         if (target.getHealth() <= 0) {

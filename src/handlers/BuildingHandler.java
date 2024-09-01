@@ -1,6 +1,6 @@
 package handlers;
 
-import buildings.Building;
+import entities.buildings.Building;
 import gamestates.Play;
 import utils.ImageLoader;
 
@@ -23,7 +23,7 @@ public class BuildingHandler implements Serializable {
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Building b : buildings)
-            g.drawImage(ImageLoader.buildings[b.getBuildingType()], b.getHitbox().x - xOffset, b.getHitbox().y - yOffset, null);
+            g.drawImage(ImageLoader.buildings[b.getSubType()], b.getHitbox().x - xOffset, b.getHitbox().y - yOffset, null);
     }
 
     public Building getBuildingAt(int x, int y) {

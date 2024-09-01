@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
-import buildings.Building;
+import entities.buildings.Building;
 import objects.Map;
 import objects.Tile;
 import ui.TextBox;

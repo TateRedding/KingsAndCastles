@@ -14,8 +14,8 @@ import java.util.Arrays;
 import main.Game;
 import objects.Map;
 import objects.Tile;
-import resources.GoldMine;
-import resources.ResourceObject;
+import entities.resources.GoldMine;
+import entities.resources.ResourceObject;
 import ui.bars.EditorBar;
 import ui.bars.MapStatBar;
 import utils.ImageLoader;
@@ -272,7 +272,7 @@ public class Edit extends MapState {
         int tileType = currTile.getTileType();
         if (tileType == WATER_GRASS || tileType == WATER_SAND)
             return;
-        if (currRO != null && currRO.getResourceType() == ResourceObject.GOLD)
+        if (currRO != null && currRO.getSubType() == ResourceObject.GOLD)
             return;
         resourceObjectData[tileY][tileX] = new GoldMine(tileX, tileY, (tileY * resourceObjectData[tileY].length + tileX));
         map.setGoldMineCount(map.getGoldMineCount() + 1);
@@ -280,7 +280,7 @@ public class Edit extends MapState {
 
     private void removeGoldMine() {
         ResourceObject currRO = resourceObjectData[tileY][tileX];
-        if (currRO != null && currRO.getResourceType() == ResourceObject.GOLD) {
+        if (currRO != null && currRO.getSubType() == ResourceObject.GOLD) {
             resourceObjectData[tileY][tileX] = null;
             map.setGoldMineCount(map.getGoldMineCount() - 1);
         }

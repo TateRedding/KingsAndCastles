@@ -1,4 +1,4 @@
-package buildings;
+package entities.buildings;
 
 import objects.Player;
 

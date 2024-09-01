@@ -1,9 +1,9 @@
 package handlers;
 
 import objects.*;
-import units.Laborer;
+import entities.units.Laborer;
 import gamestates.Play;
-import resources.*;
+import entities.resources.*;
 import utils.ImageLoader;
 import utils.OpenSimplex2;
 
@@ -14,7 +14,7 @@ import java.util.Random;
 
 import static main.Game.*;
 import static objects.Chunk.MAX_CHUNK_SIZE;
-import static resources.ResourceObject.*;
+import static entities.resources.ResourceObject.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class ResourceObjectHandler implements Serializable {
@@ -53,7 +53,7 @@ public class ResourceObjectHandler implements Serializable {
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
-                if (currRO != null && currRO.getResourceType() == TREE)
+                if (currRO != null && currRO.getSubType() == TREE)
                     currRO.setSpriteId(getBitmaskId(x, y));
             }
     }
@@ -265,22 +265,22 @@ public class ResourceObjectHandler implements Serializable {
 
     private int getBitmaskId(int x, int y) {
         int bitmaskId = 0;
-        if (y != 0 && resourceObjectData[y - 1][x] != null && resourceObjectData[y - 1][x].getResourceType() == TREE)
+        if (y != 0 && resourceObjectData[y - 1][x] != null && resourceObjectData[y - 1][x].getSubType() == TREE)
             bitmaskId += 1;
-        if (x != 0 && resourceObjectData[y][x - 1] != null && resourceObjectData[y][x - 1].getResourceType() == TREE)
+        if (x != 0 && resourceObjectData[y][x - 1] != null && resourceObjectData[y][x - 1].getSubType() == TREE)
             bitmaskId += 2;
-        if (x != resourceObjectData[y].length - 1 && resourceObjectData[y][x + 1] != null && resourceObjectData[y][x + 1].getResourceType() == TREE)
+        if (x != resourceObjectData[y].length - 1 && resourceObjectData[y][x + 1] != null && resourceObjectData[y][x + 1].getSubType() == TREE)
             bitmaskId += 4;
-        if (y != resourceObjectData.length - 1 && resourceObjectData[y + 1][x] != null && resourceObjectData[y + 1][x].getResourceType() == TREE)
+        if (y != resourceObjectData.length - 1 && resourceObjectData[y + 1][x] != null && resourceObjectData[y + 1][x].getSubType() == TREE)
             bitmaskId += 8;
         return bitmaskId;
     }
 
     public void gatherResource(Player player, ResourceObject ro, Laborer laborer) {
-        if (ro.getResourceType() == -1)
+        if (ro.getSubType() == -1)
             return;
 
-        int resourceType = ro.getResourceType();
+        int resourceType = ro.getSubType();
         int currAmt = ro.getHealth();
         int gatherAmt = Math.min(ResourceObject.getAmountPerAction(resourceType), currAmt);
         switch (resourceType) {
@@ -307,7 +307,7 @@ public class ResourceObjectHandler implements Serializable {
                     for (int x = roTileX - 1; x < roTileX + 2; x++)
                         if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length && !(y == roTileY && x == roTileX)) {
                             ResourceObject currRO = map.getResourceObjectData()[y][x];
-                            if (currRO != null && currRO.getResourceType() == TREE)
+                            if (currRO != null && currRO.getSubType() == TREE)
                                 currRO.setSpriteId(getBitmaskId(x, y));
                         }
 
@@ -320,7 +320,7 @@ public class ResourceObjectHandler implements Serializable {
                         if (Math.abs(x - laborerTileX) != radius && Math.abs(y - laborerTileY) != radius) continue;
                         if (y >= 0 && y < tileData.length && x >= 0 && x < tileData[0].length) {
                             ResourceObject currRO = map.getResourceObjectData()[y][x];
-                            if (currRO != null && currRO.getResourceType() == resourceType) {
+                            if (currRO != null && currRO.getSubType() == resourceType) {
                                 if (laborer.isTargetInRange(currRO, laborer.getActionRange()) && laborer.isLineOfSightOpen(currRO)) {
                                     laborer.setTargetEntity(currRO);
                                     return;

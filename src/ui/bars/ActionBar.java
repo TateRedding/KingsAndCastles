@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import units.Unit;
+import entities.units.Unit;
 import gamestates.Play;
 import main.Game;
 import objects.Entity;
@@ -18,7 +18,7 @@ import ui.overlays.Overlay;
 import utils.ImageLoader;
 import utils.RenderText;
 
-import static buildings.Building.*;
+import static entities.buildings.Building.*;
 import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 import static ui.buttons.Button.*;
@@ -74,7 +74,7 @@ public class ActionBar extends BottomBar {
         if (selectedEntity != null) {
             BufferedImage sprite = null;
             if (selectedEntity.getEntityType() == Entity.UNIT)
-                sprite = Unit.getSprite(((Unit) selectedEntity).getUnitType(), Unit.IDLE, Unit.DOWN, 0);
+                sprite = Unit.getSprite(selectedEntity.getSubType(), Unit.IDLE, Unit.DOWN, 0);
             else if (selectedEntity.getEntityType() == Entity.BUILDING) {
                 //sprite = building sprite
             }

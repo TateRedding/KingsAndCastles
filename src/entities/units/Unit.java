@@ -1,4 +1,4 @@
-package units;
+package entities.units;
 
 import gamestates.Play;
 import handlers.UnitHandler;
@@ -13,9 +13,9 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import static units.Brute.ATTACKING;
-import static units.Laborer.CHOPPING;
-import static units.Laborer.MINING;
+import static entities.units.Brute.ATTACKING;
+import static entities.units.Laborer.CHOPPING;
+import static entities.units.Laborer.MINING;
 import static main.Game.*;
 import static pathfinding.AStar.isPointOpen;
 
@@ -26,7 +26,7 @@ public abstract class Unit extends Entity implements Serializable {
     public static final int MELEE = 1;
     public static final int RANGED = 2;
 
-    // Unit Types
+    // Unit SubTypes
     public static final int LABORER = 0;
     public static final int BRUTE = 1;
 
@@ -66,7 +66,7 @@ public abstract class Unit extends Entity implements Serializable {
     protected Entity targetEntity;
 
     public Unit(Player player, float x, float y, int unitType, int id, UnitHandler unitHandler) {
-        super(player, UNIT, x, y, id);
+        super(player, UNIT, unitType, x, y, id);
         this.unitType = unitType;
         this.unitHandler = unitHandler;
         this.maxHealth = getDefaultMaxHealth(unitType);
@@ -397,21 +397,6 @@ public abstract class Unit extends Entity implements Serializable {
     protected void updateHitbox() {
         hitbox.x = (int) x;
         hitbox.y = (int) y;
-    }
-
-    @Override
-    public int getBuildingType() {
-        return -1;
-    }
-
-    @Override
-    public int getResourceType() {
-        return -1;
-    }
-
-    @Override
-    public int getUnitType() {
-        return unitType;
     }
 
     public int getActionRange() {

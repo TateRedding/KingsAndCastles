@@ -1,4 +1,4 @@
-package buildings;
+package entities.buildings;
 
 import objects.Entity;
 import objects.Player;
@@ -9,7 +9,7 @@ import static main.Game.TILE_SIZE;
 
 public abstract class Building extends Entity {
 
-    // Building Types
+    // Building SubTypes
     public static final int THRONE_ROOM = 0;
     public static final int CASTLE_WALL = 1;
     public static final int CASTLE_TURRET = 2;
@@ -22,11 +22,8 @@ public abstract class Building extends Entity {
     public static final int BARRACKS_TIER_2 = 9;
     public static final int BARRACKS_TIER_3 = 10;
 
-    protected int buildingType;
-
     public Building(Player player, int id, int x, int y, int buildingType) {
-        super(player, BUILDING, x, y, id);
-        this.buildingType = buildingType;
+        super(player, BUILDING, buildingType, x, y, id);
         this.maxHealth = getDefaultMaxHealth(buildingType);
         this.health = maxHealth;
         this.hitbox = new Rectangle(x, y, getBuildingTileWidth(buildingType) * TILE_SIZE, getBuildingTileHeight(buildingType) * TILE_SIZE);
@@ -167,7 +164,7 @@ public abstract class Building extends Entity {
                     "logs and stone",
                     "",
                     "Laborers will deposit",
-                    "their resources here"
+                    "their entities.resources here"
             };
             case REFINERY -> new String[]{
                     "Refine iron ore",
@@ -187,40 +184,24 @@ public abstract class Building extends Entity {
             };
             case BARRACKS_TIER_1 -> new String[]{
                     "Train basic",
-                    "combat units",
+                    "combat entities.units",
                     "",
-                    "Enter names of units here"
+                    "Enter names of entities.units here"
             };
             case BARRACKS_TIER_2 -> new String[]{
                     "Train advanced",
-                    "combat units",
+                    "combat entities.units",
                     "",
-                    "Enter names of units here"
+                    "Enter names of entities.units here"
             };
             case BARRACKS_TIER_3 -> new String[]{
                     "Train expert",
-                    "combat units",
+                    "combat entities.units",
                     "",
-                    "Enter names of units here"
+                    "Enter names of entities.units here"
             };
             default -> new String[]{"No", "Details"};
         };
-    }
-
-
-    @Override
-    public int getBuildingType() {
-        return buildingType;
-    }
-
-    @Override
-    public int getResourceType() {
-        return -1;
-    }
-
-    @Override
-    public int getUnitType() {
-        return -1;
     }
 
 }

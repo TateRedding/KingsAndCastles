@@ -3,7 +3,7 @@ package ui;
 import gamestates.MapState;
 import objects.Map;
 import objects.Tile;
-import resources.ResourceObject;
+import entities.resources.ResourceObject;
 import ui.buttons.Button;
 import ui.buttons.ImageButton;
 import utils.ImageLoader;
@@ -20,7 +20,7 @@ import java.util.Arrays;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static main.Game.*;
 import static objects.Tile.*;
-import static resources.ResourceObject.*;
+import static entities.resources.ResourceObject.*;
 import static ui.bars.UIBar.UI_WIDTH;
 import static ui.buttons.Button.*;
 
@@ -156,7 +156,7 @@ public class MiniMap implements Serializable {
         for (ResourceObject[] resourceObjectDatum : resourceObjectData)
             for (ResourceObject ro : resourceObjectDatum) {
                 if (ro != null) {
-                    int resourceType = ro.getResourceType();
+                    int resourceType = ro.getSubType();
                     switch (resourceType) {
                         case GOLD:
                             g.setColor(new Color(240, 214, 125));

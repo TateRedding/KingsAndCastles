@@ -1,20 +1,23 @@
-package units;
+package entities.units;
 
 import handlers.UnitHandler;
 import objects.Player;
+import entities.resources.ResourceObject;
 
-public class Brute extends Unit {
+public class Laborer extends Unit {
 
-    // Brute Specific States
-    public static final int ATTACKING = 3;
+    // Laborer Specific States
+    public static final int CHOPPING = 3;
+    public static final int MINING = 4;
 
-    public Brute(Player player, int x, int y, int id, UnitHandler unitHandler) {
-        super(player, x, y, BRUTE, id, unitHandler);
+    public Laborer(Player player, int x, int y, int id, UnitHandler unitHandler) {
+        super(player, x, y, LABORER, id, unitHandler);
     }
 
     public static int getNumberOfFrames(int state) {
         return switch (state) {
-            case IDLE, WALKING, ATTACKING -> 4;
+            case IDLE, WALKING -> 4;
+            case CHOPPING, MINING -> 5;
             default -> 1;
         };
     }
@@ -22,14 +25,14 @@ public class Brute extends Unit {
     public static int getMaxAnimationTick(int state) {
         return switch (state) {
             case IDLE -> 25;
-            case WALKING, ATTACKING -> 15;
+            case WALKING, CHOPPING, MINING -> 15;
             default -> 20;
         };
     }
 
     public static int getActionFrameIndex(int state) {
         return switch (state) {
-            case ATTACKING -> 3;
+            case CHOPPING, MINING -> 3;
             default -> getNumberOfFrames(state);
         };
     }
@@ -44,10 +47,10 @@ public class Brute extends Unit {
                 animationFrame = 0;
         }
 
-        if (targetEntity != null && targetEntity.getEntityType() == UNIT) {
+        if (targetEntity != null && targetEntity.getEntityType() == RESOURCE) {
             if (state == IDLE)
-                setState(ATTACKING);
-        } else if (state == ATTACKING)
+                setState((targetEntity.getSubType() == ResourceObject.TREE) ? CHOPPING : MINING);
+        } else if (state == CHOPPING || state == MINING)
             setState(IDLE);
     }
 }

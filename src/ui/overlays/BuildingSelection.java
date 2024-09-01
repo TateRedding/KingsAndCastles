@@ -2,7 +2,6 @@ package ui.overlays;
 
 import gamestates.Play;
 import main.Game;
-import org.w3c.dom.Text;
 import ui.buttons.TextButton;
 import utils.ImageLoader;
 import utils.RenderText;
@@ -13,7 +12,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static buildings.Building.*;
+import static entities.buildings.Building.*;
 import static main.Game.TILE_SIZE;
 import static main.Game.getGameFont;
 import static ui.bars.UIBar.*;
@@ -245,7 +244,7 @@ public class BuildingSelection extends Overlay {
             g.setFont(getGameFont(28f));
             g.setColor(Color.RED);
             int costWarningYStart = selectButton.getBounds().y - costWarningHeight;
-            RenderText.renderText(g, "Not enough resources!", RenderText.CENTER, RenderText.CENTER, detailsAreaXStart, costWarningYStart, detailsAreaWidth, costWarningHeight);
+            RenderText.renderText(g, "Not enough entities.resources!", RenderText.CENTER, RenderText.CENTER, detailsAreaXStart, costWarningYStart, detailsAreaWidth, costWarningHeight);
         }
 
         // Building detail text

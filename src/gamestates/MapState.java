@@ -16,7 +16,7 @@ import java.util.Arrays;
 import main.Game;
 import objects.Map;
 import objects.Tile;
-import resources.ResourceObject;
+import entities.resources.ResourceObject;
 import ui.MiniMap;
 import ui.bars.TopBar;
 import utils.ImageLoader;
@@ -86,7 +86,7 @@ public abstract class MapState extends State implements Serializable {
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
                 if (currRO != null)
-                    g.drawImage(ImageLoader.resourceObjects[currRO.getResourceType()][currRO.getSpriteId()], toPixelX(x) - xOffset,
+                    g.drawImage(ImageLoader.resourceObjects[currRO.getSubType()][currRO.getSpriteId()], toPixelX(x) - xOffset,
                             toPixelY(y) - yOffset, null);
             }
     }

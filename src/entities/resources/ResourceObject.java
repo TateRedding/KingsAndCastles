@@ -1,4 +1,4 @@
-package resources;
+package entities.resources;
 
 import java.awt.Rectangle;
 import java.io.Serializable;
@@ -9,19 +9,17 @@ import static main.Game.*;
 
 public abstract class ResourceObject extends Entity implements Serializable {
 
-    // Resource Types
+    // Resource SubTypes
     public static final int GOLD = 0;
     public static final int TREE = 1;
     public static final int ROCK = 2;
     public static final int COAL = 3;
     public static final int IRON = 4;
 
-    protected int resourceType;
     protected int spriteId;
 
     public ResourceObject(int tileX, int tileY, int id, int resourceType, int spriteId) {
-        super(null, RESOURCE, toPixelX(tileX), toPixelY(tileY), id);
-        this.resourceType = resourceType;
+        super(null, RESOURCE, resourceType, toPixelX(tileX), toPixelY(tileY), id);
         this.spriteId = spriteId;
         this.maxHealth = getStartingTotal(resourceType);
         this.health = maxHealth;
@@ -57,22 +55,6 @@ public abstract class ResourceObject extends Entity implements Serializable {
             case IRON -> 24;
             default -> 0;
         };
-    }
-
-
-    @Override
-    public int getBuildingType() {
-        return -1;
-    }
-
-    @Override
-    public int getResourceType() {
-        return resourceType;
-    }
-
-    @Override
-    public int getUnitType() {
-        return -1;
     }
 
     public int getSpriteId() {

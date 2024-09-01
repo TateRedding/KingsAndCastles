@@ -6,14 +6,14 @@ import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import buildings.*;
-import units.Unit;
+import entities.buildings.*;
+import entities.units.Unit;
 import handlers.BuildingHandler;
 import handlers.UnitHandler;
 import handlers.ResourceObjectHandler;
 import main.Game;
 import objects.*;
-import resources.ResourceObject;
+import entities.resources.ResourceObject;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 import ui.overlays.BuildingSelection;
@@ -21,12 +21,12 @@ import ui.overlays.Overlay;
 import utils.ImageLoader;
 import utils.Savable;
 
-import static buildings.Building.*;
-import static units.Unit.*;
+import static entities.buildings.Building.*;
+import static entities.units.Unit.*;
 import static main.Game.*;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
-import static resources.ResourceObject.*;
+import static entities.resources.ResourceObject.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class Play extends MapState implements Savable, Serializable {
@@ -252,7 +252,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private void handlePlayerUnitAction(int hoverType, Unit selectedUnit) {
-        int unitType = selectedUnit.getUnitType();
+        int unitType = selectedUnit.getSubType();
 
         if (unitType == LABORER && (hoverType == UNIT || hoverType == BUILDING)) {
             clickAction = SELECT;
@@ -267,13 +267,11 @@ public class Play extends MapState implements Savable, Serializable {
 
     private void handleLaborerAction(int hoverType) {
         if (hoverType == RESOURCE) {
-            ResourceObject resourceObject = (ResourceObject) hoverEntity;
-            clickAction = (resourceObject.getResourceType() == TREE) ? CHOP : MINE;
+            clickAction = (hoverEntity.getSubType() == TREE) ? CHOP : MINE;
         } else if (hoverType == BUILDING) {
-            Building hoverBuilding = (Building) hoverEntity;
-            if (hoverBuilding.getBuildingType() == Building.FARM && hoverBuilding.getHealth() == hoverBuilding.getMaxHealth()) {
+            if (hoverEntity.getSubType() == Building.FARM && hoverEntity.getHealth() == hoverEntity.getMaxHealth()) {
                 clickAction = FARM;
-            } else if (hoverBuilding.getHealth() < hoverBuilding.getMaxHealth()) {
+            } else if (hoverEntity.getHealth() < hoverEntity.getMaxHealth()) {
                 clickAction = REPAIR;
             }
         }
@@ -283,7 +281,7 @@ public class Play extends MapState implements Savable, Serializable {
         if (hoverType == UNIT || hoverType == BUILDING) {
             Player player = hoverEntity.getPlayer();
             if (player.getPlayerID() != activePlayerID) {
-                int attackStyle = getAttackStyle(selectedUnit.getUnitType());
+                int attackStyle = getAttackStyle(selectedUnit.getSubType());
                 clickAction = (attackStyle == MELEE) ? ATTACK_MELEE : ATTACK_RANGED;
             }
         }
@@ -320,7 +318,7 @@ public class Play extends MapState implements Savable, Serializable {
     private boolean canBuildHere(int x, int y, boolean checkAllBuildingTiles) {
         if (selectedBuildingType == CASTLE_TURRET) {
             Building b = buildingHandler.getBuildingAt(gameX, gameY);
-            return b != null && b.getBuildingType() == CASTLE_WALL;
+            return b != null && b.getSubType() == CASTLE_WALL;
         } else {
             int tileX = toTileX(x);
             int tileY = toTileY(y);

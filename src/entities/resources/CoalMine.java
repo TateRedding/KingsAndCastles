@@ -1,4 +1,4 @@
-package resources;
+package entities.resources;
 
 import java.io.Serializable;
 

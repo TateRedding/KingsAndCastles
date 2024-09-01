@@ -1,14 +1,14 @@
-package buildings;
+package entities.buildings;
 
 import objects.Player;
 
 public class Barracks extends Building {
 
     public Barracks(Player player, int id, int x, int y, int tier) {
-        super(player, id, x, y, getTypeByTier(tier));
+        super(player, id, x, y, getSubTypeByTier(tier));
     }
 
-    private static int getTypeByTier(int tier) {
+    private static int getSubTypeByTier(int tier) {
         return switch (tier) {
             case 1 -> BARRACKS_TIER_1;
             case 2 -> BARRACKS_TIER_2;

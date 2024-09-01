@@ -17,12 +17,13 @@ public abstract class Entity implements Serializable {
     protected Rectangle hitbox;
     protected float x, y;
     protected int id;
-    protected int entityType;
+    protected int entityType, subType;
     protected int health, maxHealth;
 
-    public Entity(Player player, int entityType, float x, float y, int id) {
+    public Entity(Player player, int entityType, int subType, float x, float y, int id) {
         this.player = player;
         this.entityType = entityType;
+        this.subType = subType;
         this.x = x;
         this.y = y;
         this.id = id;
@@ -49,11 +50,9 @@ public abstract class Entity implements Serializable {
 
     }
 
-    public abstract int getBuildingType();
-
-    public abstract int getResourceType();
-
-    public abstract int getUnitType();
+    public int getSubType() {
+        return subType;
+    }
 
     public float getX() {
         return x;
