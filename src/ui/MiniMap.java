@@ -1,6 +1,10 @@
 package ui;
 
+import entities.buildings.Building;
+import entities.buildings.CastleWall;
+import entities.units.Unit;
 import gamestates.MapState;
+import gamestates.Play;
 import objects.Map;
 import objects.Tile;
 import entities.resources.ResourceObject;
@@ -17,6 +21,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static entities.buildings.Building.CASTLE_TURRET;
+import static entities.buildings.Building.CASTLE_WALL;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static main.Game.*;
 import static objects.Tile.*;
@@ -183,11 +189,32 @@ public class MiniMap implements Serializable {
     }
 
     private void createBuildingLayer(Graphics g) {
+        if (!(mapState instanceof Play))
+            return;
 
+        ArrayList<Building> buildings = ((Play) mapState).getBuildingHandler().getBuildings();
+        for (Building b : buildings) {
+            if (b.getSubType() == CASTLE_WALL || b.getSubType() == CASTLE_TURRET)
+                g.setColor(Color.DARK_GRAY);
+            else
+                g.setColor(new Color(100, 0, 255));
+            int xStart = (int) (toTileX(b.getX()) * scale);
+            int yStart = (int) (toTileY(b.getY()) * scale);
+            g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
+        }
     }
 
     private void createUnitLayer(Graphics g) {
+        if (!(mapState instanceof Play))
+            return;
 
+        ArrayList<Unit> units = ((Play) mapState).getUnitHandler().getUnits();
+        for (Unit u : units) {
+            g.setColor(Color.ORANGE);
+            int xStart = (int) (toTileX(u.getX()) * scale);
+            int yStart = (int) (toTileY(u.getY()) * scale);
+            g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
+        }
     }
 
     private void drawMap(Graphics g) {

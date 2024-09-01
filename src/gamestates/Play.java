@@ -565,6 +565,10 @@ public class Play extends MapState implements Savable, Serializable {
         this.actionBar = actionBar;
     }
 
+    public BuildingHandler getBuildingHandler() {
+        return buildingHandler;
+    }
+
     public BuildingSelection getBuildingSelection() {
         return buildingSelection;
     }
@@ -625,5 +629,9 @@ public class Play extends MapState implements Savable, Serializable {
 
     public void setShowBuildingSelection(boolean showBuildingSelection) {
         this.showBuildingSelection = showBuildingSelection;
+    }
+
+    public UnitHandler getUnitHandler() {
+        return unitHandler;
     }
 }
