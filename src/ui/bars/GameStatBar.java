@@ -22,7 +22,7 @@ public class GameStatBar extends TopBar {
 
     public GameStatBar(Play play) {
         this.play = play;
-        this.player = play.getPlayers().get(0);
+        this.player = play.getPlayerByID(play.getActivePlayerID());
         this.colWidth = (float) (UI_WIDTH - (UI_WIDTH - play.getMiniMap().getBounds().x)) / cols;
         this.rowHeight = (float) TOP_BAR_HEIGHT / rows;
     }
@@ -48,7 +48,7 @@ public class GameStatBar extends TopBar {
                 ImageLoader.icons[ICON_COAL]
         ));
         ArrayList<String> counts = new ArrayList<>(Arrays.asList(
-                String.valueOf(player.getPopulation()),
+                String.valueOf(player.getPopulation()) + "/" + String.valueOf(player.getMaxPopulation()),
                 String.valueOf(player.getGold()),
                 String.valueOf(player.getFood()),
                 String.valueOf(player.getLogs()),

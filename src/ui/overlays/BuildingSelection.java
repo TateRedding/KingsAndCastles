@@ -280,7 +280,7 @@ public class BuildingSelection extends Overlay {
                 closeOverlay();
             else if (selectButton.getBounds().contains(x, y) && selectButton.isMousePressed() && selectedBuildingType != -1) {
                 play.setSelectedBuildingType(selectedBuildingType);
-                play.getActionBar().setSelectedBuildingType(selectedBuildingType);
+                play.getActionBar().setSelectedBuildingButtonType(selectedBuildingType);
                 closeOverlay();
             } else
                 for (int row = 0; row < selectionBounds.length; row++)

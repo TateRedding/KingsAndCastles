@@ -1,6 +1,6 @@
 package gamestates;
 
-import static gamestates.Play.SELECT;
+import static gamestates.Play.CA_SELECT;
 import static main.Game.TILE_SIZE;
 import static objects.Tile.*;
 
@@ -109,7 +109,7 @@ public class Edit extends MapState {
                 }
             else
                 g.drawImage(ImageLoader.editorBarButtonSprites.get(selectedType), mouseX, mouseY, null);
-        g.drawImage(ImageLoader.actions[SELECT], mouseX, mouseY, null);
+        g.drawImage(ImageLoader.actions[CA_SELECT], mouseX, mouseY, null);
     }
 
     private void drawPlayerIndicator(Graphics g) {

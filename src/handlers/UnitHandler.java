@@ -22,6 +22,8 @@ import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class UnitHandler implements Serializable {
 
+    private static final int NUM_MAX_STARTING_UNITS = 2;
+
     private Play play;
     private ArrayList<Unit> units = new ArrayList<>();
 
@@ -81,18 +83,26 @@ public class UnitHandler implements Serializable {
         Random random = new Random(play.getSeed());
 
         for (int i = 0; i < players.size(); i++) {
-            int maxStartingUnits = Math.min(players.get(i).getPopulation(), castleZones.get(i).size());
+            int maxStartingUnits = Math.min(NUM_MAX_STARTING_UNITS, castleZones.get(i).size());
             ArrayList<Point> spawnPoints = new ArrayList<>(castleZones.get(i));
             Collections.shuffle(spawnPoints, random);
             for (int j = 0; j < maxStartingUnits + 1; j++) {
                 Point spawn = spawnPoints.get(j);
                 // Debugging - Starting with one Brute each. Remove this check and just spawn laborers for production
                 if (j == maxStartingUnits)
-                    units.add(new Brute(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
+                    createUnit(players.get(i), spawn, BRUTE);
                 else
-                    units.add(new Laborer(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
+                    createUnit(players.get(i), spawn, LABORER);
             }
         }
+    }
+
+    public void createUnit(Player player, Point spawn, int unitType) {
+        switch (unitType) {
+            case LABORER -> units.add(new Laborer(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
+            case BRUTE -> units.add(new Brute(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
+        }
+        player.setPopulation(player.getPopulation() + 1);
     }
 
     private void drawPath(Unit u, Graphics g, int xOffset, int yOffset) {

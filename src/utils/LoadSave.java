@@ -221,11 +221,11 @@ public class LoadSave {
         Entity selectedEntity = play.getSelectedEntity();
 
         play.setGame(null);
+        play.setSelectedEntity(null);
         play.setActionBar(null);
         play.setGameStatBar(null);
         play.setMiniMap(null);
         play.setSelectedBuildingType(-1);
-        play.setSelectedEntity(null);
 
         play.setClickAction(-1);
         play.setBuildingSelection(null);
@@ -242,10 +242,10 @@ public class LoadSave {
 
         play.setGame(game);
         play.setActionBar(actionBar);
+        play.setSelectedEntity(selectedEntity);
         play.setGameStatBar(gameStatBar);
         play.setMiniMap(miniMap);
         play.setSelectedBuildingType(selectedBuildingType);
-        play.setSelectedEntity(selectedEntity);
     }
 
     public static void createGameFile(Play game, File gameFile) {
