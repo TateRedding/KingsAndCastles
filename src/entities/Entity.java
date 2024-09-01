@@ -15,9 +15,11 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import static entities.Brute.ATTACKING;
 import static entities.Laborer.CHOPPING;
 import static entities.Laborer.MINING;
 import static main.Game.*;
+import static pathfinding.AStar.isPointOpen;
 
 public abstract class Entity extends SelectableGameObject implements Serializable {
 
@@ -46,7 +48,6 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static final int DEAD = 0;
     public static final int IDLE = 1;
     public static final int WALKING = 2;
-    public static final int ATTACKING = 3;
 
     protected ArrayList<Point> path;
     protected EntityHandler entityHandler;
@@ -178,8 +179,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
             // Below will need to check if an entity is also in a combat state if entityToAttack is not null.
             // It may also need to ensure the target is still within attacking range, should the target be moving.
             if ((resourceToGather != null && (state == CHOPPING || state == MINING)) || (entityToAttack != null && state == ATTACKING)) {
-                if (state != WALKING && state != IDLE)
-                    turnTowardsTarget();
+                turnTowardsTarget();
                 actionTick++;
             }
 
@@ -225,7 +225,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
                 if (neighbor.equals(targetTile))
                     return true;
 
-                if (AStar.isPointOpen(neighbor, play)) {
+                if (isPointOpen(neighbor, play)) {
                     nextTile = neighbor;
                     break;
                 }
@@ -323,7 +323,11 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
                 Entity e = entityHandler.getEntityAtCoord(toPixelX(next.x), toPixelY(next.y), true);
                 if (e != null) {
                     Point start = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
-                    path = AStar.pathFind(start, path.get(path.size() - 1), entityHandler.getPlay());
+                    Point goal = path.get(path.size() - 1);
+                    if (entityHandler.getPlay().getGameObjectAtTile(goal.x, goal.y) != null)
+                        e.setPath(entityHandler.getPathToNearestAdjacentTile(e, goal.x, goal.y));
+                    else
+                        path = AStar.pathFind(start, goal, entityHandler.getPlay());
                 }
             }
         }

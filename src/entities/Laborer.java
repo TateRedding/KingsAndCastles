@@ -7,8 +7,8 @@ import resources.ResourceObject;
 public class Laborer extends Entity {
 
     // Laborer Specific States
-    public static final int CHOPPING = 4;
-    public static final int MINING = 5;
+    public static final int CHOPPING = 3;
+    public static final int MINING = 4;
 
     public Laborer(Player player, int x, int y, int id, EntityHandler entityHandler) {
         super(player, x, y, LABORER, id, entityHandler);

@@ -141,7 +141,7 @@ public class AStar {
         int x = toPixelX(point.x);
         int y = toPixelY(point.y);
         int tileType = play.getMap().getTileData()[point.y][point.x].getTileType();
-        return (tileType != WATER_GRASS && tileType != WATER_SAND && play.getGameObjectAt(x, y, true) == null);
+        return (tileType != WATER_GRASS && tileType != WATER_SAND && play.getGameObjectAtTile(point.x, point.y) == null);
     }
 
     public static double getDistance(Point from, Point to) {

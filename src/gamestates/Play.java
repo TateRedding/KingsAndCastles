@@ -293,8 +293,8 @@ public class Play extends MapState implements Savable, Serializable {
         game.getSaveFileHandler().saveGame(this);
     }
 
-    public GameObject getGameObjectAt(int x, int y, boolean checkEntireTile) {
-        Entity e = entityHandler.getEntityAtCoord(x, y, checkEntireTile);
+    public GameObject getGameObjectAtCoordinate(int x, int y) {
+        Entity e = entityHandler.getEntityAtCoord(x, y, false);
         if (e != null)
             return e;
 
@@ -303,6 +303,18 @@ public class Play extends MapState implements Savable, Serializable {
             return b;
 
         return resourceObjectData[toTileY(y)][toTileX(x)];
+    }
+
+    public GameObject getGameObjectAtTile(int tileX, int tileY) {
+        Entity e = entityHandler.getEntityAtCoord(toPixelX(tileX), toPixelY(tileY), true);
+        if (e != null)
+            return e;
+
+        Building b = buildingHandler.getBuildingAt(toPixelX(tileX), toPixelY(tileY));
+        if (b != null)
+            return b;
+
+        return resourceObjectData[tileY][tileX];
     }
 
     private boolean canBuildHere(int x, int y, boolean checkAllBuildingTiles) {
@@ -350,7 +362,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private boolean isTileBuildable(Point tile) {
-        if (getGameObjectAt(toPixelX(tile.x), toPixelY(tile.y), true) != null)
+        if (getGameObjectAtTile(tile.x, tile.y) != null)
             return false;
         int tileType = map.getTileData()[tile.y][tile.x].getTileType();
         return (tileType != WATER_GRASS && tileType != WATER_SAND);
@@ -521,7 +533,7 @@ public class Play extends MapState implements Savable, Serializable {
             super.mouseMoved(x, y);
             if (inGameArea) {
                 if (selectedBuildingType == -1) {
-                    hoverGO = getGameObjectAt(x + mapXOffset, y + mapYOffset, false);
+                    hoverGO = getGameObjectAtCoordinate(x + mapXOffset, y + mapYOffset);
                     determineAction();
                 } else
                     canBuild = canBuildHere(gameX, gameY, true);

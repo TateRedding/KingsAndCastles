@@ -5,6 +5,9 @@ import objects.Player;
 
 public class Brute extends Entity {
 
+    // Brute Specific States
+    public static final int ATTACKING = 3;
+
     public Brute(Player player, int x, int y, int id, EntityHandler entityHandler) {
         super(player, x, y, BRUTE, id, entityHandler);
     }
