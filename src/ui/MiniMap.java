@@ -30,7 +30,7 @@ public class MiniMap implements Serializable {
     private MapState mapState;
     private BufferedImage miniMap;
     private Rectangle bounds, mmBounds;
-    private ImageButton expand, terrain, resources, entities, buildings;
+    private ImageButton expand, terrain, resources, units, buildings;
     private ArrayList<ImageButton> iconButtons = new ArrayList<>();
 
     private Tile[][] tileData;
@@ -40,7 +40,7 @@ public class MiniMap implements Serializable {
     private boolean mapExpanded = true;
     private boolean showTerrain = true;
     private boolean showResources = true;
-    private boolean showEntities = true;
+    private boolean showUnits = true;
     private boolean showBuildings = true;
 
     public MiniMap(MapState mapState, Tile[][] tileData) {
@@ -84,12 +84,12 @@ public class MiniMap implements Serializable {
         float buttonScale = 1.0f;
 
         buildings = new ImageButton(ICON, xStart, areaY, ImageLoader.icons[ICON_BUILDING], buttonScale);
-        entities = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_ENTITY], buttonScale);
+        units = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_UNIT], buttonScale);
         resources = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_RESOURCE], buttonScale);
         terrain = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_TERRAIN], buttonScale);
         expand = new ImageButton(ICON, xStart += buttonWidth + xOffset, areaY, ImageLoader.icons[ICON_MAP], buttonScale);
 
-        iconButtons.addAll(Arrays.asList(buildings, entities, resources, terrain, expand));
+        iconButtons.addAll(Arrays.asList(buildings, units, resources, terrain, expand));
     }
 
     public void update() {
@@ -122,8 +122,8 @@ public class MiniMap implements Serializable {
                 createResourceLayer(g);
             if (showBuildings)
                 createBuildingLayer(g);
-            if (showEntities)
-                createEntityLayer(g);
+            if (showUnits)
+                createUnitLayer(g);
         }
 
     }
@@ -175,8 +175,8 @@ public class MiniMap implements Serializable {
                             break;
                     }
 
-                    int xStart = (int) (ro.getTileX() * scale);
-                    int yStart = (int) (ro.getTileY() * scale);
+                    int xStart = (int) (toTileX(ro.getX()) * scale);
+                    int yStart = (int) (toTileY(ro.getY()) * scale);
                     g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
                 }
             }
@@ -186,7 +186,7 @@ public class MiniMap implements Serializable {
 
     }
 
-    private void createEntityLayer(Graphics g) {
+    private void createUnitLayer(Graphics g) {
 
     }
 
@@ -256,8 +256,8 @@ public class MiniMap implements Serializable {
                     setScreenPosition(x, y);
                 else if (buildings.getBounds().contains(x, y) && buildings.isMousePressed())
                     showBuildings = !showBuildings;
-                else if (entities.getBounds().contains(x, y) && entities.isMousePressed())
-                    showEntities = !showEntities;
+                else if (units.getBounds().contains(x, y) && units.isMousePressed())
+                    showUnits = !showUnits;
                 else if (resources.getBounds().contains(x, y) && resources.isMousePressed())
                     showResources = !showResources;
                 else if (terrain.getBounds().contains(x, y) && terrain.isMousePressed())

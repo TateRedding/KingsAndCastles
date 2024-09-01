@@ -18,8 +18,8 @@ import javax.imageio.ImageIO;
 
 import gamestates.Play;
 import main.Game;
+import objects.Entity;
 import objects.Map;
-import objects.SelectableGameObject;
 import ui.MiniMap;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
@@ -218,14 +218,14 @@ public class LoadSave {
         GameStatBar gameStatBar = play.getGameStatBar();
         MiniMap miniMap = play.getMiniMap();
         int selectedBuildingType = play.getSelectedBuildingType();
-        SelectableGameObject selectedSGO = play.getSelectedSGO();
+        Entity selectedEntity = play.getSelectedEntity();
 
         play.setGame(null);
         play.setActionBar(null);
         play.setGameStatBar(null);
         play.setMiniMap(null);
         play.setSelectedBuildingType(-1);
-        play.setSelectedSGO(null);
+        play.setSelectedEntity(null);
 
         play.setClickAction(-1);
         play.setBuildingSelection(null);
@@ -245,7 +245,7 @@ public class LoadSave {
         play.setGameStatBar(gameStatBar);
         play.setMiniMap(miniMap);
         play.setSelectedBuildingType(selectedBuildingType);
-        play.setSelectedSGO(selectedSGO);
+        play.setSelectedEntity(selectedEntity);
     }
 
     public static void createGameFile(Play game, File gameFile) {

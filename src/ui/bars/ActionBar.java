@@ -6,11 +6,10 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import entities.Entity;
+import units.Unit;
 import gamestates.Play;
 import main.Game;
-import objects.GameObject;
-import objects.SelectableGameObject;
+import objects.Entity;
 import ui.buttons.Button;
 import ui.buttons.ImageButton;
 import ui.buttons.TextButton;
@@ -71,12 +70,12 @@ public class ActionBar extends BottomBar {
 
         renderBuildingCost(g);
 
-        SelectableGameObject sgo = play.getSelectedSGO();
-        if (sgo != null) {
+        Entity selectedEntity = play.getSelectedEntity();
+        if (selectedEntity != null) {
             BufferedImage sprite = null;
-            if (sgo.getGameObjectType() == GameObject.ENTITY)
-                sprite = Entity.getSprite(((Entity) sgo).getEntityType(), Entity.IDLE, Entity.DOWN, 0);
-            else if (sgo.getGameObjectType() == GameObject.BUILDING) {
+            if (selectedEntity.getEntityType() == Entity.UNIT)
+                sprite = Unit.getSprite(((Unit) selectedEntity).getUnitType(), Unit.IDLE, Unit.DOWN, 0);
+            else if (selectedEntity.getEntityType() == Entity.BUILDING) {
                 //sprite = building sprite
             }
             renderSelection(g, sprite);
@@ -150,7 +149,7 @@ public class ActionBar extends BottomBar {
                 play.saveGame();
             if (buildButton.getBounds().contains(x, y) && buildButton.isMousePressed()) {
                 play.setSelectedBuildingType(selectedBuildingType);
-                play.setSelectedSGO(null);
+                play.setSelectedEntity(null);
             }
             if (buildingInterfaceButton.getBounds().contains(x, y) && buildingInterfaceButton.isMousePressed()) {
                 if (play.getBuildingSelection() == null) {

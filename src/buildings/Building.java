@@ -1,14 +1,13 @@
 package buildings;
 
-import objects.GameObject;
-import objects.SelectableGameObject;
+import objects.Entity;
 import objects.Player;
 
 import java.awt.*;
 
 import static main.Game.TILE_SIZE;
 
-public abstract class Building extends SelectableGameObject {
+public abstract class Building extends Entity {
 
     // Building Types
     public static final int THRONE_ROOM = 0;
@@ -23,12 +22,10 @@ public abstract class Building extends SelectableGameObject {
     public static final int BARRACKS_TIER_2 = 9;
     public static final int BARRACKS_TIER_3 = 10;
 
-    protected int x, y, buildingType;
+    protected int buildingType;
 
     public Building(Player player, int id, int x, int y, int buildingType) {
-        super(player, GameObject.BUILDING, id);
-        this.x = x;
-        this.y = y;
+        super(player, BUILDING, x, y, id);
         this.buildingType = buildingType;
         this.maxHealth = getDefaultMaxHealth(buildingType);
         this.health = maxHealth;
@@ -210,12 +207,20 @@ public abstract class Building extends SelectableGameObject {
         };
     }
 
+
+    @Override
     public int getBuildingType() {
         return buildingType;
     }
 
-    public void setBuildingType(int buildingType) {
-        this.buildingType = buildingType;
+    @Override
+    public int getResourceType() {
+        return -1;
+    }
+
+    @Override
+    public int getUnitType() {
+        return -1;
     }
 
 }

@@ -61,7 +61,7 @@ public class ImageLoader {
         loadBuildingImages();
         loadButtonImages();
         loadResourceImages();
-        loadEntityImages();
+        loadUnitImages();
         loadTerrainTiles();
         loadUIImages();
     }
@@ -99,9 +99,9 @@ public class ImageLoader {
         };
     }
 
-    private static void loadEntityImages() {
-        brute = getEntityAnimationArray(BRUTE, 4, 4);
-        laborer = getEntityAnimationArray(LABORER, 5, 5);
+    private static void loadUnitImages() {
+        brute = getUnitAnimationArray(BRUTE, 4, 4);
+        laborer = getUnitAnimationArray(LABORER, 5, 5);
     }
 
     private static void loadTerrainTiles() {
@@ -222,7 +222,7 @@ public class ImageLoader {
         return temp;
     }
 
-    private static BufferedImage[][][] getEntityAnimationArray(String fileName, int numAnimations, int maxFrames) {
+    private static BufferedImage[][][] getUnitAnimationArray(String fileName, int numAnimations, int maxFrames) {
         BufferedImage atlas = LoadSave.loadImage(fileName);
         BufferedImage[][][] temp = new BufferedImage[numAnimations][4][maxFrames];
         int spriteSize = 32;

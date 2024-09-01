@@ -3,22 +3,28 @@ package objects;
 import java.awt.*;
 import java.io.Serializable;
 
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 
-public abstract class GameObject implements Serializable {
+public abstract class Entity implements Serializable {
 
     public static final int BUILDING = 0;
-    public static final int ENTITY = 1;
+    public static final int UNIT = 1;
     public static final int RESOURCE = 2;
 
     public static final int HEALTH_BAR_MAX_WIDTH = TILE_SIZE / 4 * 3;
 
+    protected Player player;
     protected Rectangle hitbox;
+    protected float x, y;
     protected int id;
-    protected int gameObjectType;
+    protected int entityType;
+    protected int health, maxHealth;
 
-    public GameObject(int type, int id) {
-        this.gameObjectType = type;
+    public Entity(Player player, int entityType, float x, float y, int id) {
+        this.player = player;
+        this.entityType = entityType;
+        this.x = x;
+        this.y = y;
         this.id = id;
     }
 
@@ -43,15 +49,46 @@ public abstract class GameObject implements Serializable {
 
     }
 
-    public int getId() {
-        return id;
+    public abstract int getBuildingType();
+
+    public abstract int getResourceType();
+
+    public abstract int getUnitType();
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+
+    public int getEntityType() {
+        return entityType;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
     }
 
     public Rectangle getHitbox() {
         return hitbox;
     }
 
-    public int getGameObjectType() {
-        return gameObjectType;
+    public int getId() {
+        return id;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

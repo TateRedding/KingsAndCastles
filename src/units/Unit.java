@@ -1,12 +1,10 @@
-package entities;
+package units;
 
 import gamestates.Play;
-import handlers.EntityHandler;
-import objects.GameObject;
-import objects.SelectableGameObject;
+import handlers.UnitHandler;
+import objects.Entity;
 import objects.Player;
 import pathfinding.AStar;
-import resources.ResourceObject;
 import utils.ImageLoader;
 
 import java.awt.*;
@@ -15,20 +13,20 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import static entities.Brute.ATTACKING;
-import static entities.Laborer.CHOPPING;
-import static entities.Laborer.MINING;
+import static units.Brute.ATTACKING;
+import static units.Laborer.CHOPPING;
+import static units.Laborer.MINING;
 import static main.Game.*;
 import static pathfinding.AStar.isPointOpen;
 
-public abstract class Entity extends SelectableGameObject implements Serializable {
+public abstract class Unit extends Entity implements Serializable {
 
     // Attack Styles
     public static final int NONE = 0;
     public static final int MELEE = 1;
     public static final int RANGED = 2;
 
-    // Entity Types
+    // Unit Types
     public static final int LABORER = 0;
     public static final int BRUTE = 1;
 
@@ -44,15 +42,15 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public static final int UP_RIGHT = 6;
     public static final int DOWN_RIGHT = 7;
 
-    // All Entity States
+    // All Unit States
     public static final int DEAD = 0;
     public static final int IDLE = 1;
     public static final int WALKING = 2;
 
     protected ArrayList<Point> path;
-    protected EntityHandler entityHandler;
+    protected UnitHandler unitHandler;
 
-    protected int entityType;
+    protected int unitType;
     protected int damage;
     protected int actionTick = 0;
     protected int actionTickMax;
@@ -61,111 +59,107 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     protected int state = IDLE;
     protected int animationFrame = 0;
     protected int animationTick = 0;
-    protected float x, y, speed;
+    protected float speed;
 
     protected boolean isAlive = true;
 
-    protected ResourceObject resourceToGather;
-    protected Entity entityToAttack;
+    protected Entity targetEntity;
 
-    public Entity(Player player, float x, float y, int entityType, int id, EntityHandler entityHandler) {
-        super(player, GameObject.ENTITY, id);
-        this.x = x;
-        this.y = y;
-        this.entityType = entityType;
-        this.entityHandler = entityHandler;
-        this.maxHealth = getDefaultMaxHealth(entityType);
+    public Unit(Player player, float x, float y, int unitType, int id, UnitHandler unitHandler) {
+        super(player, UNIT, x, y, id);
+        this.unitType = unitType;
+        this.unitHandler = unitHandler;
+        this.maxHealth = getDefaultMaxHealth(unitType);
         this.health = maxHealth;
-        this.damage = getDefaultDamage(entityType);
-        this.actionTickMax = getDefaultActionSpeed(entityType);
-        this.actionRange = getDefaultActionRange(entityType);
-        this.speed = getDefaultMoveSpeed(entityType);
-        this.sightRange = getDefaultSightRange(entityType);
+        this.damage = getDefaultDamage(unitType);
+        this.actionTickMax = getDefaultActionSpeed(unitType);
+        this.actionRange = getDefaultActionRange(unitType);
+        this.speed = getDefaultMoveSpeed(unitType);
+        this.sightRange = getDefaultSightRange(unitType);
         this.hitbox = new Rectangle((int) x, (int) y, TILE_SIZE, TILE_SIZE);
     }
 
-    public static int getDefaultMaxHealth(int entityType) {
-        return switch (entityType) {
+    public static int getDefaultMaxHealth(int unitType) {
+        return switch (unitType) {
             case LABORER -> 50;
             case BRUTE -> 100;
             default -> 0;
         };
     }
 
-    public static int getDefaultDamage(int entityType) {
-        return switch (entityType) {
+    public static int getDefaultDamage(int unitType) {
+        return switch (unitType) {
             case BRUTE -> 5;
             default -> 0;
         };
     }
 
-    public static int getDefaultActionSpeed(int entityType) {
-        return switch (entityType) {
+    public static int getDefaultActionSpeed(int unitType) {
+        return switch (unitType) {
             case LABORER -> Laborer.getMaxAnimationTick(CHOPPING) * Laborer.getNumberOfFrames(CHOPPING);
             case BRUTE -> Brute.getMaxAnimationTick(ATTACKING) * Brute.getNumberOfFrames(ATTACKING);
             default -> 0;
         };
     }
 
-    public static float getDefaultMoveSpeed(int entityType) {
-        return switch (entityType) {
+    public static float getDefaultMoveSpeed(int unitType) {
+        return switch (unitType) {
             case LABORER -> 0.8f;
             case BRUTE -> 1.0f;
             default -> 0.0f;
         };
     }
 
-    public static int getDefaultActionRange(int entityType) {
-
-        return switch (entityType) {
+    public static int getDefaultActionRange(int unitType) {
+        return switch (unitType) {
             case LABORER, BRUTE -> 1;
             default -> 0;
         };
     }
 
-    public static int getDefaultSightRange(int entityType) {
-        return switch (entityType) {
+    public static int getDefaultSightRange(int unitType) {
+        return switch (unitType) {
             case LABORER -> 2;
             case BRUTE -> 5;
             default -> 0;
         };
     }
 
-    public static BufferedImage getSprite(int entityType, int state, int dir, int frame) {
-        return switch (entityType) {
+    public static BufferedImage getSprite(int unitType, int state, int dir, int frame) {
+        return switch (unitType) {
             case LABORER -> ImageLoader.laborer[state][dir][frame];
             case BRUTE -> ImageLoader.brute[state][dir][frame];
             default -> null;
         };
     }
 
-    public static int getAttackStyle(int entityType) {
-        return switch (entityType) {
+    public static int getAttackStyle(int unitType) {
+        return switch (unitType) {
             case LABORER -> NONE;
             case BRUTE -> MELEE;
             default -> -1;
         };
     }
 
-    public static int getActionFrameIndex(int entityType, int state) {
+    public static int getActionFrameIndex(int unitType, int state) {
         // Which animation frame should the action be performed on?
-        return switch (entityType) {
+        return switch (unitType) {
             case LABORER -> Laborer.getActionFrameIndex(state);
             case BRUTE -> Brute.getActionFrameIndex(state);
             default -> 0;
         };
     }
 
-    private static int getNumberOfFrames(int entityType, int state) {
-        return switch (entityType) {
+    private static int getNumberOfFrames(int unitType, int state) {
+        return switch (unitType) {
             case LABORER -> Laborer.getNumberOfFrames(state);
             case BRUTE -> Brute.getNumberOfFrames(state);
             default -> 0;
         };
     }
 
-    private static int getMaxAnimationTick(int entityType, int state) {
-        return switch (entityType) {
+    private static int getMaxAnimationTick(int unitType, int state) {
+        return switch (unitType) {
             case LABORER -> Laborer.getMaxAnimationTick(state);
             case BRUTE -> Brute.getMaxAnimationTick(state);
             default -> 0;
@@ -176,9 +170,10 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         if (isAlive) {
             if (path != null && !path.isEmpty())
                 move();
-            // Below will need to check if an entity is also in a combat state if entityToAttack is not null.
-            // It may also need to ensure the target is still within attacking range, should the target be moving.
-            if ((resourceToGather != null && (state == CHOPPING || state == MINING)) || (entityToAttack != null && state == ATTACKING)) {
+
+            if (targetEntity != null
+                    && ((targetEntity.getEntityType() == RESOURCE && (state == CHOPPING || state == MINING))
+                    || (targetEntity.getEntityType() == UNIT && state == ATTACKING))) {
                 turnTowardsTarget();
                 actionTick++;
             }
@@ -186,7 +181,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         }
     }
 
-    public boolean isTargetInRange(GameObject target, int tileRange) {
+    public boolean isTargetInRange(Entity target, int tileRange) {
         float startX = x - tileRange * TILE_SIZE;
         float startY = y - tileRange * TILE_SIZE;
         float size = (tileRange * 2 + 1) * TILE_SIZE;
@@ -197,22 +192,22 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         return range.contains(middleX, middleY);
     }
 
-    public boolean isLineOfSightOpen(GameObject target) {
-        Point entityTile;
+    public boolean isLineOfSightOpen(Entity target) {
+        Point unitTile;
         Point targetTile;
-        Play play = entityHandler.getPlay();
+        Play play = unitHandler.getPlay();
 
         if (path != null && !path.isEmpty())
-            entityTile = path.get(0);
+            unitTile = path.get(0);
         else
-            entityTile = new Point(toTileX(hitbox.x), toTileY(hitbox.y)); // Default to entity's current tile
+            unitTile = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
 
-        if (target.getGameObjectType() == ENTITY && ((Entity) target).getPath() != null && !(((Entity) target).getPath().isEmpty()))
-            targetTile = ((Entity) target).getPath().get(0);
+        if (target.getEntityType() == UNIT && ((Unit) target).getPath() != null && !(((Unit) target).getPath().isEmpty()))
+            targetTile = ((Unit) target).getPath().get(0);
         else
-            targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y)); // Default to target's current tile
+            targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y));
 
-        Point currentTile = entityTile;
+        Point currentTile = unitTile;
 
         while (!currentTile.equals(targetTile)) {
             ArrayList<Point> neighbors = getTilesClosestToTarget(currentTile, targetTile, play);
@@ -277,26 +272,18 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     }
 
     protected void turnTowardsTarget() {
-        int targetX = 0;
-        int targetY = 0;
-        int entityX = toTileX((int) x);
-        int entityY = toTileY((int) y);
+        int targetX = toTileX(targetEntity.getX());
+        int targetY = toTileY(targetEntity.getY());
+        int unitX = toTileX(x);
+        int unitY = toTileY(y);
 
-        if (resourceToGather != null) {
-            targetX = resourceToGather.getTileX();
-            targetY = resourceToGather.getTileY();
-        } else if (entityToAttack != null) {
-            targetX = toTileX(entityToAttack.getHitbox().x);
-            targetY = toTileY(entityToAttack.getHitbox().y);
-        }
-
-        if (targetY < entityY)
+        if (targetY < unitY)
             direction = UP;
-        else if (targetX < entityX)
+        else if (targetX < unitX)
             direction = LEFT;
-        else if (targetX > entityX)
+        else if (targetX > unitX)
             direction = RIGHT;
-        else if (targetY > entityY)
+        else if (targetY > unitY)
             direction = DOWN;
 
     }
@@ -304,7 +291,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     protected void move() {
         if (state != WALKING)
             setState(WALKING);
-        // Check if Entity has reached the current path point based on movement speed
+        // Check if Unit has reached the current path point based on movement speed
         int currentX = toPixelX(path.get(0).x);
         int currentY = toPixelY(path.get(0).y);
 
@@ -320,14 +307,14 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
             path.remove(0);
             if (!path.isEmpty()) {
                 Point next = path.get(0);
-                Entity e = entityHandler.getEntityAtCoord(toPixelX(next.x), toPixelY(next.y), true);
-                if (e != null) {
+                Unit u = unitHandler.getUnitAtCoord(toPixelX(next.x), toPixelY(next.y), true);
+                if (u != null) {
                     Point start = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
                     Point goal = path.get(path.size() - 1);
-                    if (entityHandler.getPlay().getGameObjectAtTile(goal.x, goal.y) != null)
-                        e.setPath(entityHandler.getPathToNearestAdjacentTile(e, goal.x, goal.y));
+                    if (unitHandler.getPlay().getEntityAtTile(goal.x, goal.y) != null)
+                        u.setPath(unitHandler.getPathToNearestAdjacentTile(u, goal.x, goal.y));
                     else
-                        path = AStar.pathFind(start, goal, entityHandler.getPlay());
+                        path = AStar.pathFind(start, goal, unitHandler.getPlay());
                 }
             }
         }
@@ -412,12 +399,23 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         hitbox.y = (int) y;
     }
 
-    public int getActionRange() {
-        return actionRange;
+    @Override
+    public int getBuildingType() {
+        return -1;
     }
 
-    public void setActionRange(int actionRange) {
-        this.actionRange = actionRange;
+    @Override
+    public int getResourceType() {
+        return -1;
+    }
+
+    @Override
+    public int getUnitType() {
+        return unitType;
+    }
+
+    public int getActionRange() {
+        return actionRange;
     }
 
     public int getActionTickMax() {
@@ -444,18 +442,6 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         return animationFrame;
     }
 
-    public void setAnimationFrame(int animationFrame) {
-        this.animationFrame = animationFrame;
-    }
-
-    public int getAnimationTick() {
-        return animationTick;
-    }
-
-    public void setAnimationTick(int animationTick) {
-        this.animationTick = animationTick;
-    }
-
     public int getState() {
         return state;
     }
@@ -463,7 +449,7 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
     public void setState(int state) {
         this.state = state;
         this.animationFrame = 0;
-        this.actionTick = getMaxAnimationTick(entityType, state) * (getNumberOfFrames(entityType, state) - getActionFrameIndex(entityType, state));
+        this.actionTick = getMaxAnimationTick(unitType, state) * (getNumberOfFrames(unitType, state) - getActionFrameIndex(unitType, state));
         this.animationTick = 0;
     }
 
@@ -475,30 +461,6 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         return direction;
     }
 
-    public void setDirection(int direction) {
-        this.direction = direction;
-    }
-
-    public EntityHandler getEntityHandler() {
-        return entityHandler;
-    }
-
-    public Entity getEntityToAttack() {
-        return entityToAttack;
-    }
-
-    public void setEntityToAttack(Entity entityToAttack) {
-        this.entityToAttack = entityToAttack;
-    }
-
-    public int getEntityType() {
-        return entityType;
-    }
-
-    public int getSightRange() {
-        return sightRange;
-    }
-
     public ArrayList<Point> getPath() {
         return path;
     }
@@ -507,11 +469,20 @@ public abstract class Entity extends SelectableGameObject implements Serializabl
         this.path = path;
     }
 
-    public ResourceObject getResourceToGather() {
-        return resourceToGather;
+    public int getSightRange() {
+        return sightRange;
     }
 
-    public void setResourceToGather(ResourceObject resourceToGather) {
-        this.resourceToGather = resourceToGather;
+    public Entity getTargetEntity() {
+        return targetEntity;
     }
+
+    public void setTargetEntity(Entity targetEntity) {
+        this.targetEntity = targetEntity;
+    }
+
+    public UnitHandler getUnitHandler() {
+        return unitHandler;
+    }
+
 }

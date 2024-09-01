@@ -1,11 +1,8 @@
 package handlers;
 
-import entities.Laborer;
+import objects.*;
+import units.Laborer;
 import gamestates.Play;
-import objects.Chunk;
-import objects.Map;
-import objects.Player;
-import objects.Tile;
 import resources.*;
 import utils.ImageLoader;
 import utils.OpenSimplex2;
@@ -15,7 +12,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 import static objects.Chunk.MAX_CHUNK_SIZE;
 import static resources.ResourceObject.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
@@ -42,8 +39,8 @@ public class ResourceObjectHandler implements Serializable {
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
-                if (currRO != null && currRO.getCurrentAmount() < currRO.getTotalAmount())
-                    currRO.drawHealthBar(g, currRO.getCurrentAmount(), currRO.getTotalAmount(), xOffset, yOffset);
+                if (currRO != null && currRO.getHealth() < currRO.getMaxHealth())
+                    currRO.drawHealthBar(g, currRO.getHealth(), currRO.getMaxHealth(), xOffset, yOffset);
             }
     }
 
@@ -280,8 +277,11 @@ public class ResourceObjectHandler implements Serializable {
     }
 
     public void gatherResource(Player player, ResourceObject ro, Laborer laborer) {
+        if (ro.getResourceType() == -1)
+            return;
+
         int resourceType = ro.getResourceType();
-        int currAmt = ro.getCurrentAmount();
+        int currAmt = ro.getHealth();
         int gatherAmt = Math.min(ResourceObject.getAmountPerAction(resourceType), currAmt);
         switch (resourceType) {
             case GOLD -> player.setGold(player.getGold() + gatherAmt);
@@ -294,8 +294,8 @@ public class ResourceObjectHandler implements Serializable {
 
         // Check if resource is depleted
         if (newAmt <= 0) {
-            int roTileX = ro.getTileX();
-            int roTileY = ro.getTileY();
+            int roTileX = toTileX(ro.getX());
+            int roTileY = toTileY(ro.getY());
             int laborerTileX = laborer.getHitbox().x / TILE_SIZE;
             int laborerTileY = (laborer.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE;
             Map map = play.getMap();
@@ -322,21 +322,21 @@ public class ResourceObjectHandler implements Serializable {
                             ResourceObject currRO = map.getResourceObjectData()[y][x];
                             if (currRO != null && currRO.getResourceType() == resourceType) {
                                 if (laborer.isTargetInRange(currRO, laborer.getActionRange()) && laborer.isLineOfSightOpen(currRO)) {
-                                    laborer.setResourceToGather(currRO);
+                                    laborer.setTargetEntity(currRO);
                                     return;
                                 }
-                                ArrayList<Point> path = laborer.getEntityHandler().getPathToNearestAdjacentTile(laborer, currRO.getTileX(), currRO.getTileY());
+                                ArrayList<Point> path = laborer.getUnitHandler().getPathToNearestAdjacentTile(laborer, toTileX(currRO.getX()), toTileY(currRO.getY()));
                                 if (path != null) {
                                     laborer.setPath(path);
-                                    laborer.setResourceToGather(currRO);
+                                    laborer.setTargetEntity(currRO);
                                     return;
                                 }
                             }
                         }
                     }
-            laborer.setResourceToGather(null);
+            laborer.setTargetEntity(null);
         } else
-            ro.setCurrentAmount(newAmt);
+            ro.setHealth(newAmt);
     }
 
 }

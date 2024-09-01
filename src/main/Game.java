@@ -76,12 +76,20 @@ public class Game extends JFrame implements Runnable {
         return pixelX / TILE_SIZE;
     }
 
+    public static int toTileX(float pixelX) {
+        return (int) pixelX / TILE_SIZE;
+    }
+
     public static int toPixelY(int tileY) {
         return tileY * TILE_SIZE + TOP_BAR_HEIGHT;
     }
 
     public static int toTileY(int pixelY) {
         return (pixelY - TOP_BAR_HEIGHT) / TILE_SIZE;
+    }
+
+    public static int toTileY(float pixelY) {
+        return ((int) pixelY - TOP_BAR_HEIGHT) / TILE_SIZE;
     }
 
     private void start() {

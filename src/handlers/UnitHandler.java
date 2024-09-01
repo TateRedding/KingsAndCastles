@@ -1,10 +1,11 @@
 package handlers;
 
-import entities.Brute;
-import entities.Entity;
-import entities.Laborer;
+import resources.ResourceObject;
+import units.Brute;
+import units.Unit;
+import units.Laborer;
 import gamestates.Play;
-import objects.GameObject;
+import objects.Entity;
 import objects.Player;
 import pathfinding.AStar;
 
@@ -15,115 +16,114 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
-import static entities.Entity.*;
+import static units.Unit.*;
 import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
-public class EntityHandler implements Serializable {
+public class UnitHandler implements Serializable {
 
     private Play play;
-    private ArrayList<Entity> entities = new ArrayList<>();
+    private ArrayList<Unit> units = new ArrayList<>();
 
     private int id = 0;
-    private GameObject targetObject;
 
-    public EntityHandler(Play play) {
+    public UnitHandler(Play play) {
         this.play = play;
-        createStartingEntities();
+        createStartingUnits();
     }
 
     public void update() {
-        for (Entity e : entities) {
-            if (e.isAlive()) {
-                e.update();
-                int entityType = e.getEntityType();
+        for (Unit u : units) {
+            if (u.isAlive() && u.getUnitType() != -1) {
+                u.update();
+                int unitType = u.getUnitType();
 
                 // Auto-attack
-                if (entityType != LABORER && e.getState() == IDLE && e.getEntityToAttack() == null)
-                    findEntityToAttack(e);
+                if (unitType != LABORER && u.getState() == IDLE && u.getTargetEntity() == null)
+                    findEnemyToAttack(u);
 
-                if (e.getActionTick() >= e.getActionTickMax()) {
-                    if (entityType == LABORER)
-                        play.getResourceObjectHandler().gatherResource(e.getPlayer(), e.getResourceToGather(), (Laborer) e);
+                if (u.getActionTick() >= u.getActionTickMax()) {
+                    if (unitType == LABORER)
+                        play.getResourceObjectHandler().gatherResource(u.getPlayer(), (ResourceObject) u.getTargetEntity(), (Laborer) u);
                     else
-                        attack(e, e.getEntityToAttack());
-                    e.setActionTick(0);
+                        attack(u, (Unit) u.getTargetEntity());
+                    u.setActionTick(0);
                 }
             }
         }
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
-        for (Entity e : entities) {
-            if (e.isAlive()) {
-                int dir = e.getDirection();
+        for (Unit u : units) {
+            if (u.isAlive()) {
+                int dir = u.getDirection();
                 if (dir == UP_LEFT || dir == DOWN_LEFT)
                     dir = LEFT;
                 else if (dir == UP_RIGHT || dir == DOWN_RIGHT)
                     dir = RIGHT;
 
-                g.drawImage(Entity.getSprite(e.getEntityType(), e.getState(), dir, e.getAnimationFrame()), e.getHitbox().x - xOffset, e.getHitbox().y - yOffset, null);
+                g.drawImage(Unit.getSprite(u.getUnitType(), u.getState(), dir, u.getAnimationFrame()), u.getHitbox().x - xOffset, u.getHitbox().y - yOffset, null);
 
-                if (e.getHealth() < e.getMaxHealth())
-                    e.drawHealthBar(g, e.getHealth(), e.getMaxHealth(), xOffset, yOffset);
+                if (u.getHealth() < u.getMaxHealth())
+                    u.drawHealthBar(g, u.getHealth(), u.getMaxHealth(), xOffset, yOffset);
 
                 // Debugging
-                drawPath(e, g, xOffset, yOffset);
-                drawHitbox(e, g, xOffset, yOffset);
-                drawTargetHitbox(e, g, xOffset, yOffset);
+                drawPath(u, g, xOffset, yOffset);
+                drawHitbox(u, g, xOffset, yOffset);
+                drawTargetHitbox(u, g, xOffset, yOffset);
             }
         }
     }
 
-    private void createStartingEntities() {
+    private void createStartingUnits() {
         ArrayList<ArrayList<Point>> castleZones = play.getMap().getCastleZones();
         ArrayList<Player> players = play.getPlayers();
         Random random = new Random(play.getSeed());
 
         for (int i = 0; i < players.size(); i++) {
-            int maxStartingEntities = Math.min(players.get(i).getPopulation(), castleZones.get(i).size());
+            int maxStartingUnits = Math.min(players.get(i).getPopulation(), castleZones.get(i).size());
             ArrayList<Point> spawnPoints = new ArrayList<>(castleZones.get(i));
             Collections.shuffle(spawnPoints, random);
-            for (int j = 0; j < maxStartingEntities + 1; j++) {
+            for (int j = 0; j < maxStartingUnits + 1; j++) {
                 Point spawn = spawnPoints.get(j);
                 // Debugging - Starting with one Brute each. Remove this check and just spawn laborers for production
-                if (j == maxStartingEntities)
-                    entities.add(new Brute(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
+                if (j == maxStartingUnits)
+                    units.add(new Brute(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
                 else
-                    entities.add(new Laborer(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
+                    units.add(new Laborer(players.get(i), spawn.x * TILE_SIZE, spawn.y * TILE_SIZE + TOP_BAR_HEIGHT, id++, this));
             }
         }
     }
 
-    private void drawPath(Entity e, Graphics g, int xOffset, int yOffset) {
-        if (e.getPath() != null && !e.getPath().isEmpty()) {
+    private void drawPath(Unit u, Graphics g, int xOffset, int yOffset) {
+        if (u.getPath() != null && !u.getPath().isEmpty()) {
             g.setColor(new Color(255, 0, 255, 100));
-            for (Point p : e.getPath()) {
+            for (Point p : u.getPath()) {
                 g.fillRect(toPixelX(p.x) - xOffset, toPixelY(p.y) - yOffset, TILE_SIZE, TILE_SIZE);
             }
         }
     }
 
-    private void drawHitbox(Entity e, Graphics g, int xOffset, int yOffset) {
+    private void drawHitbox(Unit u, Graphics g, int xOffset, int yOffset) {
         g.setColor(Color.RED);
-        Rectangle bounds = e.getHitbox();
+        Rectangle bounds = u.getHitbox();
         g.drawRect(bounds.x - xOffset, bounds.y - yOffset, bounds.width, bounds.height);
     }
 
-    private void drawTargetHitbox(Entity e, Graphics g, int xOffset, int yOffset) {
-        GameObject go = e.getResourceToGather() == null ? e.getEntityToAttack() : e.getResourceToGather();
-        if (go != null) {
+    private void drawTargetHitbox(Unit u, Graphics g, int xOffset, int yOffset) {
+        Entity e = u.getTargetEntity();
+        if (e != null) {
             g.setColor(Color.BLUE);
-            Rectangle bounds = go.getHitbox();
+            Rectangle bounds = e.getHitbox();
             g.drawRect(bounds.x - xOffset, bounds.y - yOffset, bounds.width, bounds.height);
         }
     }
 
-    private void findEntityToAttack(Entity attacker) {
-        for (Entity target : entities) {
+    private void findEnemyToAttack(Unit attacker) {
+        for (Unit target : units) {
             if (target.isAlive() && target.getPlayer().getPlayerID() != attacker.getPlayer().getPlayerID() && attacker.isTargetInRange(target, attacker.getSightRange())) {
                 if (attacker.isTargetInRange(target, attacker.getActionRange()) && attacker.isLineOfSightOpen(target)) {
-                    attacker.setEntityToAttack(target);
+                    attacker.setTargetEntity(target);
                     return;
                 }
 
@@ -133,51 +133,54 @@ public class EntityHandler implements Serializable {
                     targetTile = targetPath.get(0);
                 else
                     targetTile = new Point(target.getHitbox().x / TILE_SIZE, (target.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
-                ArrayList<Point> path = attacker.getEntityHandler().getPathToNearestAdjacentTile(attacker, targetTile.x, targetTile.y);
+                ArrayList<Point> path = attacker.getUnitHandler().getPathToNearestAdjacentTile(attacker, targetTile.x, targetTile.y);
                 if (path != null) {
                     attacker.setPath(path);
-                    attacker.setEntityToAttack(target);
+                    attacker.setTargetEntity(target);
                     return;
                 }
             }
         }
     }
 
-    private void attack(Entity attacker, Entity target) {
+    private void attack(Unit attacker, Unit target) {
+        if (attacker.getUnitType() == -1 || target.getUnitType() == -1)
+            return;
+
         target.setHealth(target.getHealth() - attacker.getDamage());
 
         // Auto-retaliate
-        if (target.getEntityType() != LABORER && target.getEntityToAttack() == null && target.getState() == IDLE)
-            target.setEntityToAttack(attacker);
+        if (target.getUnitType() != LABORER && target.getTargetEntity() == null && target.getState() == IDLE)
+            target.setTargetEntity(attacker);
 
         if (target.getHealth() <= 0) {
             target.setAlive(false);
             attacker.setState(IDLE);
-            attacker.setEntityToAttack(null);
+            attacker.setTargetEntity(null);
         }
     }
 
-    public void setPathToTile(Entity e, int tileX, int tileY) {
+    public void setPathToTile(Unit u, int tileX, int tileY) {
         Point goal = new Point(tileX, tileY);
-        if (e.getPath() != null && !e.getPath().isEmpty()) {
-            ArrayList<Point> path = AStar.pathFind(e.getPath().get(0), goal, play);
+        if (u.getPath() != null && !u.getPath().isEmpty()) {
+            ArrayList<Point> path = AStar.pathFind(u.getPath().get(0), goal, play);
             if (path != null) {
-                path.add(0, e.getPath().get(0));
-                e.setPath(path);
+                path.add(0, u.getPath().get(0));
+                u.setPath(path);
             }
         } else {
-            Point start = new Point(e.getHitbox().x / TILE_SIZE, (e.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
-            e.setPath(AStar.pathFind(start, goal, play));
+            Point start = new Point(u.getHitbox().x / TILE_SIZE, (u.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+            u.setPath(AStar.pathFind(start, goal, play));
         }
     }
 
-    public ArrayList<Point> getPathToNearestAdjacentTile(Entity e, int goalTileX, int goalTileY) {
+    public ArrayList<Point> getPathToNearestAdjacentTile(Unit u, int goalTileX, int goalTileY) {
         HashMap<Double, Point> openTiles = new HashMap<Double, Point>();
         Point start;
-        if (e.getPath() != null && !e.getPath().isEmpty())
-            start = e.getPath().get(0);
+        if (u.getPath() != null && !u.getPath().isEmpty())
+            start = u.getPath().get(0);
         else
-            start = new Point(e.getHitbox().x / TILE_SIZE, (e.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+            start = new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
 
         for (int x = goalTileX - 1; x < goalTileX + 2; x++)
             for (int y = goalTileY - 1; y < goalTileY + 2; y++) {
@@ -209,8 +212,8 @@ public class EntityHandler implements Serializable {
             Point target = openTiles.get(sorted.get(i));
             ArrayList<Point> path = AStar.pathFind(start, target, play);
             if (path != null) {
-                if (e.getPath() != null && !e.getPath().isEmpty())
-                    path.add(0, e.getPath().get(0));
+                if (u.getPath() != null && !u.getPath().isEmpty())
+                    path.add(0, u.getPath().get(0));
                 return path;
             }
         }
@@ -220,41 +223,33 @@ public class EntityHandler implements Serializable {
     public boolean isAdjacentDiagonalOpen(Point origin, Point target) {
         // Check if point in vertical direction of target & cardinal of the origin is open
         Point verticalPoint = new Point(origin.x, origin.y + (target.y - origin.y));
-        boolean isVerticalPointOpen = (play.getGameObjectAtTile(verticalPoint.x, verticalPoint.y) == null && AStar.isPointOpen(verticalPoint, play));
+        boolean isVerticalPointOpen = (play.getEntityAtTile(verticalPoint.x, verticalPoint.y) == null && AStar.isPointOpen(verticalPoint, play));
         if (isVerticalPointOpen)
             return true;
 
         // Check if point in horizontal direction of target & cardinal of the origin is open
         Point horizontalPoint = new Point(origin.x + (target.x - origin.x), origin.y);
-        return (play.getGameObjectAtTile(horizontalPoint.x, horizontalPoint.y) == null && AStar.isPointOpen(horizontalPoint, play));
+        return (play.getEntityAtTile(horizontalPoint.x, horizontalPoint.y) == null && AStar.isPointOpen(horizontalPoint, play));
     }
 
-    public Entity getEntityAtCoord(int x, int y, boolean checkEntireTile) {
+    public Unit getUnitAtCoord(int x, int y, boolean checkEntireTile) {
         if (checkEntireTile) {
             Rectangle tileBounds = new Rectangle(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-            for (Entity e : entities)
-                if (e.isAlive() && e.getHitbox().intersects(tileBounds))
-                    return e;
+            for (Unit u : units)
+                if (u.isAlive() && u.getHitbox().intersects(tileBounds))
+                    return u;
         } else
-            for (Entity e : entities)
-                if (e.isAlive() && e.getHitbox().contains(x, y))
-                    return e;
+            for (Unit u : units)
+                if (u.isAlive() && u.getHitbox().contains(x, y))
+                    return u;
         return null;
     }
 
-    public ArrayList<Entity> getEntities() {
-        return entities;
+    public ArrayList<Unit> getUnits() {
+        return units;
     }
 
     public Play getPlay() {
         return play;
-    }
-
-    public GameObject getTargetObject() {
-        return targetObject;
-    }
-
-    public void setTargetObject(GameObject targetObject) {
-        this.targetObject = targetObject;
     }
 }

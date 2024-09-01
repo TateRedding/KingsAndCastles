@@ -20,7 +20,7 @@ public class Button {
     public static final int ICON_SQUARE = 2;
     public static final int ICON_UP = 3;
     public static final int ICON_DOWN = 4;
-    public static final int ICON_ENTITY = 5;
+    public static final int ICON_UNIT = 5;
     public static final int ICON_BUILDING = 6;
     public static final int ICON_RESOURCE = 7;
     public static final int ICON_TERRAIN = 8;

@@ -3,11 +3,11 @@ package resources;
 import java.awt.Rectangle;
 import java.io.Serializable;
 
-import objects.GameObject;
+import objects.Entity;
 
 import static main.Game.*;
 
-public abstract class ResourceObject extends GameObject implements Serializable {
+public abstract class ResourceObject extends Entity implements Serializable {
 
     // Resource Types
     public static final int GOLD = 0;
@@ -17,17 +17,14 @@ public abstract class ResourceObject extends GameObject implements Serializable 
     public static final int IRON = 4;
 
     protected int resourceType;
-    protected int tileX, tileY, spriteId;
-    protected int currentAmount, totalAmount;
+    protected int spriteId;
 
     public ResourceObject(int tileX, int tileY, int id, int resourceType, int spriteId) {
-        super(GameObject.RESOURCE, id);
-        this.tileX = tileX;
-        this.tileY = tileY;
+        super(null, RESOURCE, toPixelX(tileX), toPixelY(tileY), id);
         this.resourceType = resourceType;
         this.spriteId = spriteId;
-        this.totalAmount = getStartingTotal(resourceType);
-        this.currentAmount = totalAmount;
+        this.maxHealth = getStartingTotal(resourceType);
+        this.health = maxHealth;
 
         hitbox = new Rectangle(toPixelX(tileX), toPixelY(tileY), TILE_SIZE, TILE_SIZE);
     }
@@ -62,24 +59,20 @@ public abstract class ResourceObject extends GameObject implements Serializable 
         };
     }
 
-    public int getTileX() {
-        return tileX;
+
+    @Override
+    public int getBuildingType() {
+        return -1;
     }
 
-    public int getTileY() {
-        return tileY;
-    }
-
-    public int getCurrentAmount() {
-        return currentAmount;
-    }
-
-    public void setCurrentAmount(int currentAmount) {
-        this.currentAmount = currentAmount;
-    }
-
+    @Override
     public int getResourceType() {
         return resourceType;
+    }
+
+    @Override
+    public int getUnitType() {
+        return -1;
     }
 
     public int getSpriteId() {
@@ -88,10 +81,6 @@ public abstract class ResourceObject extends GameObject implements Serializable 
 
     public void setSpriteId(int spriteId) {
         this.spriteId = spriteId;
-    }
-
-    public int getTotalAmount() {
-        return totalAmount;
     }
 
 }
