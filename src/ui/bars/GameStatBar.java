@@ -48,7 +48,7 @@ public class GameStatBar extends TopBar {
                 ImageLoader.icons[ICON_COAL]
         ));
         ArrayList<String> counts = new ArrayList<>(Arrays.asList(
-                String.valueOf(player.getPopulation()) + "/" + String.valueOf(player.getMaxPopulation()),
+                player.getPopulation() + "/" + player.getMaxPopulation(),
                 String.valueOf(player.getGold()),
                 String.valueOf(player.getFood()),
                 String.valueOf(player.getLogs()),

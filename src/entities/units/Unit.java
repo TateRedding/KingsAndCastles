@@ -309,12 +309,16 @@ public abstract class Unit extends Entity implements Serializable {
                 Point next = path.get(0);
                 Unit u = unitHandler.getUnitAtCoord(toPixelX(next.x), toPixelY(next.y), true);
                 if (u != null) {
+//                    System.out.println("Next tile in path blocked for unit with ID: " + id);
                     Point start = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
                     Point goal = path.get(path.size() - 1);
-                    if (unitHandler.getPlay().getEntityAtTile(goal.x, goal.y) != null)
+                    if (unitHandler.getPlay().getEntityAtTile(goal.x, goal.y) != null) {
                         u.setPath(unitHandler.getPathToNearestAdjacentTile(u, goal.x, goal.y));
-                    else
+//                        System.out.println("Goal is also blocked, finding path to nearest adjacent tile to goal.");
+                    } else {
                         path = AStar.pathFind(start, goal, unitHandler.getPlay());
+//                        System.out.println("Re-calculating path to goal.");
+                    }
                 }
             }
         }

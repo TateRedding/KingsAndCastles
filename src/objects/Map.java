@@ -19,7 +19,6 @@ public class Map implements Savable, Serializable {
     public static final int MAX_HEIGHT = 250;
 
     private Tile[][] tileData;
-    private ResourceObject[][] resourceObjectData;
     private Chunk[][] chunks;
     private String name;
     /*
@@ -28,8 +27,8 @@ public class Map implements Savable, Serializable {
      */
     private int numPlayers = 2;
     private ArrayList<ArrayList<Point>> castleZones = new ArrayList<ArrayList<Point>>();
+    private ArrayList<Point> goldMinePoints;
     private int[] tileCounts = new int[5];
-    private int goldMineCount;
 
     public Map(String name, int tileWidth, int tileHeight) {
         this.name = name;
@@ -41,7 +40,7 @@ public class Map implements Savable, Serializable {
 
     private void createDefaultMap(int tileWidth, int tileHeight) {
         tileData = new Tile[tileHeight][tileWidth];
-        resourceObjectData = new ResourceObject[tileHeight][tileWidth];
+        goldMinePoints = new ArrayList<Point>();
         for (int j = 0; j < tileData.length; j++)
             for (int i = 0; i < tileData[j].length; i++) {
                 tileData[j][i] = new Tile(GRASS, 0);
@@ -107,16 +106,12 @@ public class Map implements Savable, Serializable {
         return chunks;
     }
 
-    public int getGoldMineCount() {
-        return goldMineCount;
+    public ArrayList<Point> getGoldMinePoints() {
+        return goldMinePoints;
     }
 
-    public void setGoldMineCount(int goldMineCount) {
-        this.goldMineCount = goldMineCount;
-    }
-
-    public ResourceObject[][] getResourceObjectData() {
-        return resourceObjectData;
+    public void setGoldMinePoints(ArrayList<Point> goldMinePoints) {
+        this.goldMinePoints = goldMinePoints;
     }
 
     public int[] getTileCounts() {

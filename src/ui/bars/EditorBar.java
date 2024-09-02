@@ -29,7 +29,8 @@ public class EditorBar extends BottomBar {
     private int brushSize;
 
     public EditorBar(Edit edit) {
-        this.edit = edit;
+        super(edit);
+        this.edit = (Edit) mapState;
         this.brushSize = edit.getBrushSize();
         initTileButtons();
         initBrushButtons();
@@ -216,7 +217,7 @@ public class EditorBar extends BottomBar {
         }
     }
 
-    public Edit getEdit() {
+    public Edit getMapState() {
         return edit;
     }
 

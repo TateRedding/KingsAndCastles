@@ -86,7 +86,7 @@ public abstract class FileSelect extends State {
             Tile[][] tileData = selectedMap.getTileData();
             return new String[][]{
                     {"Map Size", tileData[0].length + " x " + tileData[1].length},
-                    {"Water Tiles", "Calculate Me"}, {"Gold Mines", "" + selectedMap.getGoldMineCount()},
+                    {"Water Tiles", "Calculate Me"}, {"Gold Mines", "" + selectedMap.getGoldMinePoints().size()},
                     {"Castle Zones", selectedMap.getCastleZones().get(0).size() + " Tiles"}
             };
         } else if (selectedFile instanceof Play selectedGame) {

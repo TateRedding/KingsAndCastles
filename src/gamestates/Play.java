@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import entities.buildings.*;
-import entities.units.Laborer;
+import entities.resources.ResourceObject;
 import entities.units.Unit;
 import handlers.BuildingHandler;
 import handlers.UnitHandler;
@@ -52,6 +52,7 @@ public class Play extends MapState implements Savable, Serializable {
     private BuildingHandler buildingHandler;
     private UnitHandler unitHandler;
     private ResourceObjectHandler resourceObjectHandler;
+    private ResourceObject[][] resourceObjectData;
 
     private String name;
     private long seed;
@@ -72,52 +73,25 @@ public class Play extends MapState implements Savable, Serializable {
     private boolean paused;
 
     public Play(Game game, Map map, String name, long playerID) {
-        super(game, map);
-        this.name = name;
-        this.seed = System.currentTimeMillis();
-        this.activePlayerID = playerID;
-        int numPlayers = map.getNumPlayers();
-
-        // Add the human player to the array
-        // In the future, when accounts are implemented, the playerID will be generated and used here
-        // In testing, or with 'guest accounts' this can be the nano-time
-        players.add(new Player(this, playerID, true));
-
-        // Until multiplayer is introduced, the rest of the players will always be AI
-        // AI players can use the nano-time as a player ID
-        for (int i = 1; i < numPlayers; i++)
-            players.add(new Player(this, System.nanoTime(), false));
-
-        this.buildingHandler = new BuildingHandler(this);
-        this.unitHandler = new UnitHandler(this);
-        this.resourceObjectHandler = new ResourceObjectHandler(this);
-
-        this.actionBar = new ActionBar(this);
-        this.gameStatBar = new GameStatBar(this);
-
-        int xStart = (GAME_AREA_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_LARGE)) / 2;
-        int yStart = TOP_BAR_HEIGHT + (GAME_AREA_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_LARGE)) / 2;
-        this.buildingSelection = new BuildingSelection(xStart, yStart, this);
+        this(game, map, name, System.currentTimeMillis(), playerID);
     }
 
-    public Play(Game game, Map map, String name, long seed, int playerID) {
+    public Play(Game game, Map map, String name, long seed, long playerID) {
         super(game, map);
         this.name = name;
         this.seed = seed;
         this.activePlayerID = playerID;
-        this.gameStatBar = new GameStatBar(this);
 
-        int numPlayers = map.getNumPlayers();
+        initPlayers(map, playerID);
+        initComponents(map);
 
-        // Add the human player to the array
-        // In the future, when accounts are implemented, the playerID will be generated and used here
-        // In testing, or with 'guest accounts' this can be the nano-time
-        players.add(new Player(this, playerID, true));
+        int xStart = (GAME_AREA_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_LARGE)) / 2;
+        int yStart = TOP_BAR_HEIGHT + (GAME_AREA_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_LARGE)) / 2;
+        this.buildingSelection = new BuildingSelection(xStart, yStart, this);
+    }
 
-        // Until multiplayer is introduced, the rest of the players will always be AI
-        // AI players can use the nano-time as a player ID
-        for (int i = 1; i < numPlayers; i++)
-            players.add(new Player(this, System.nanoTime(), false));
+    private void initComponents(Map map) {
+        this.resourceObjectData = new ResourceObject[map.getTileData().length][map.getTileData()[0].length];
 
         this.buildingHandler = new BuildingHandler(this);
         this.unitHandler = new UnitHandler(this);
@@ -125,11 +99,21 @@ public class Play extends MapState implements Savable, Serializable {
 
         this.actionBar = new ActionBar(this);
         this.gameStatBar = new GameStatBar(this);
-
-        int xStart = (GAME_AREA_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_LARGE)) / 2;
-        int yStart = TOP_BAR_HEIGHT + (GAME_AREA_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_LARGE)) / 2;
-        this.buildingSelection = new BuildingSelection(xStart, yStart, this);
     }
+
+    private void initPlayers(Map map, long playerID) {
+        int numPlayers = map.getNumPlayers();
+
+        // Add the human player
+        players.add(new Player(this, playerID, true));
+
+        // Add AI players
+        for (int i = 1; i < numPlayers; i++) {
+            players.add(new Player(this, System.nanoTime(), false));
+        }
+
+    }
+
 
     @Override
     public void update() {
@@ -158,14 +142,14 @@ public class Play extends MapState implements Savable, Serializable {
     public void render(Graphics g) {
         super.render(g);
 
-        // Debugging
-        drawChunkBorders(g);
-
         buildingHandler.render(g, mapXOffset, mapYOffset);
-        unitHandler.render(g, mapXOffset, mapYOffset);
         resourceObjectHandler.render(g, mapXOffset, mapYOffset);
+        unitHandler.render(g, mapXOffset, mapYOffset);
 
         highlightSelectedObject(g, mapXOffset, mapYOffset);
+
+        // Debugging
+        drawChunkBorders(g);
 
         actionBar.render(g);
         gameStatBar.render(g);
@@ -628,6 +612,10 @@ public class Play extends MapState implements Savable, Serializable {
 
     public ArrayList<Player> getPlayers() {
         return players;
+    }
+
+    public ResourceObject[][] getResourceObjectData() {
+        return resourceObjectData;
     }
 
     public ResourceObjectHandler getResourceObjectHandler() {

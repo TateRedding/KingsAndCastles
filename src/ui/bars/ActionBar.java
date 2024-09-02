@@ -44,7 +44,8 @@ public class ActionBar extends BottomBar {
     private boolean showLaborerSpawnButton, showCombatUnitSpawnButtons;
 
     public ActionBar(Play play) {
-        this.play = play;
+        super(play);
+        this.play = (Play) mapState;
         this.player = play.getPlayerByID(play.getActivePlayerID());
         initBuildButtons();
         initSpawnButtons();

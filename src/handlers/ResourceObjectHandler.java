@@ -15,7 +15,6 @@ import java.util.Random;
 import static main.Game.*;
 import static objects.Chunk.MAX_CHUNK_SIZE;
 import static entities.resources.ResourceObject.*;
-import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class ResourceObjectHandler implements Serializable {
 
@@ -29,7 +28,7 @@ public class ResourceObjectHandler implements Serializable {
     public ResourceObjectHandler(Play play) {
         this.play = play;
         this.tileData = play.getMap().getTileData();
-        this.resourceObjectData = play.getMap().getResourceObjectData();
+        this.resourceObjectData = play.getResourceObjectData();
         this.gridWidth = tileData[0].length;
         this.random = new Random(play.getSeed());
         generateResourceObjects();
@@ -39,12 +38,17 @@ public class ResourceObjectHandler implements Serializable {
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
                 ResourceObject currRO = resourceObjectData[y][x];
-                if (currRO != null && currRO.getHealth() < currRO.getMaxHealth())
-                    currRO.drawHealthBar(g, currRO.getHealth(), currRO.getMaxHealth(), xOffset, yOffset);
+                if (currRO != null) {
+                    g.drawImage(ImageLoader.resourceObjects[currRO.getSubType()][currRO.getSpriteId()], toPixelX(x) - xOffset,
+                            toPixelY(y) - yOffset, null);
+                    if (currRO.getHealth() < currRO.getMaxHealth())
+                        currRO.drawHealthBar(g, currRO.getHealth(), currRO.getMaxHealth(), xOffset, yOffset);
+                }
             }
     }
 
     private void generateResourceObjects() {
+        addGoldMinePoints();
         generateCoalPoints();
         generateIronPoints();
         generateRockPoints();
@@ -56,6 +60,11 @@ public class ResourceObjectHandler implements Serializable {
                 if (currRO != null && currRO.getSubType() == TREE)
                     currRO.setSpriteId(getBitmaskId(x, y));
             }
+    }
+
+    private void addGoldMinePoints() {
+        for (Point p : play.getMap().getGoldMinePoints())
+            resourceObjectData[p.y][p.x] = new GoldMine(p.x, p.y, p.y * gridWidth + p.x);
     }
 
     private void generateCoalPoints() {
@@ -299,14 +308,14 @@ public class ResourceObjectHandler implements Serializable {
             int laborerTileX = toTileX(laborer.getHitbox().x);
             int laborerTileY = toTileY(laborer.getHitbox().y);
             Map map = play.getMap();
-            map.getResourceObjectData()[roTileY][roTileX] = null;
+            play.getResourceObjectData()[roTileY][roTileX] = null;
 
             // If depleted resource is a tree, update its sprite
             if (resourceType == TREE)
                 for (int y = roTileY - 1; y < roTileY + 2; y++)
                     for (int x = roTileX - 1; x < roTileX + 2; x++)
                         if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length && !(y == roTileY && x == roTileX)) {
-                            ResourceObject currRO = map.getResourceObjectData()[y][x];
+                            ResourceObject currRO = play.getResourceObjectData()[y][x];
                             if (currRO != null && currRO.getSubType() == TREE)
                                 currRO.setSpriteId(getBitmaskId(x, y));
                         }
@@ -319,7 +328,7 @@ public class ResourceObjectHandler implements Serializable {
                         // Skip inner loops when radius > 1
                         if (Math.abs(x - laborerTileX) != radius && Math.abs(y - laborerTileY) != radius) continue;
                         if (y >= 0 && y < tileData.length && x >= 0 && x < tileData[0].length) {
-                            ResourceObject currRO = map.getResourceObjectData()[y][x];
+                            ResourceObject currRO = play.getResourceObjectData()[y][x];
                             if (currRO != null && currRO.getSubType() == resourceType) {
                                 if (laborer.isTargetInRange(currRO, laborer.getActionRange()) && laborer.isLineOfSightOpen(currRO)) {
                                     laborer.setTargetEntity(currRO);

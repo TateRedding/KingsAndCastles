@@ -186,6 +186,10 @@ public class Game extends JFrame implements Runnable {
         return edit;
     }
 
+    public void setEdit(Edit edit) {
+        this.edit = edit;
+    }
+
     public EditMapSelect getEditMapSelect() {
         return editMapSelect;
     }
@@ -208,6 +212,10 @@ public class Game extends JFrame implements Runnable {
 
     public Play getPlay() {
         return play;
+    }
+
+    public void setPlay(Play play) {
+        this.play = play;
     }
 
     public PlayMapSelect getPlayMapSelect() {

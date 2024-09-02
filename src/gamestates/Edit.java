@@ -1,7 +1,8 @@
 package gamestates;
 
+import static entities.resources.ResourceObject.GOLD;
 import static gamestates.Play.CA_SELECT;
-import static main.Game.TILE_SIZE;
+import static main.Game.*;
 import static objects.Tile.*;
 
 import java.awt.*;
@@ -94,6 +95,7 @@ public class Edit extends MapState {
                 drawPlayerIndicator(g);
         }
 
+        drawGoldMines(g, mapXOffset, mapYOffset);
         editorBar.render(g);
         mapStatBar.render(g);
         miniMap.render(g, mapXOffset, mapYOffset);
@@ -121,6 +123,11 @@ public class Edit extends MapState {
         g.drawString(indicator, x, y);
     }
 
+    private void drawGoldMines(Graphics g, int mapXOffset, int mapYOffset) {
+        for (Point p : map.getGoldMinePoints())
+            g.drawImage(ImageLoader.resourceObjects[GOLD][0], toPixelX(p.x) - mapXOffset, toPixelY(p.y) - mapYOffset, null);
+    }
+
     private void changeTile(int mouseEvent) {
         if (mouseEvent == MouseEvent.MOUSE_DRAGGED && lastTileX == tileX && lastTileY == tileY)
             return;
@@ -137,7 +144,7 @@ public class Edit extends MapState {
             if (isTileInRange(currTileX, currTileY)) {
                 Tile currTile = tileData[currTileY][currTileX];
                 int prevTileType = currTile.getTileType();
-                if (prevTileType == tileType || ((tileType == WATER_GRASS || tileType == WATER_SAND) && resourceObjectData[currTileY][currTileX] != null))
+                if (prevTileType == tileType || ((tileType == WATER_GRASS || tileType == WATER_SAND) && map.getGoldMinePoints().contains(new Point(currTileX, currTileY))))
                     continue;
                 tileData[currTileY][currTileX] = new Tile(tileType, 0);
                 map.getTileCounts()[prevTileType]--;
@@ -268,22 +275,19 @@ public class Edit extends MapState {
 
     private void placeGoldMine() {
         Tile currTile = tileData[tileY][tileX];
-        ResourceObject currRO = resourceObjectData[tileY][tileX];
         int tileType = currTile.getTileType();
         if (tileType == WATER_GRASS || tileType == WATER_SAND)
             return;
-        if (currRO != null && currRO.getSubType() == ResourceObject.GOLD)
+        Point goldMinePoint = new Point(tileX, tileY);
+        if (map.getGoldMinePoints().contains(goldMinePoint))
             return;
-        resourceObjectData[tileY][tileX] = new GoldMine(tileX, tileY, (tileY * resourceObjectData[tileY].length + tileX));
-        map.setGoldMineCount(map.getGoldMineCount() + 1);
+        map.getGoldMinePoints().add(goldMinePoint);
     }
 
     private void removeGoldMine() {
-        ResourceObject currRO = resourceObjectData[tileY][tileX];
-        if (currRO != null && currRO.getSubType() == ResourceObject.GOLD) {
-            resourceObjectData[tileY][tileX] = null;
-            map.setGoldMineCount(map.getGoldMineCount() - 1);
-        }
+        Point goldMinePoint = new Point(tileX, tileY);
+        if (map.getGoldMinePoints().contains(goldMinePoint))
+            map.getGoldMinePoints().remove(new Point(tileX, tileY));
     }
 
     public void saveMap() {

@@ -92,7 +92,7 @@ public class MapStatBar extends TopBar {
         int xStart = X + offset + (int) (colWidth * 2);
         RenderText.renderText(g, "Resources", RenderText.CENTER, RenderText.CENTER, xStart, headerY, (int) colWidth, headerHeight);
 
-        String resourceStats = "Gold Mines: " + map.getGoldMineCount();
+        String resourceStats = "Gold Mines: " + map.getGoldMinePoints().size();
         g.setFont(Game.getGameFont(statFontSize));
         RenderText.renderText(g, resourceStats, RenderText.CENTER, RenderText.TOP, xStart, headerY + headerHeight, (int) colWidth, statHeight);
     }

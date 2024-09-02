@@ -18,11 +18,10 @@ import java.util.Random;
 
 import static entities.units.Unit.*;
 import static main.Game.*;
-import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class UnitHandler implements Serializable {
 
-    private static final int NUM_MAX_STARTING_UNITS = 2;
+    private static final int NUM_MAX_STARTING_UNITS = 3;
 
     private Play play;
     private ArrayList<Unit> units = new ArrayList<>();
@@ -40,9 +39,15 @@ public class UnitHandler implements Serializable {
                 u.update();
                 int unitType = u.getSubType();
 
+                // Below concepts to be addressed and reworked at a later point
+
+                // Check if target has moved
+//                if (unitType != LABORER && u.getState() == WALKING && u.getTargetEntity() != null)
+//                    changePathIfTargetMoved(u);
+
                 // Auto-attack
-                if (unitType != LABORER && u.getState() == IDLE && u.getTargetEntity() == null)
-                    findEnemyToAttack(u);
+//                if (unitType != LABORER && u.getState() == IDLE && u.getTargetEntity() == null)
+//                    findEnemyToAttack(u);
 
                 if (u.getActionTick() >= u.getActionTickMax()) {
                     if (unitType == LABORER)
@@ -82,17 +87,27 @@ public class UnitHandler implements Serializable {
         ArrayList<Player> players = play.getPlayers();
         Random random = new Random(play.getSeed());
 
+        // Debugging
+        int maxLaborers = 2;
+
         for (int i = 0; i < players.size(); i++) {
+            // Debugging
+            int numLaborers = 0;
+
             int maxStartingUnits = Math.min(NUM_MAX_STARTING_UNITS, castleZones.get(i).size());
             ArrayList<Point> spawnPoints = new ArrayList<>(castleZones.get(i));
             Collections.shuffle(spawnPoints, random);
-            for (int j = 0; j < maxStartingUnits + 1; j++) {
+            for (int j = 0; j < maxStartingUnits; j++) {
                 Point spawn = spawnPoints.get(j);
-                // Debugging - Starting with one Brute each. Remove this check and just spawn laborers for production
-                if (j == maxStartingUnits)
-                    createUnit(players.get(i), spawn, BRUTE);
-                else
+
+                // Debugging
+                if (numLaborers < maxLaborers) {
                     createUnit(players.get(i), spawn, LABORER);
+                    numLaborers++;
+                    continue;
+                }
+
+                createUnit(players.get(i), spawn, BRUTE);
             }
         }
     }
@@ -126,6 +141,21 @@ public class UnitHandler implements Serializable {
             g.setColor(Color.BLUE);
             Rectangle bounds = e.getHitbox();
             g.drawRect(bounds.x - xOffset, bounds.y - yOffset, bounds.width, bounds.height);
+        }
+    }
+
+    private void changePathIfTargetMoved(Unit u) {
+        ArrayList<Point> currPath = u.getPath();
+        if (currPath == null || currPath.isEmpty())
+            return;
+
+        int targetTileX = toTileX(u.getTargetEntity().getX());
+        int targetTileY = toTileY(u.getTargetEntity().getY());
+        Point pathGoal = u.getPath().get(u.getPath().size() - 1);
+
+        if (Math.abs(targetTileX - pathGoal.x) > 1 || Math.abs(targetTileY - pathGoal.y) > 1) {
+//            System.out.println("Target with ID: " + u.getTargetEntity().getId() + " has moved. Re-calculating path for unit with ID: " + u.getId() + ".");
+            u.setPath(getPathToNearestAdjacentTile(u, targetTileX, targetTileY));
         }
     }
 
@@ -167,6 +197,8 @@ public class UnitHandler implements Serializable {
             target.setAlive(false);
             attacker.setState(IDLE);
             attacker.setTargetEntity(null);
+            if (play.getSelectedEntity() == target)
+                play.setSelectedEntity(null);
         }
     }
 
@@ -212,6 +244,7 @@ public class UnitHandler implements Serializable {
             }
 
         if (openTiles.isEmpty()) {
+//            System.out.println("No open tiles around goal");
             return null;
         }
 
@@ -224,9 +257,11 @@ public class UnitHandler implements Serializable {
             if (path != null) {
                 if (u.getPath() != null && !u.getPath().isEmpty())
                     path.add(0, u.getPath().get(0));
+//                System.out.println("Path found to an adjacent tile.");
                 return path;
             }
         }
+//        System.out.println("No possible path found to any adjacent tiles");
         return null;
     }
 

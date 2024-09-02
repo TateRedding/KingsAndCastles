@@ -10,6 +10,7 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
 import gamestates.GameStates;
+import gamestates.MapState;
 import main.Game;
 import ui.buttons.TextButton;
 import utils.ImageLoader;
@@ -19,9 +20,11 @@ public abstract class BottomBar extends UIBar {
     public final static int BOTTOM_BAR_Y = TOP_BAR_HEIGHT + GAME_AREA_HEIGHT;
     public final static int BOTTOM_BAR_HEIGHT = 160;
 
+    protected MapState mapState;
     protected TextButton menu, save;
 
-    public BottomBar() {
+    public BottomBar(MapState mapState) {
+        this.mapState = mapState;
         bounds = new Rectangle(X, BOTTOM_BAR_Y, UI_WIDTH, BOTTOM_BAR_HEIGHT);
         int offset = 16;
         float fontSize = 28f;
@@ -53,8 +56,11 @@ public abstract class BottomBar extends UIBar {
 
     public void mouseReleased(int x, int y, int button) {
         if (button == MouseEvent.BUTTON1)
-            if (menu.getBounds().contains(x, y) && menu.isMousePressed())
+            if (menu.getBounds().contains(x, y) && menu.isMousePressed()) {
                 GameStates.setGameState(GameStates.MENU);
+                mapState.getGame().setPlay(null);
+                mapState.getGame().setEdit(null);
+            }
         menu.reset(x, y);
     }
 

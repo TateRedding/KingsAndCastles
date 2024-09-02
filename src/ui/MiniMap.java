@@ -12,9 +12,7 @@ import ui.buttons.Button;
 import ui.buttons.ImageButton;
 import utils.ImageLoader;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
@@ -123,9 +121,9 @@ public class MiniMap implements Serializable {
 
         if (showTerrain)
             createTerrainLayer(g);
+        if (showResources)
+            createResourceLayer(g);
         if (mapState.getClass() == gamestates.Play.class) {
-            if (showResources)
-                createResourceLayer(g);
             if (showBuildings)
                 createBuildingLayer(g);
             if (showUnits)
@@ -158,34 +156,43 @@ public class MiniMap implements Serializable {
     }
 
     private void createResourceLayer(Graphics g) {
-        ResourceObject[][] resourceObjectData = mapState.getMap().getResourceObjectData();
-        for (ResourceObject[] resourceObjectDatum : resourceObjectData)
-            for (ResourceObject ro : resourceObjectDatum) {
-                if (ro != null) {
-                    int resourceType = ro.getSubType();
-                    switch (resourceType) {
-                        case GOLD:
-                            g.setColor(new Color(240, 214, 125));
-                            break;
-                        case TREE:
-                            g.setColor(new Color(53, 97, 47));
-                            break;
-                        case ROCK:
-                            g.setColor(new Color(127, 117, 116));
-                            break;
-                        case COAL:
-                            g.setColor(Color.BLACK);
-                            break;
-                        case IRON:
-                            g.setColor(new Color(120, 50, 50));
-                            break;
-                    }
+        if (mapState instanceof Play) {
+            ResourceObject[][] resourceObjectData = ((Play) mapState).getResourceObjectData();
+            for (ResourceObject[] resourceObjectDatum : resourceObjectData)
+                for (ResourceObject ro : resourceObjectDatum) {
+                    if (ro != null) {
+                        int resourceType = ro.getSubType();
+                        switch (resourceType) {
+                            case GOLD:
+                                g.setColor(new Color(240, 214, 125));
+                                break;
+                            case TREE:
+                                g.setColor(new Color(53, 97, 47));
+                                break;
+                            case ROCK:
+                                g.setColor(new Color(127, 117, 116));
+                                break;
+                            case COAL:
+                                g.setColor(Color.BLACK);
+                                break;
+                            case IRON:
+                                g.setColor(new Color(120, 50, 50));
+                                break;
+                        }
 
-                    int xStart = (int) (toTileX(ro.getX()) * scale);
-                    int yStart = (int) (toTileY(ro.getY()) * scale);
-                    g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
+                        int xStart = (int) (toTileX(ro.getX()) * scale);
+                        int yStart = (int) (toTileY(ro.getY()) * scale);
+                        g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
+                    }
                 }
+        } else {
+            g.setColor(new Color(240, 214, 125));
+            for (Point p : mapState.getMap().getGoldMinePoints()) {
+                int xStart = (int) (p.x * scale);
+                int yStart = (int) (p.y * scale);
+                g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
             }
+        }
     }
 
     private void createBuildingLayer(Graphics g) {

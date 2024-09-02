@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import entities.resources.GoldMine;
 import main.Game;
 import objects.Map;
 import objects.Tile;
@@ -27,7 +28,6 @@ public abstract class MapState extends State implements Serializable {
     protected MiniMap miniMap;
     protected Rectangle gameBounds;
     protected Tile[][] tileData;
-    protected ResourceObject[][] resourceObjectData;
 
     // Pixel coordinates are relative to the entire screen
     // Tile coordinates are relative to indexes of 2D grid arrays such as tileData
@@ -50,7 +50,6 @@ public abstract class MapState extends State implements Serializable {
         super(game);
         this.map = map;
         this.tileData = map.getTileData();
-        this.resourceObjectData = map.getResourceObjectData();
         this.miniMap = new MiniMap(this, tileData);
         this.maxMapXOffset = (map.getTileData()[0].length - GAME_AREA_TILE_WIDTH) * TILE_SIZE;
         this.maxMapYOffset = (map.getTileData().length - GAME_AREA_TILE_HEIGHT) * TILE_SIZE;
@@ -67,7 +66,6 @@ public abstract class MapState extends State implements Serializable {
     public void render(Graphics g) {
         game.getTileHandler().drawTiles(tileData, g, mapXOffset, mapYOffset);
         drawCastleZones(g, mapXOffset, mapYOffset);
-        drawResourceObjects(g, mapXOffset, mapYOffset);
     }
 
     private void drawCastleZones(Graphics g, int xOffset, int yOffset) {
@@ -79,16 +77,6 @@ public abstract class MapState extends State implements Serializable {
             for (Point p : castleZones.get(i))
                 g.fillRect(toPixelX(p.x) - xOffset, toPixelY(p.y) - yOffset, TILE_SIZE, TILE_SIZE);
         }
-    }
-
-    private void drawResourceObjects(Graphics g, int xOffset, int yOffset) {
-        for (int y = 0; y < resourceObjectData.length; y++)
-            for (int x = 0; x < resourceObjectData[y].length; x++) {
-                ResourceObject currRO = resourceObjectData[y][x];
-                if (currRO != null)
-                    g.drawImage(ImageLoader.resourceObjects[currRO.getSubType()][currRO.getSpriteId()], toPixelX(x) - xOffset,
-                            toPixelY(y) - yOffset, null);
-            }
     }
 
     protected void dragScreen(int x, int y) {
