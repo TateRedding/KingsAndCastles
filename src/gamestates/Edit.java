@@ -15,8 +15,6 @@ import java.util.Arrays;
 import main.Game;
 import objects.Map;
 import objects.Tile;
-import entities.resources.GoldMine;
-import entities.resources.ResourceObject;
 import ui.bars.EditorBar;
 import ui.bars.MapStatBar;
 import utils.ImageLoader;
@@ -39,7 +37,6 @@ public class Edit extends MapState {
     private int selectedZone = 0;
     private int selectedType = -1;
     private int lastTileX, lastTileY;
-    private boolean leftMouseDown, rightMouseDown;
 
     public Edit(Game game, Map map) {
         super(game, map);
@@ -301,21 +298,15 @@ public class Edit extends MapState {
             editorBar.mousePressed(x, y, button);
         else if (mapStatBar.getBounds().contains(x, y))
             mapStatBar.mousePressed(x, y, button);
-
-        if (button == MouseEvent.BUTTON1)
-            leftMouseDown = true;
-        else if (button == MouseEvent.BUTTON3)
-            rightMouseDown = true;
-
     }
 
     @Override
     public void mouseReleased(int x, int y, int button) {
         super.mouseReleased(x, y, button);
         editorBar.mouseReleased(x, y, button);
-        if (mapStatBar.getBounds().contains(x, y))
-            mapStatBar.mouseReleased(x, y, button);
-        else if (selectedType != -1 && inGameArea)
+        mapStatBar.mouseReleased(x, y, button);
+
+        if (selectedType != -1 && inGameArea)
             if (leftMouseDown)
                 switch (selectedType) {
                     case CASTLE_ZONE:
@@ -340,29 +331,29 @@ public class Edit extends MapState {
     @Override
     public void mouseDragged(int x, int y) {
         super.mouseDragged(x, y);
-        if (inGameArea)
+
+        if (inGameArea) {
             if (leftMouseDown) {
                 if (selectedType == CASTLE_ZONE)
                     setCastleZone();
                 else if (selectedType != -1 && selectedType != GOLD_MINE_TILE)
                     changeTile(MouseEvent.MOUSE_DRAGGED);
-                else
+                else if (!isMouseDownInMiniMap)
                     dragScreen(x, y);
-            } else if (rightMouseDown) {
+            } else if (rightMouseDown && (!isMouseDownInMiniMap || selectedType == CASTLE_ZONE))
                 if (selectedType == CASTLE_ZONE)
                     unsetCastleZone();
                 else
                     dragScreen(x, y);
-            }
+        }
     }
+
 
     @Override
     public void mouseMoved(int x, int y) {
         super.mouseMoved(x, y);
-        if (editorBar.getBounds().contains(x, y))
-            editorBar.mouseMoved(x, y);
-        else if (mapStatBar.getBounds().contains(x, y))
-            mapStatBar.mouseMoved(x, y);
+        editorBar.mouseMoved(x, y);
+        mapStatBar.mouseMoved(x, y);
     }
 
     @Override

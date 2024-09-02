@@ -462,12 +462,16 @@ public class Play extends MapState implements Savable, Serializable {
 
     @Override
     public void mouseReleased(int x, int y, int button) {
-        if (showBuildingSelection && buildingSelection != null)
-            buildingSelection.mouseReleased(x, y, button);
-        else if (!showBuildingSelection) {
-            super.mouseReleased(x, y, button);
-            if (inGameArea) {
-                if (button == MouseEvent.BUTTON1) {
+        actionBar.mouseReleased(x, y, button);
+        gameStatBar.mouseReleased(x, y, button);
+
+        if (button == MouseEvent.BUTTON1) {
+            if (showBuildingSelection && buildingSelection != null)
+                buildingSelection.mouseReleased(x, y, button);
+            else if (!showBuildingSelection) {
+                super.mouseReleased(x, y, button);
+                if (inGameArea) {
+
                     if (selectedBuildingType != -1 && canBuild && canAffordBuilding(selectedBuildingType)) {
                         buildBuilding();
                         selectedBuildingType = -1;
@@ -507,34 +511,30 @@ public class Play extends MapState implements Savable, Serializable {
                 }
             }
         }
-
-        if (actionBar.getBounds().contains(x, y))
-            actionBar.mouseReleased(x, y, button);
-        else if (gameStatBar.getBounds().contains(x, y))
-            gameStatBar.mouseReleased(x, y, button);
-
+        leftMouseDown = false;
+        rightMouseDown = false;
     }
 
     @Override
     public void mouseDragged(int x, int y) {
-        if (showBuildingSelection && buildingSelection != null)
-            return;
+        if (showBuildingSelection && buildingSelection != null) return;
+
         super.mouseDragged(x, y);
+
         if (inGameArea) {
-            if (selectedBuildingType == -1 && selectedEntity == null)
+            if ((selectedBuildingType == -1 && selectedEntity == null || rightMouseDown && !leftMouseDown) && !isMouseDownInMiniMap)
                 dragScreen(x, y);
 
-            int mouseDownTileX = toTileX(mouseDownX);
-            int mouseDownTileY = toTileY(mouseDownY);
-            int currTileX = toTileX(x);
-            int currTileY = toTileY(y);
-            if (mouseDownTileX != currTileX || mouseDownTileY != currTileY)
+            if (toTileX(mouseDownX) != toTileX(x) || toTileY(mouseDownY) != toTileY(y))
                 clickAction = -1;
         }
     }
 
     @Override
     public void mouseMoved(int x, int y) {
+        actionBar.mouseMoved(x, y);
+        gameStatBar.mouseMoved(x, y);
+
         if (showBuildingSelection && buildingSelection != null)
             buildingSelection.mouseMoved(x, y);
         else if (!showBuildingSelection) {
@@ -547,11 +547,6 @@ public class Play extends MapState implements Savable, Serializable {
                     canBuild = canBuildHere(gameX, gameY, true);
             }
         }
-
-        if (actionBar.getBounds().contains(x, y))
-            actionBar.mouseMoved(x, y);
-        else if (gameStatBar.getBounds().contains(x, y))
-            gameStatBar.mouseMoved(x, y);
     }
 
     @Override

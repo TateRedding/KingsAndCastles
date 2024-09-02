@@ -241,6 +241,12 @@ public class MiniMap implements Serializable {
         int hlX = mmX + (int) ((xOffset / TILE_SIZE) * scale);
         int hlY = mmY + (int) ((yOffset / TILE_SIZE) * scale);
 
+        if (xOffset == mapState.getMaxMapXOffset())
+            hlX = mmX + mmWidth - hlWidth;
+
+        if (yOffset == mapState.getMaxMapYOffset())
+            hlY = mmY + mmHeight - hlHeight;
+
         g.setColor(Color.GRAY);
         g.drawRect(hlX, hlY, hlWidth - 1, hlHeight - 1);
 
