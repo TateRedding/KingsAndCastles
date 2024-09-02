@@ -3,7 +3,7 @@ package objects;
 import java.awt.*;
 import java.io.Serializable;
 
-import static main.Game.*;
+import static main.Game.TILE_SIZE;
 
 public abstract class Entity implements Serializable {
 

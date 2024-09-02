@@ -1,21 +1,5 @@
 package utils;
 
-import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
-
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.GraphicsEnvironment;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-import javax.imageio.ImageIO;
-
 import gamestates.Play;
 import main.Game;
 import objects.Entity;
@@ -23,6 +7,13 @@ import objects.Map;
 import ui.MiniMap;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class LoadSave {
 

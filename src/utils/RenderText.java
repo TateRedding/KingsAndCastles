@@ -2,8 +2,7 @@ package utils;
 
 import main.Game;
 
-import java.awt.Font;
-import java.awt.Graphics;
+import java.awt.*;
 
 public class RenderText {
 

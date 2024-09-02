@@ -1,17 +1,14 @@
 package pathfinding;
 
-import static main.Game.*;
+import gamestates.Play;
+
+import java.awt.*;
+import java.util.*;
+
+import static main.Game.toPixelX;
+import static main.Game.toPixelY;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
-
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.PriorityQueue;
-
-import gamestates.Play;
 
 public class AStar {
 

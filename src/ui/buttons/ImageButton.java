@@ -1,7 +1,6 @@
 package ui.buttons;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class ImageButton extends Button {

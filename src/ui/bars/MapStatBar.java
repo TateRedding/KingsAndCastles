@@ -1,15 +1,13 @@
 package ui.bars;
 
-import static objects.Tile.*;
-
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-
 import gamestates.Edit;
 import main.Game;
 import objects.Map;
 import utils.RenderText;
+
+import java.awt.*;
+
+import static objects.Tile.*;
 
 public class MapStatBar extends TopBar {
 

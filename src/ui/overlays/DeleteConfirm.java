@@ -5,8 +5,7 @@ import ui.buttons.Button;
 import ui.buttons.TextButton;
 import utils.RenderText;
 
-import java.awt.Graphics;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 
 import static ui.buttons.Button.TEXT_LARGE;

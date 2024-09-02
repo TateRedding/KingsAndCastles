@@ -1,13 +1,12 @@
 package handlers;
 
-import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import utils.ImageLoader;
 import main.Game;
 import objects.Tile;
-import ui.bars.TopBar;
+import utils.ImageLoader;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static main.Game.toPixelX;
 import static main.Game.toPixelY;

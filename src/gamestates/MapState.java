@@ -1,23 +1,20 @@
 package gamestates;
 
-import static main.Game.*;
-import static ui.bars.TopBar.TOP_BAR_HEIGHT;
+import main.Game;
+import objects.Map;
+import objects.Tile;
+import ui.MiniMap;
+import ui.bars.TopBar;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import main.Game;
-import objects.Map;
-import objects.Tile;
-import ui.MiniMap;
-import ui.bars.TopBar;
+import static main.Game.*;
+import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public abstract class MapState extends State implements Serializable {
 

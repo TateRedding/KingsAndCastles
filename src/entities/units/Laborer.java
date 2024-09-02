@@ -1,8 +1,8 @@
 package entities.units;
 
+import entities.resources.ResourceObject;
 import handlers.UnitHandler;
 import objects.Player;
-import entities.resources.ResourceObject;
 
 public class Laborer extends Unit {
 

@@ -1,10 +1,10 @@
 package gamestates;
 
-import java.awt.Graphics;
+import main.Game;
+
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
-
-import main.Game;
 
 public abstract class State implements StateMethods, Serializable {
 

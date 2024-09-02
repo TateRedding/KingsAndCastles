@@ -1,5 +1,11 @@
 package ui.bars;
 
+import gamestates.Edit;
+import main.Game;
+import ui.buttons.ImageButton;
+import utils.ImageLoader;
+import utils.RenderText;
+
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -10,12 +16,6 @@ import static main.Game.SCREEN_WIDTH;
 import static main.Game.getGameFont;
 import static objects.Tile.WATER_SAND;
 import static ui.buttons.Button.*;
-
-import gamestates.Edit;
-import main.Game;
-import ui.buttons.ImageButton;
-import utils.ImageLoader;
-import utils.RenderText;
 
 public class EditorBar extends BottomBar {
 

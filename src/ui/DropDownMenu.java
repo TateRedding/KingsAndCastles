@@ -1,16 +1,14 @@
 package ui;
 
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.Color;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-
 import main.Game;
 import ui.buttons.Button;
 import ui.buttons.ImageButton;
 import utils.ImageLoader;
 import utils.RenderText;
+
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import static ui.buttons.Button.*;
 

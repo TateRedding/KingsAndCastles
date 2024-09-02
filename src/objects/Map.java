@@ -1,15 +1,15 @@
 package objects;
 
-import static objects.Chunk.MAX_CHUNK_SIZE;
-import static objects.Tile.*;
+import utils.LoadSave;
+import utils.Savable;
 
-import java.awt.Point;
+import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import entities.resources.ResourceObject;
-import utils.LoadSave;
-import utils.Savable;
+import static objects.Chunk.MAX_CHUNK_SIZE;
+import static objects.Tile.GRASS;
+import static objects.Tile.WATER_SAND;
 
 public class Map implements Savable, Serializable {
 

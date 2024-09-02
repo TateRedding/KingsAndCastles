@@ -1,22 +1,21 @@
 package main;
 
-import static ui.bars.BottomBar.BOTTOM_BAR_HEIGHT;
-import static ui.bars.TopBar.TOP_BAR_HEIGHT;
-
-import java.awt.*;
-
-import javax.swing.JFrame;
-
-import gamestates.*;
 import gamestates.Menu;
+import gamestates.*;
 import handlers.SaveFileHandler;
 import handlers.TileHandler;
 import objects.Map;
 import ui.MiniMap;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
-import utils.LoadSave;
 import utils.ImageLoader;
+import utils.LoadSave;
+
+import javax.swing.*;
+import java.awt.*;
+
+import static ui.bars.BottomBar.BOTTOM_BAR_HEIGHT;
+import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class Game extends JFrame implements Runnable {
 

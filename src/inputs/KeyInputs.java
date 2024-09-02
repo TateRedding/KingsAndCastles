@@ -1,11 +1,10 @@
 package inputs;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-
-import gamestates.GameStates;
 import gamestates.State;
 import main.Game;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 public class KeyInputs implements KeyListener {
 

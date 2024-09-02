@@ -1,9 +1,12 @@
 package handlers;
 
-import objects.*;
+import entities.resources.*;
 import entities.units.Laborer;
 import gamestates.Play;
-import entities.resources.*;
+import objects.Chunk;
+import objects.Map;
+import objects.Player;
+import objects.Tile;
 import utils.ImageLoader;
 import utils.OpenSimplex2;
 
@@ -12,9 +15,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static entities.resources.ResourceObject.*;
 import static main.Game.*;
 import static objects.Chunk.MAX_CHUNK_SIZE;
-import static entities.resources.ResourceObject.*;
 
 public class ResourceObjectHandler implements Serializable {
 

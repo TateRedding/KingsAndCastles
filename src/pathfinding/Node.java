@@ -1,6 +1,6 @@
 package pathfinding;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class Node {
 

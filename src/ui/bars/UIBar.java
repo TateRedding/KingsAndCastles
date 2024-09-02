@@ -2,9 +2,9 @@ package ui.bars;
 
 import ui.buttons.Button;
 
-import static main.Game.SCREEN_WIDTH;
+import java.awt.*;
 
-import java.awt.Rectangle;
+import static main.Game.SCREEN_WIDTH;
 
 public abstract class UIBar {
 

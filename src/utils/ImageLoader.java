@@ -1,11 +1,11 @@
 package utils;
 
-import static main.Game.TILE_SIZE;
-import static objects.Tile.*;
-import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
-import static ui.TextBox.*;
-import static ui.buttons.Button.*;
+import entities.buildings.Building;
+import objects.Map;
+import objects.Tile;
+import ui.TextBox;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -13,12 +13,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.imageio.ImageIO;
-
-import entities.buildings.Building;
-import objects.Map;
-import objects.Tile;
-import ui.TextBox;
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
+import static main.Game.TILE_SIZE;
+import static objects.Tile.*;
+import static ui.TextBox.NUMBER;
+import static ui.TextBox.TEXT;
+import static ui.buttons.Button.*;
 
 public class ImageLoader {
 

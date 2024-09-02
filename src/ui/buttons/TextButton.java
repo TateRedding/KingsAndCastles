@@ -1,10 +1,9 @@
 package ui.buttons;
 
-import java.awt.Color;
-import java.awt.Graphics;
-
 import main.Game;
 import utils.RenderText;
+
+import java.awt.*;
 
 public class TextButton extends Button {
 

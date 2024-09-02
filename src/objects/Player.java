@@ -1,7 +1,6 @@
 package objects;
 
 import entities.buildings.Building;
-import entities.buildings.Village;
 import gamestates.Play;
 
 import java.io.Serializable;

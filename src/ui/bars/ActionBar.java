@@ -1,11 +1,5 @@
 package ui.bars;
 
-import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import entities.units.Unit;
 import gamestates.Play;
 import main.Game;
@@ -19,12 +13,18 @@ import ui.overlays.Overlay;
 import utils.ImageLoader;
 import utils.RenderText;
 
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import static entities.buildings.Building.BUILDING;
 import static entities.buildings.Building.*;
 import static entities.units.Unit.*;
 import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 import static ui.buttons.Button.*;
-import static ui.buttons.Button.SPRITE;
 
 public class ActionBar extends BottomBar {
 

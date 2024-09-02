@@ -1,17 +1,18 @@
 package ui.overlays;
 
-import static ui.TextBox.*;
+import main.Game;
+import objects.Map;
+import ui.TextBox;
+import utils.RenderText;
 
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import main.Game;
-import objects.Map;
-import ui.TextBox;
-import utils.RenderText;
+import static ui.TextBox.NUMBER;
+import static ui.TextBox.TEXT;
 
 public class NewMapForm extends Overlay {
 

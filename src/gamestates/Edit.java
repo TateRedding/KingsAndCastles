@@ -1,9 +1,11 @@
 package gamestates;
 
-import static entities.resources.ResourceObject.GOLD;
-import static gamestates.Play.CA_SELECT;
-import static main.Game.*;
-import static objects.Tile.*;
+import main.Game;
+import objects.Map;
+import objects.Tile;
+import ui.bars.EditorBar;
+import ui.bars.MapStatBar;
+import utils.ImageLoader;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -12,12 +14,10 @@ import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import main.Game;
-import objects.Map;
-import objects.Tile;
-import ui.bars.EditorBar;
-import ui.bars.MapStatBar;
-import utils.ImageLoader;
+import static entities.resources.ResourceObject.GOLD;
+import static gamestates.Play.CA_SELECT;
+import static main.Game.*;
+import static objects.Tile.*;
 
 public class Edit extends MapState {
 

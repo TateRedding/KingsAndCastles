@@ -2,7 +2,6 @@ package gamestates;
 
 import main.Game;
 import objects.Map;
-import ui.buttons.Button;
 import ui.buttons.ImageButton;
 import ui.buttons.TextButton;
 import ui.overlays.NewMapForm;

@@ -1,8 +1,5 @@
 package gamestates;
 
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-
 import main.Game;
 import objects.Map;
 import objects.Tile;
@@ -13,10 +10,12 @@ import ui.overlays.DeleteConfirm;
 import ui.overlays.Overlay;
 import utils.Savable;
 
+import java.awt.*;
+import java.awt.event.MouseEvent;
+
 import static main.Game.SCREEN_HEIGHT;
 import static main.Game.SCREEN_WIDTH;
 import static ui.buttons.Button.*;
-import static ui.buttons.Button.getButtonHeight;
 
 public abstract class FileSelect extends State {
 

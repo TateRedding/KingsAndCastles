@@ -1,19 +1,18 @@
 package ui.bars;
 
-import static main.Game.GAME_AREA_HEIGHT;
-import static ui.bars.TopBar.TOP_BAR_HEIGHT;
-import static ui.buttons.Button.TEXT_SMALL_SHORT;
-import static objects.Tile.GRASS;
-
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-
 import gamestates.GameStates;
 import gamestates.MapState;
 import main.Game;
 import ui.buttons.TextButton;
 import utils.ImageLoader;
+
+import java.awt.*;
+import java.awt.event.MouseEvent;
+
+import static main.Game.GAME_AREA_HEIGHT;
+import static objects.Tile.GRASS;
+import static ui.bars.TopBar.TOP_BAR_HEIGHT;
+import static ui.buttons.Button.TEXT_SMALL_SHORT;
 
 public abstract class BottomBar extends UIBar {
 

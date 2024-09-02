@@ -1,20 +1,16 @@
 package gamestates;
 
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Random;
-
-import entities.buildings.*;
+import entities.buildings.Building;
 import entities.resources.ResourceObject;
 import entities.units.Unit;
 import handlers.BuildingHandler;
-import handlers.UnitHandler;
 import handlers.ResourceObjectHandler;
+import handlers.UnitHandler;
 import main.Game;
-import objects.*;
+import objects.Chunk;
+import objects.Entity;
+import objects.Map;
+import objects.Player;
 import ui.bars.ActionBar;
 import ui.bars.GameStatBar;
 import ui.overlays.BuildingSelection;
@@ -22,12 +18,22 @@ import ui.overlays.Overlay;
 import utils.ImageLoader;
 import utils.Savable;
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Random;
+
+import static entities.buildings.Building.BUILDING;
+import static entities.buildings.Building.RESOURCE;
+import static entities.buildings.Building.UNIT;
 import static entities.buildings.Building.*;
+import static entities.resources.ResourceObject.TREE;
 import static entities.units.Unit.*;
 import static main.Game.*;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
-import static entities.resources.ResourceObject.*;
 import static pathfinding.AStar.isPointOpen;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 

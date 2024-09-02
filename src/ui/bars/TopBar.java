@@ -1,12 +1,11 @@
 package ui.bars;
 
-import static objects.Tile.GRASS;
-
-import java.awt.Graphics;
-import java.awt.Rectangle;
-
 import main.Game;
 import utils.ImageLoader;
+
+import java.awt.*;
+
+import static objects.Tile.GRASS;
 
 public abstract class TopBar extends UIBar {
 

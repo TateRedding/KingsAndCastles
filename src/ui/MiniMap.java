@@ -1,13 +1,12 @@
 package ui;
 
 import entities.buildings.Building;
-import entities.buildings.CastleWall;
+import entities.resources.ResourceObject;
 import entities.units.Unit;
 import gamestates.MapState;
 import gamestates.Play;
 import objects.Map;
 import objects.Tile;
-import entities.resources.ResourceObject;
 import ui.buttons.Button;
 import ui.buttons.ImageButton;
 import utils.ImageLoader;
@@ -21,10 +20,10 @@ import java.util.Arrays;
 
 import static entities.buildings.Building.CASTLE_TURRET;
 import static entities.buildings.Building.CASTLE_WALL;
+import static entities.resources.ResourceObject.*;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static main.Game.*;
 import static objects.Tile.*;
-import static entities.resources.ResourceObject.*;
 import static ui.bars.UIBar.UI_WIDTH;
 import static ui.buttons.Button.*;
 

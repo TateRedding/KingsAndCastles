@@ -1,16 +1,11 @@
 package ui;
 
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-
 import main.Game;
 import utils.ImageLoader;
 import utils.RenderText;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
 
 public class TextBox {
 

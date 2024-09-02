@@ -9,7 +9,8 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static ui.buttons.Button.*;
+import static ui.buttons.Button.TEXT_LARGE;
+import static ui.buttons.Button.getButtonHeight;
 
 public class Debug extends State {
 

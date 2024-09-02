@@ -2,8 +2,8 @@ package handlers;
 
 import entities.resources.ResourceObject;
 import entities.units.Brute;
-import entities.units.Unit;
 import entities.units.Laborer;
+import entities.units.Unit;
 import gamestates.Play;
 import objects.Entity;
 import objects.Player;

@@ -1,8 +1,8 @@
 package gamestates;
 
-import java.awt.Graphics;
-
 import main.Game;
+
+import java.awt.*;
 
 public class Credits extends State {
 

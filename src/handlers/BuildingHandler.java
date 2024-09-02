@@ -10,8 +10,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import static entities.buildings.Building.*;
-import static main.Game.toPixelX;
-import static main.Game.toPixelY;
 
 public class BuildingHandler implements Serializable {
 

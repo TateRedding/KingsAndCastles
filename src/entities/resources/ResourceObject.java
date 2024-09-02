@@ -1,9 +1,9 @@
 package entities.resources;
 
-import java.awt.Rectangle;
-import java.io.Serializable;
-
 import objects.Entity;
+
+import java.awt.*;
+import java.io.Serializable;
 
 import static main.Game.*;
 

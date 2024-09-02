@@ -1,17 +1,17 @@
 package gamestates;
 
-import static main.Game.SCREEN_HEIGHT;
-import static main.Game.SCREEN_WIDTH;
-import static ui.buttons.Button.*;
+import main.Game;
+import ui.buttons.TextButton;
 
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import main.Game;
-import ui.buttons.TextButton;
+import static main.Game.SCREEN_HEIGHT;
+import static main.Game.SCREEN_WIDTH;
+import static ui.buttons.Button.*;
 
 public class Menu extends State {
 

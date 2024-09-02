@@ -1,15 +1,15 @@
 package ui.bars;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import gamestates.Play;
 import main.Game;
 import objects.Player;
 import utils.ImageLoader;
 import utils.RenderText;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameStatBar extends TopBar {
 

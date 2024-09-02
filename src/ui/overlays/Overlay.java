@@ -1,12 +1,11 @@
 package ui.overlays;
 
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-
 import ui.buttons.ImageButton;
 import utils.ImageLoader;
+
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
 import static ui.buttons.Button.*;
 

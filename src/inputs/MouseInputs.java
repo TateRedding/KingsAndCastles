@@ -1,15 +1,9 @@
 package inputs;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.io.Serializable;
-
-import gamestates.GameStates;
 import gamestates.State;
 import main.Game;
+
+import java.awt.event.*;
 
 public class MouseInputs implements MouseListener, MouseMotionListener, MouseWheelListener {
 
