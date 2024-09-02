@@ -244,7 +244,7 @@ public class BuildingSelection extends Overlay {
             g.setFont(getGameFont(28f));
             g.setColor(Color.RED);
             int costWarningYStart = selectButton.getBounds().y - costWarningHeight;
-            RenderText.renderText(g, "Not enough entities.resources!", RenderText.CENTER, RenderText.CENTER, detailsAreaXStart, costWarningYStart, detailsAreaWidth, costWarningHeight);
+            RenderText.renderText(g, "Not enough resources!", RenderText.CENTER, RenderText.CENTER, detailsAreaXStart, costWarningYStart, detailsAreaWidth, costWarningHeight);
         }
 
         // Building detail text

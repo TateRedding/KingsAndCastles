@@ -296,8 +296,8 @@ public class ResourceObjectHandler implements Serializable {
         if (newAmt <= 0) {
             int roTileX = toTileX(ro.getX());
             int roTileY = toTileY(ro.getY());
-            int laborerTileX = laborer.getHitbox().x / TILE_SIZE;
-            int laborerTileY = (laborer.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE;
+            int laborerTileX = toTileX(laborer.getHitbox().x);
+            int laborerTileY = toTileY(laborer.getHitbox().y);
             Map map = play.getMap();
             map.getResourceObjectData()[roTileY][roTileX] = null;
 

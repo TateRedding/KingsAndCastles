@@ -142,7 +142,7 @@ public class UnitHandler implements Serializable {
                 if (targetPath != null && !targetPath.isEmpty())
                     targetTile = targetPath.get(0);
                 else
-                    targetTile = new Point(target.getHitbox().x / TILE_SIZE, (target.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+                    targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y));
                 ArrayList<Point> path = attacker.getUnitHandler().getPathToNearestAdjacentTile(attacker, targetTile.x, targetTile.y);
                 if (path != null) {
                     attacker.setPath(path);
@@ -179,7 +179,7 @@ public class UnitHandler implements Serializable {
                 u.setPath(path);
             }
         } else {
-            Point start = new Point(u.getHitbox().x / TILE_SIZE, (u.getHitbox().y - TOP_BAR_HEIGHT) / TILE_SIZE);
+            Point start = new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
             u.setPath(AStar.pathFind(start, goal, play));
         }
     }

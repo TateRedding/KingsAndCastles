@@ -107,7 +107,6 @@ public abstract class Building extends Entity {
 
     public static int getCostIron(int buildingType) {
         return switch (buildingType) {
-            case BARRACKS_TIER_1 -> 105;
             case BARRACKS_TIER_2 -> 190;
             case BARRACKS_TIER_3 -> 450;
             default -> 0;
@@ -164,7 +163,7 @@ public abstract class Building extends Entity {
                     "logs and stone",
                     "",
                     "Laborers will deposit",
-                    "their entities.resources here"
+                    "their resources here"
             };
             case REFINERY -> new String[]{
                     "Refine iron ore",
@@ -184,21 +183,21 @@ public abstract class Building extends Entity {
             };
             case BARRACKS_TIER_1 -> new String[]{
                     "Train basic",
-                    "combat entities.units",
+                    "combat units",
                     "",
-                    "Enter names of entities.units here"
+                    "Enter names of units here"
             };
             case BARRACKS_TIER_2 -> new String[]{
                     "Train advanced",
-                    "combat entities.units",
+                    "combat units",
                     "",
-                    "Enter names of entities.units here"
+                    "Enter names of units here"
             };
             case BARRACKS_TIER_3 -> new String[]{
                     "Train expert",
-                    "combat entities.units",
+                    "combat units",
                     "",
-                    "Enter names of entities.units here"
+                    "Enter names of units here"
             };
             default -> new String[]{"No", "Details"};
         };
