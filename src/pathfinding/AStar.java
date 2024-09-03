@@ -1,12 +1,13 @@
 package pathfinding;
 
+import entities.units.Unit;
 import gamestates.Play;
 
 import java.awt.*;
 import java.util.*;
 
-import static main.Game.toPixelX;
-import static main.Game.toPixelY;
+import static main.Game.*;
+import static main.Game.toTileY;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
 
@@ -154,6 +155,79 @@ public class AStar {
         for (int i = path.size() - 1; i >= 0; i--)
             reverse.add(path.get(i));
         return reverse;
+    }
+
+    public static ArrayList<Point> getUnitPathToTile(Unit u, int tileX, int tileY, Play play) {
+        Point goal = new Point(tileX, tileY);
+        ArrayList<Point> path = null;
+        if (u.getPath() != null && !u.getPath().isEmpty()) {
+            path = pathFind(u.getPath().get(0), goal, play);
+            if (path != null)
+                path.add(0, u.getPath().get(0));
+        } else {
+            Point start = new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
+            path = pathFind(start, goal, play);
+        }
+        return path;
+    }
+
+    public static ArrayList<Point> getPathToNearestAdjacentTile(Unit u, int goalTileX, int goalTileY, Play play) {
+        HashMap<Double, Point> openTiles = new HashMap<>();
+        Point start = (u.getPath() != null && !u.getPath().isEmpty()) ? u.getPath().get(0)
+                : new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
+
+        int mapWidth = play.getMap().getTileData()[0].length;
+        int mapHeight = play.getMap().getTileData().length;
+
+        for (int x = goalTileX - 1; x <= goalTileX + 1; x++) {
+            for (int y = goalTileY - 1; y <= goalTileY + 1; y++) {
+                if (x < 0 || y < 0 || x >= mapWidth || y >= mapHeight) continue;
+
+                Point currTarget = new Point(x, y);
+
+                if (AStar.isPointOpen(currTarget, play)) {
+                    boolean isCardinal = (x == goalTileX || y == goalTileY);
+
+                    if (!isCardinal && !isAdjacentDiagonalOpen(currTarget, new Point(goalTileX, goalTileY), play)) {
+                        continue;
+                    }
+
+                    double distance = AStar.getDistance(start, currTarget);
+                    if (!isCardinal) distance *= 2;  // Prioritize cardinally adjacent tiles
+
+                    openTiles.put(distance, currTarget);
+                }
+            }
+        }
+
+        if (openTiles.isEmpty()) return null;
+
+        ArrayList<Double> sortedDistances = new ArrayList<>(openTiles.keySet());
+        Collections.sort(sortedDistances);
+
+        for (double dist : sortedDistances) {
+            Point target = openTiles.get(dist);
+            ArrayList<Point> path = AStar.pathFind(start, target, play);
+            if (path != null) {
+                if (u.getPath() != null && !u.getPath().isEmpty())
+                    path.add(0, u.getPath().get(0));
+                return path;
+            }
+        }
+
+        return null;
+    }
+
+    private static boolean isAdjacentDiagonalOpen(Point origin, Point target, Play play) {
+        // Check if point in vertical direction of target & cardinal of the origin is open
+        Point verticalPoint = new Point(origin.x, origin.y + (target.y - origin.y));
+        boolean isVerticalPointOpen = (play.getEntityAtTile(verticalPoint.x, verticalPoint.y) == null && AStar.isPointOpen(verticalPoint, play));
+        if (isVerticalPointOpen)
+            return true;
+
+        // Check if point in horizontal direction of target & cardinal of the origin is open
+        Point horizontalPoint = new Point(origin.x + (target.x - origin.x), origin.y);
+        return (play.getEntityAtTile(horizontalPoint.x, horizontalPoint.y) == null && AStar.isPointOpen(horizontalPoint, play));
     }
 
 }

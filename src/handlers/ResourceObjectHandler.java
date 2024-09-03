@@ -18,6 +18,7 @@ import java.util.Random;
 import static entities.resources.ResourceObject.*;
 import static main.Game.*;
 import static objects.Chunk.MAX_CHUNK_SIZE;
+import static pathfinding.AStar.getPathToNearestAdjacentTile;
 
 public class ResourceObjectHandler implements Serializable {
 
@@ -55,7 +56,7 @@ public class ResourceObjectHandler implements Serializable {
         generateCoalPoints();
         generateIronPoints();
         generateRockPoints();
-        generateTreePoints();
+//        generateTreePoints();
 
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
@@ -337,7 +338,7 @@ public class ResourceObjectHandler implements Serializable {
                                     laborer.setTargetEntity(currRO);
                                     return;
                                 }
-                                ArrayList<Point> path = laborer.getUnitHandler().getPathToNearestAdjacentTile(laborer, toTileX(currRO.getX()), toTileY(currRO.getY()));
+                                ArrayList<Point> path = getPathToNearestAdjacentTile(laborer, toTileX(currRO.getX()), toTileY(currRO.getY()), play);
                                 if (path != null) {
                                     laborer.setPath(path);
                                     laborer.setTargetEntity(currRO);

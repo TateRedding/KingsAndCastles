@@ -17,6 +17,7 @@ import static entities.units.Brute.ATTACKING;
 import static entities.units.Laborer.CHOPPING;
 import static entities.units.Laborer.MINING;
 import static main.Game.*;
+import static pathfinding.AStar.getPathToNearestAdjacentTile;
 import static pathfinding.AStar.isPointOpen;
 
 public abstract class Unit extends Entity implements Serializable {
@@ -313,7 +314,7 @@ public abstract class Unit extends Entity implements Serializable {
                     Point start = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
                     Point goal = path.get(path.size() - 1);
                     if (unitHandler.getPlay().getEntityAtTile(goal.x, goal.y) != null) {
-                        u.setPath(unitHandler.getPathToNearestAdjacentTile(u, goal.x, goal.y));
+                        u.setPath(getPathToNearestAdjacentTile(u, goal.x, goal.y, unitHandler.getPlay()));
 //                        System.out.println("Goal is also blocked, finding path to nearest adjacent tile to goal.");
                     } else {
                         path = AStar.pathFind(start, goal, unitHandler.getPlay());

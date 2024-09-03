@@ -34,7 +34,7 @@ import static entities.units.Unit.*;
 import static main.Game.*;
 import static objects.Tile.WATER_GRASS;
 import static objects.Tile.WATER_SAND;
-import static pathfinding.AStar.isPointOpen;
+import static pathfinding.AStar.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public class Play extends MapState implements Savable, Serializable {
@@ -490,29 +490,26 @@ public class Play extends MapState implements Savable, Serializable {
                     } else if (clickAction != -1) {
                         Unit selectedUnit = (Unit) selectedEntity;
                         if (clickAction == CA_MOVE) {
-                            unitHandler.setPathToTile(selectedUnit, tileX, tileY);
-                            selectedUnit.setTargetEntity(null);
-                        } else if (hoverEntity.getEntityType() == RESOURCE && (clickAction == CA_CHOP || clickAction == CA_MINE)) {
-                            boolean isInRangeAndReachable = (selectedUnit.isTargetInRange(hoverEntity, selectedUnit.getActionRange()) && (selectedUnit.isLineOfSightOpen(hoverEntity)));
+                            ArrayList<Point> path = getUnitPathToTile(selectedUnit, tileX, tileY, this);
+                            if (path != null && !path.isEmpty()) {
+                                selectedUnit.setPath(getUnitPathToTile(selectedUnit, tileX, tileY, this));
+                                selectedUnit.setTargetEntity(null);
+                            }
+                        } else if ((hoverEntity.getEntityType() == RESOURCE && (clickAction == CA_CHOP || clickAction == CA_MINE)) ||
+                                (hoverEntity.getEntityType() == UNIT && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED))) {
+                            boolean isInRangeAndReachable = selectedUnit.isTargetInRange(hoverEntity, selectedUnit.getActionRange()) && selectedUnit.isLineOfSightOpen(hoverEntity);
                             ArrayList<Point> path = null;
                             if (!isInRangeAndReachable) {
-                                path = unitHandler.getPathToNearestAdjacentTile(selectedUnit, tileX, tileY);
-                                if (path != null)
+                                path = getPathToNearestAdjacentTile(selectedUnit, tileX, tileY, this);
+                                if (path != null) {
                                     selectedUnit.setPath(path);
+                                }
                             }
-                            if (isInRangeAndReachable || path != null)
+                            if (isInRangeAndReachable || path != null) {
                                 selectedUnit.setTargetEntity(hoverEntity);
-                        } else if (hoverEntity.getEntityType() == UNIT && clickAction == CA_ATTACK_MELEE) {
-                            boolean isInRangeAndReachable = (selectedUnit.isTargetInRange(hoverEntity, selectedUnit.getActionRange()) && (selectedUnit.isLineOfSightOpen(hoverEntity)));
-                            ArrayList<Point> path = null;
-                            if (!isInRangeAndReachable) {
-                                path = unitHandler.getPathToNearestAdjacentTile(selectedUnit, tileX, tileY);
-                                if (path != null)
-                                    selectedUnit.setPath(path);
                             }
-                            if (isInRangeAndReachable || path != null)
-                                selectedUnit.setTargetEntity(hoverEntity);
                         }
+
                     }
                 }
             }
