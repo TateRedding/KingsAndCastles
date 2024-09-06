@@ -56,7 +56,7 @@ public class ResourceObjectHandler implements Serializable {
         generateCoalPoints();
         generateIronPoints();
         generateRockPoints();
-//        generateTreePoints();
+        generateTreePoints();
 
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {

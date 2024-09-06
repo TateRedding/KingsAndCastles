@@ -155,7 +155,8 @@ public class Play extends MapState implements Savable, Serializable {
         highlightSelectedObject(g, mapXOffset, mapYOffset);
 
         // Debugging
-        drawChunkBorders(g);
+        if (Debug.config.get(Debug.DebugToggle.SHOW_CHUNK_BORDERS))
+            drawChunkBorders(g);
 
         actionBar.render(g);
         gameStatBar.render(g);

@@ -1,5 +1,6 @@
 package utils;
 
+import gamestates.Debug;
 import gamestates.Play;
 import main.Game;
 import objects.Entity;
@@ -12,195 +13,129 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.EnumMap;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class LoadSave {
 
     public static String homePath = System.getProperty("user.home");
-    public static String mainFolder = "Kings and Castles";
+    public static String parentFolder = "Kings and Castles";
+    public static String parentFolderPath = homePath + File.separator + parentFolder;
+
     public static String mapFolder = "maps";
     public static String mapFileExtension = ".kacmap";
-    public static String mapPath = homePath + File.separator + mainFolder + File.separator + mapFolder;
+    public static String mapPath = parentFolderPath + File.separator + mapFolder;
     public static String previewImageSuffix = "_preview.png";
+
     public static String gameFolder = "saves";
     public static String gameFileExtension = ".kacsave";
-    public static String gamePath = homePath + File.separator + mainFolder + File.separator + gameFolder;
+    public static String gamePath = parentFolderPath + File.separator + gameFolder;
+
+    private static String configFileName = "debug.config";
+    private static String configFileFullPath = parentFolderPath + File.separator + configFileName;
 
     private static String fontName = "SilverModified.ttf";
     public static Font silverModified;
 
     public static void createFolders() {
-        File folder = new File(homePath + File.separator + mainFolder);
-        if (!folder.exists())
-            folder.mkdir();
-        folder = new File(mapPath);
-        if (!folder.exists())
-            folder.mkdir();
-        folder = new File(gamePath);
-        if (!folder.exists())
-            folder.mkdir();
+        String[] folders = {mapPath, gamePath};
+        for (String folderPath : folders) {
+            File folder = new File(folderPath);
+            if (!folder.exists())
+                folder.mkdir();
+        }
     }
 
     public static void loadFont() {
-        InputStream is = LoadSave.class.getClassLoader().getResourceAsStream(fontName);
-        try {
+        try (InputStream is = LoadSave.class.getClassLoader().getResourceAsStream(fontName)) {
             silverModified = Font.createFont(Font.TRUETYPE_FONT, is);
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(silverModified);
         } catch (FontFormatException | IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-
     }
 
     public static BufferedImage loadImage(String fileName) {
-        BufferedImage img = null;
-        InputStream is = LoadSave.class.getClassLoader().getResourceAsStream(fileName);
-        try {
-            img = ImageIO.read(is);
+        try (InputStream is = LoadSave.class.getClassLoader().getResourceAsStream(fileName)) {
+            BufferedImage img = ImageIO.read(is);
+            BufferedImage convertedImg = new BufferedImage(img.getWidth(), img.getHeight(), TYPE_INT_ARGB);
+            convertedImg.getGraphics().drawImage(img, 0, 0, null);
+            return convertedImg;
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            return null;
         }
-
-        BufferedImage convertedImg = new BufferedImage(img.getWidth(), img.getHeight(), TYPE_INT_ARGB);
-        convertedImg.getGraphics().drawImage(img, 0, 0, null);
-
-        return convertedImg;
     }
 
     public static Map loadMap(File mapFile) {
-        Map map = null;
-        try {
-            FileInputStream fis = new FileInputStream(mapFile);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            map = (Map) ois.readObject();
-            ois.close();
-            fis.close();
-        } catch (Exception e) {
+        try (FileInputStream fis = new FileInputStream(mapFile);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            return (Map) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+            return null;
         }
-
-        return map;
     }
 
     public static void saveMap(Map map) {
         File mapFile = new File(mapPath + File.separator + map.getName() + mapFileExtension);
-        if (mapFile.exists()) {
+        if (mapFile.exists())
             System.out.println("Saving Map...");
-            writeMapToFile(map, mapFile);
-        } else {
+        else {
             System.out.println("Creating new map file");
-            createMapFile(map, mapFile);
+            createNewFile(mapFile);
         }
+        writeMapToFile(map, mapFile);
         ImageLoader.createMapPreviewImage(map);
     }
 
     private static void writeMapToFile(Map map, File mapFile) {
-        try {
-            FileOutputStream fileStream = new FileOutputStream(mapFile);
-            ObjectOutputStream objectStream = new ObjectOutputStream(fileStream);
+        try (FileOutputStream fileStream = new FileOutputStream(mapFile);
+             ObjectOutputStream objectStream = new ObjectOutputStream(fileStream)) {
             objectStream.writeObject(map);
-            objectStream.close();
-            fileStream.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void createMapFile(Map map, File mapFile) {
-        if (mapFile.exists()) {
-            System.out.println("File: " + mapFile + " already exists");
-        } else {
-            try {
-                mapFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            writeMapToFile(map, mapFile);
+    private static void createNewFile(File file) {
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     public static void deleteMapFile(Map map) {
-        String mapFileName = map.getName() + mapFileExtension;
-        String imageName = map.getName() + previewImageSuffix;
-        File mapFile = new File(mapPath + File.separator + mapFileName);
-        if (mapFile.exists()) {
-            boolean deleted = mapFile.delete();
-            if (deleted)
-                System.out.println(mapFileName + " deleted successfully.");
-            else
-                System.out.println("Failed to delete " + mapFileName);
-        } else
-            System.out.println("Could not locate " + mapFileName);
-
-        File imageFile = new File(mapPath + File.separator + imageName);
-        if (imageFile.exists()) {
-            boolean deleted = imageFile.delete();
-            if (deleted)
-                System.out.println(imageName + " deleted successfully.");
-            else
-                System.out.println("Failed to delete " + imageName);
-        } else
-            System.out.println("Could not locate " + imageName);
+        deleteFile(new File(mapPath + File.separator + map.getName() + mapFileExtension), map.getName() + mapFileExtension);
+        deleteFile(new File(mapPath + File.separator + map.getName() + previewImageSuffix), map.getName() + previewImageSuffix);
     }
 
     public static void clearMaps() {
-        File mapFolder = new File(mapPath);
-        boolean success = true;
-        if (mapFolder.exists()) {
-            File[] files = mapFolder.listFiles();
-            if (files != null)
-                for (File file : files)
-                    if (file.isFile()) {
-                        boolean deleted = file.delete();
-                        if (!deleted) {
-                            success = false;
-                            System.out.println("Failed to delete " + file.getName());
-                        }
-                    }
-        } else
-            System.out.println("Could not locate map folder.");
-        if (success)
-            System.out.println("Successfully cleared map folder.");
+        clearFolder(new File(mapPath), "map");
     }
 
     public static Play loadGame(File gameFile) {
-        Play game = null;
-        try {
-            FileInputStream fis = new FileInputStream(gameFile);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            game = (Play) ois.readObject();
-            ois.close();
-            fis.close();
-        } catch (Exception e) {
+        try (FileInputStream fis = new FileInputStream(gameFile);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            return (Play) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+            return null;
         }
-
-        return game;
     }
 
     public static void saveGame(Play game) {
         File gameFile = new File(gamePath + File.separator + game.getName() + gameFileExtension);
-        if (gameFile.exists()) {
+        if (gameFile.exists())
             System.out.println("Saving game...");
-            writeGameToFile(game, gameFile);
-        } else {
+        else {
             System.out.println("Creating new game file");
-            createGameFile(game, gameFile);
+            createNewFile(gameFile);
         }
+        writeGameToFile(game, gameFile);
     }
 
     private static void writeGameToFile(Play play, File gameFile) {
@@ -221,13 +156,10 @@ public class LoadSave {
         play.setClickAction(-1);
         play.setBuildingSelection(null);
 
-        try {
-            FileOutputStream fileStream = new FileOutputStream(gameFile);
-            ObjectOutputStream objectStream = new ObjectOutputStream(fileStream);
+        try (FileOutputStream fileStream = new FileOutputStream(gameFile);
+             ObjectOutputStream objectStream = new ObjectOutputStream(fileStream)) {
             objectStream.writeObject(play);
-            objectStream.close();
-            fileStream.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -239,51 +171,76 @@ public class LoadSave {
         play.setSelectedBuildingType(selectedBuildingType);
     }
 
-    public static void createGameFile(Play game, File gameFile) {
-        if (gameFile.exists()) {
-            System.out.println("File: " + gameFile + " already exists");
-        } else {
-            try {
-                gameFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            writeGameToFile(game, gameFile);
-        }
-    }
-
     public static void deleteGameFile(Play game) {
-        String gameFileName = game.getName() + gameFileExtension;
-        File gameFile = new File(gamePath + File.separator + gameFileName);
-        if (gameFile.exists()) {
-            boolean deleted = gameFile.delete();
-            if (deleted)
-                System.out.println(gameFileName + " deleted successfully.");
-            else
-                System.out.println("Failed to delete " + gameFileName);
-        } else
-            System.out.println("Could not locate " + gameFileName);
-
+        deleteFile(new File(gamePath + File.separator + game.getName() + gameFileExtension), game.getName() + gameFileExtension);
     }
 
     public static void clearGames() {
-        File gameFolder = new File(gamePath);
-        boolean success = true;
-        if (gameFolder.exists()) {
-            File[] files = gameFolder.listFiles();
-            if (files != null)
-                for (File file : files)
-                    if (file.isFile()) {
-                        boolean deleted = file.delete();
-                        if (!deleted) {
-                            success = false;
-                            System.out.println("Failed to delete " + file.getName());
-                        }
-                    }
-        } else
-            System.out.println("Could not locate game folder.");
-        if (success)
-            System.out.println("Successfully cleared game folder.");
+        clearFolder(new File(gamePath), "game");
     }
 
+    public static EnumMap<Debug.DebugToggle, Boolean> loadDebugConfig() {
+        EnumMap<Debug.DebugToggle, Boolean> config = new EnumMap<>(Debug.DebugToggle.class);
+        try (BufferedReader reader = new BufferedReader(new FileReader(configFileFullPath))) {
+            String line;
+            while ((line = reader.readLine()) != null)
+                for (Debug.DebugToggle toggle : Debug.DebugToggle.values())
+                    if (line.contains("\"" + toggle.getLabel() + "\":")) {
+                        boolean value = line.contains("true");
+                        config.put(toggle, value);
+                    }
+            System.out.println("Successfully loaded debug configuration from file.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return config;
+    }
+
+    public static void saveDebugConfig(EnumMap<Debug.DebugToggle, Boolean> config) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{\n");
+        int count = 0;
+        for (Debug.DebugToggle toggle : Debug.DebugToggle.values()) {
+            sb.append("  \"").append(toggle.getLabel()).append("\": ")
+                    .append(config.get(toggle));
+            if (++count < Debug.DebugToggle.values().length)
+                sb.append(",\n");
+            else
+                sb.append("\n");
+        }
+
+        sb.append("}");
+        try (FileWriter file = new FileWriter(configFileFullPath)) {
+            file.write(sb.toString());
+            System.out.println("Successfully saved debug configuration to file.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void deleteFile(File file, String fileName) {
+        if (file.exists() && file.delete()) {
+            System.out.println(fileName + " deleted successfully.");
+        } else {
+            System.out.println("Failed to delete " + fileName);
+        }
+    }
+
+    private static void clearFolder(File folder, String folderType) {
+        boolean success = true;
+        if (folder.exists()) {
+            File[] files = folder.listFiles();
+            if (files != null)
+                for (File file : files)
+                    if (file.isFile() && !file.delete()) {
+                        success = false;
+                        System.out.println("Failed to delete " + file.getName());
+                    }
+        } else
+            System.out.println("Could not locate " + folderType + " folder.");
+
+        if (success)
+            System.out.println("Successfully cleared " + folderType + " folder.");
+    }
 }

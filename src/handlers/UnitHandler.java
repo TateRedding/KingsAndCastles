@@ -4,16 +4,15 @@ import entities.resources.ResourceObject;
 import entities.units.Brute;
 import entities.units.Laborer;
 import entities.units.Unit;
+import gamestates.Debug;
 import gamestates.Play;
 import objects.Entity;
 import objects.Player;
-import pathfinding.AStar;
 
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Random;
 
 import static entities.units.Unit.*;
@@ -76,9 +75,14 @@ public class UnitHandler implements Serializable {
                     u.drawHealthBar(g, u.getHealth(), u.getMaxHealth(), xOffset, yOffset);
 
                 // Debugging
-                drawPath(u, g, xOffset, yOffset);
-                drawHitbox(u, g, xOffset, yOffset);
-                drawTargetHitbox(u, g, xOffset, yOffset);
+                if (Debug.config.get(Debug.DebugToggle.SHOW_PATHS))
+                    drawPath(u, g, xOffset, yOffset);
+
+                if (Debug.config.get(Debug.DebugToggle.SHOW_HITBOXES))
+                    drawHitbox(u, g, xOffset, yOffset);
+
+                if (Debug.config.get(Debug.DebugToggle.SHOW_TARGET_HITBOXES))
+                    drawTargetHitbox(u, g, xOffset, yOffset);
             }
         }
     }
