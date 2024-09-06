@@ -193,8 +193,13 @@ public class LoadSave {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        for (Debug.DebugToggle toggle : Debug.DebugToggle.values())
+            config.putIfAbsent(toggle, false);
+
         return config;
     }
+
 
     public static void saveDebugConfig(EnumMap<Debug.DebugToggle, Boolean> config) {
         StringBuilder sb = new StringBuilder();

@@ -157,6 +157,8 @@ public class Play extends MapState implements Savable, Serializable {
         // Debugging
         if (Debug.config.get(Debug.DebugToggle.SHOW_CHUNK_BORDERS))
             drawChunkBorders(g);
+        if (Debug.config.get(Debug.DebugToggle.SHOW_TILE_COORDINATES))
+            drawTileCoords(g, mapXOffset, mapYOffset);
 
         actionBar.render(g);
         gameStatBar.render(g);

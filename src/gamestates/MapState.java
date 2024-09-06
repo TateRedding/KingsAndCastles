@@ -18,6 +18,8 @@ import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
 public abstract class MapState extends State implements Serializable {
 
+    private static final Font DEBUG_TILE_COORDINATE_FONT = new Font("Monospaced", Font.PLAIN, 8);
+
     protected Map map;
     protected MiniMap miniMap;
     protected Rectangle gameBounds;
@@ -72,6 +74,17 @@ public abstract class MapState extends State implements Serializable {
             for (Point p : castleZones.get(i))
                 g.fillRect(toPixelX(p.x) - xOffset, toPixelY(p.y) - yOffset, TILE_SIZE, TILE_SIZE);
         }
+    }
+
+    protected void drawTileCoords(Graphics g, int mapXOffset, int mapYOffset) {
+        g.setFont(DEBUG_TILE_COORDINATE_FONT);
+        g.setColor(Color.BLACK);
+        for (int y = 0; y < tileData.length; y++)
+            for (int x = 0; x < tileData[y].length; x++) {
+                int xStart = toPixelX(x) - mapXOffset;
+                int yStart = toPixelY(y) - mapYOffset + g.getFontMetrics().getHeight();
+                g.drawString(x + "," + y, xStart, yStart);
+            }
     }
 
     protected void dragScreen(int x, int y) {

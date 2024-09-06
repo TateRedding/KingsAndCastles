@@ -9,9 +9,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.Map;
-import java.io.IOException;
-import java.io.FileWriter;
 
 import static ui.buttons.Button.*;
 import static utils.LoadSave.loadDebugConfig;
@@ -23,7 +20,9 @@ public class Debug extends State {
         SHOW_PATHS("Show paths"),
         SHOW_HITBOXES("Show hitboxes"),
         SHOW_CHUNK_BORDERS("Show chunk borders"),
-        SHOW_TARGET_HITBOXES("Show target hitboxes");
+        SHOW_TARGET_HITBOXES("Show target hitboxes"),
+        SHOW_TILE_COORDINATES("Show tile coordinates"),
+        SHOW_UNIT_IDS("Show unit IDs");
 
         private final String label;
 
@@ -47,10 +46,6 @@ public class Debug extends State {
     public Debug(Game game) {
         super(game);
         initButtons();
-
-        config = new EnumMap<>(DebugToggle.class);
-        for (DebugToggle toggle : DebugToggle.values())
-            config.put(toggle, false);
 
         config = loadDebugConfig();
     }

@@ -21,6 +21,7 @@ import static pathfinding.AStar.getPathToNearestAdjacentTile;
 
 public class UnitHandler implements Serializable {
 
+    private static final Font DEBUG_UNIT_ID_FONT = new Font("Monospaced", Font.BOLD, 14);
     private static final int NUM_MAX_STARTING_UNITS = 3;
 
     private Play play;
@@ -77,12 +78,12 @@ public class UnitHandler implements Serializable {
                 // Debugging
                 if (Debug.config.get(Debug.DebugToggle.SHOW_PATHS))
                     drawPath(u, g, xOffset, yOffset);
-
                 if (Debug.config.get(Debug.DebugToggle.SHOW_HITBOXES))
                     drawHitbox(u, g, xOffset, yOffset);
-
                 if (Debug.config.get(Debug.DebugToggle.SHOW_TARGET_HITBOXES))
                     drawTargetHitbox(u, g, xOffset, yOffset);
+                if (Debug.config.get(Debug.DebugToggle.SHOW_UNIT_IDS))
+                    drawUnitIDs(u, g, xOffset, yOffset);
             }
         }
     }
@@ -147,6 +148,16 @@ public class UnitHandler implements Serializable {
             Rectangle bounds = e.getHitbox();
             g.drawRect(bounds.x - xOffset, bounds.y - yOffset, bounds.width, bounds.height);
         }
+    }
+
+    private void drawUnitIDs(Unit u, Graphics g, int xOffset, int yOffset) {
+        Rectangle bounds = u.getHitbox();
+        String id = String.valueOf(u.getId());
+        int xStart = (bounds.x - xOffset) + (bounds.width - g.getFontMetrics().stringWidth(id)) / 2;
+        int yStart = (bounds.y - yOffset) + (bounds.height - g.getFontMetrics().getHeight());
+        g.setFont(DEBUG_UNIT_ID_FONT);
+        g.setColor(Color.RED);
+        g.drawString(id, xStart, yStart);
     }
 
     private void changePathIfTargetMoved(Unit u) {
