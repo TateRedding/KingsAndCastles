@@ -32,8 +32,6 @@ import static entities.buildings.Building.*;
 import static entities.resources.ResourceObject.TREE;
 import static entities.units.Unit.*;
 import static main.Game.*;
-import static objects.Tile.WATER_GRASS;
-import static objects.Tile.WATER_SAND;
 import static pathfinding.AStar.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 
@@ -316,9 +314,8 @@ public class Play extends MapState implements Savable, Serializable {
         return resourceObjectData[tileY][tileX];
     }
 
-    public boolean isTileBlockedOrReserved(int tileX, int tileY, Unit excludedUnit, boolean checkPathGoals) {
-        if (getEntityAtTile(tileX, tileY) != null) return true;
-        return unitHandler.isTileReserved(tileX, tileY, excludedUnit, checkPathGoals);
+    public boolean isTileBlockedOrReserved(int tileX, int tileY, Unit excludedUnit) {
+        return getEntityAtTile(tileX, tileY) != null || unitHandler.isTileReserved(tileX, tileY, excludedUnit);
     }
 
     private boolean canBuildHere(int x, int y, boolean checkAllBuildingTiles) {
@@ -336,9 +333,9 @@ public class Play extends MapState implements Savable, Serializable {
 
             for (Point p : tiles) {
                 if (selectedBuildingType == THRONE_ROOM || selectedBuildingType == CASTLE_WALL)
-                    if (!map.getCastleZones().getFirst().contains(p))
+                    if (!map.getCastleZones().get(0).contains(p))
                         return false;
-                if (isTileBlockedOrReserved(p.x, p.y, null, false))
+                if (isTileBlockedOrReserved(p.x, p.y, null))
                     return false;
             }
         }
@@ -445,7 +442,7 @@ public class Play extends MapState implements Savable, Serializable {
                 if (y >= 0 && y < mapHeight && x >= 0 && x < mapWidth)
                     if (!building.getHitbox().contains(toPixelX(x), toPixelY(y))) {
                         Point currPoint = new Point(x, y);
-                        if (isPointOpen(currPoint, this, false))
+                        if (isPointOpen(currPoint, this))
                             spawnPoints.add(currPoint);
                     }
 

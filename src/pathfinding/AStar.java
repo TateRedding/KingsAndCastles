@@ -85,60 +85,60 @@ public class AStar {
         // Cardinal Directions (Up, Right, Down, Left)
         if (parent.y > 0) {
             Point above = new Point(parent.x, parent.y - 1);
-            isUpOpen = isPointOpen(above, play, true);
+            isUpOpen = isPointOpen(above, play);
             if (isUpOpen) neighbors.add(above);
         }
 
         if (parent.x < gridWidth - 1) {
             Point right = new Point(parent.x + 1, parent.y);
-            isRightOpen = isPointOpen(right, play, true);
+            isRightOpen = isPointOpen(right, play);
             if (isRightOpen) neighbors.add(right);
         }
 
         if (parent.y < gridHeight - 1) {
             Point below = new Point(parent.x, parent.y + 1);
-            isDownOpen = isPointOpen(below, play, true);
+            isDownOpen = isPointOpen(below, play);
             if (isDownOpen) neighbors.add(below);
         }
 
         if (parent.x > 0) {
             Point left = new Point(parent.x - 1, parent.y);
-            isLeftOpen = isPointOpen(left, play, true);
+            isLeftOpen = isPointOpen(left, play);
             if (isLeftOpen) neighbors.add(left);
         }
 
         // Diagonal Directions (Top-left, Top-right, Bottom-left, Bottom-right)
         if (parent.y > 0 && parent.x > 0) {
             Point topLeft = new Point(parent.x - 1, parent.y - 1);
-            if (isPointOpen(topLeft, play, true) && (isUpOpen || isLeftOpen))
+            if (isPointOpen(topLeft, play) && (isUpOpen || isLeftOpen))
                 neighbors.add(topLeft);
         }
 
         if (parent.y > 0 && parent.x < gridWidth - 1) {
             Point topRight = new Point(parent.x + 1, parent.y - 1);
-            if (isPointOpen(topRight, play, true) && (isUpOpen || isRightOpen))
+            if (isPointOpen(topRight, play) && (isUpOpen || isRightOpen))
                 neighbors.add(topRight);
         }
 
         if (parent.y < gridHeight - 1 && parent.x > 0) {
             Point bottomLeft = new Point(parent.x - 1, parent.y + 1);
-            if (isPointOpen(bottomLeft, play, true) && (isDownOpen || isLeftOpen))
+            if (isPointOpen(bottomLeft, play) && (isDownOpen || isLeftOpen))
                 neighbors.add(bottomLeft);
         }
 
         if (parent.y < gridHeight - 1 && parent.x < gridWidth - 1) {
             Point bottomRight = new Point(parent.x + 1, parent.y + 1);
-            if (isPointOpen(bottomRight, play, true) && (isDownOpen || isRightOpen))
+            if (isPointOpen(bottomRight, play) && (isDownOpen || isRightOpen))
                 neighbors.add(bottomRight);
         }
 
         return neighbors;
     }
 
-    public static boolean isPointOpen(Point point, Play play, boolean checkPathGoals) {
+    public static boolean isPointOpen(Point point, Play play) {
         int tileType = play.getMap().getTileData()[point.y][point.x].getTileType();
         return !(tileType == WATER_GRASS || tileType == WATER_SAND ||
-                play.isTileBlockedOrReserved(point.x, point.y, null, checkPathGoals));
+                play.isTileBlockedOrReserved(point.x, point.y, null));
     }
 
 
@@ -159,16 +159,9 @@ public class AStar {
 
     public static ArrayList<Point> getUnitPathToTile(Unit u, int tileX, int tileY, Play play) {
         Point goal = new Point(tileX, tileY);
-        ArrayList<Point> path = null;
-        if (u.getPath() != null && !u.getPath().isEmpty()) {
-            path = pathFind(u.getPath().get(0), goal, play);
-            if (path != null)
-                path.add(0, u.getPath().get(0));
-        } else {
-            Point start = new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
-            path = pathFind(start, goal, play);
-        }
-        return path;
+        Point start = (u.getPath() != null && !u.getPath().isEmpty()) ? u.getPath().get(0)
+                : new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
+        return getUnitPathToGoal(u, start, goal, play);
     }
 
     public static ArrayList<Point> getUnitPathToNearestAdjacentTile(Unit u, int goalTileX, int goalTileY, Play play) {
@@ -185,7 +178,7 @@ public class AStar {
 
                 Point currTarget = new Point(x, y);
 
-                if (AStar.isPointOpen(currTarget, play, true)) {
+                if (AStar.isPointOpen(currTarget, play)) {
                     boolean isCardinal = (x == goalTileX || y == goalTileY);
 
                     if (!isCardinal && !isAdjacentDiagonalOpen(currTarget, new Point(goalTileX, goalTileY), play)) {
@@ -206,28 +199,25 @@ public class AStar {
         Collections.sort(sortedDistances);
 
         for (double dist : sortedDistances) {
-            Point target = openTiles.get(dist);
-            ArrayList<Point> path = AStar.pathFind(start, target, play);
-            if (path != null) {
-                if (u.getPath() != null && !u.getPath().isEmpty())
-                    path.add(0, u.getPath().get(0));
-                return path;
-            }
+            Point goal = openTiles.get(dist);
+            ArrayList<Point> path = getUnitPathToGoal(u, start, goal, play);
+            if (path != null) return path;
         }
-
         return null;
     }
 
-    private static boolean isAdjacentDiagonalOpen(Point origin, Point target, Play play) {
-        // Check if point in vertical direction of target & cardinal of the origin is open
-        Point verticalPoint = new Point(origin.x, origin.y + (target.y - origin.y));
-        boolean isVerticalPointOpen = (play.getEntityAtTile(verticalPoint.x, verticalPoint.y) == null && AStar.isPointOpen(verticalPoint, play, false));
-        if (isVerticalPointOpen)
-            return true;
-
-        // Check if point in horizontal direction of target & cardinal of the origin is open
-        Point horizontalPoint = new Point(origin.x + (target.x - origin.x), origin.y);
-        return (play.getEntityAtTile(horizontalPoint.x, horizontalPoint.y) == null && AStar.isPointOpen(horizontalPoint, play, false));
+    private static ArrayList<Point> getUnitPathToGoal(Unit u, Point start, Point goal, Play play) {
+        ArrayList<Point> path = pathFind(start, goal, play);
+        if (path != null && u.getPath() != null && !u.getPath().isEmpty())
+            path.add(0, u.getPath().get(0));
+        return path;
     }
+
+    private static boolean isAdjacentDiagonalOpen(Point origin, Point target, Play play) {
+        Point verticalPoint = new Point(origin.x, origin.y + (target.y - origin.y));
+        Point horizontalPoint = new Point(origin.x + (target.x - origin.x), origin.y);
+        return AStar.isPointOpen(verticalPoint, play) || AStar.isPointOpen(horizontalPoint, play);
+    }
+
 
 }

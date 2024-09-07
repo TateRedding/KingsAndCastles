@@ -38,6 +38,7 @@ public class UnitHandler implements Serializable {
     public void update() {
         if (!deadUnits.isEmpty())
             cleanupUnitList();
+
         for (Unit u : units) {
             if (u.isAlive()) {
                 u.update();
@@ -251,9 +252,9 @@ public class UnitHandler implements Serializable {
     }
 
     public Unit getUnitAtCoord(int x, int y) {
-            for (Unit u : units)
-                if (u.isAlive() && u.getHitbox().contains(x, y))
-                    return u;
+        for (Unit u : units)
+            if (u.isAlive() && u.getHitbox().contains(x, y))
+                return u;
         return null;
     }
 
@@ -265,7 +266,7 @@ public class UnitHandler implements Serializable {
         return null;
     }
 
-    public boolean isTileReserved(int tileX, int tileY, Unit excludedUnit, boolean checkPathGoals) {
+    public boolean isTileReserved(int tileX, int tileY, Unit excludedUnit) {
         Point p = new Point(tileX, tileY);
         for (Unit unit : units) {
             if (excludedUnit != null && excludedUnit.getId() == unit.getId())
@@ -273,7 +274,7 @@ public class UnitHandler implements Serializable {
 
             ArrayList<Point> path = unit.getPath();
             if (unit.isAlive() && path != null && !path.isEmpty())
-                if (path.getFirst().equals(p) || (checkPathGoals && (path.size() <= 5 && path.getLast().equals(p))))
+                if (path.get(0).equals(p))
                     return true;
         }
         return false;
