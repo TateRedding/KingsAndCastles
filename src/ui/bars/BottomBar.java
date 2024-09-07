@@ -18,6 +18,7 @@ public abstract class BottomBar extends UIBar {
 
     public final static int BOTTOM_BAR_Y = TOP_BAR_HEIGHT + GAME_AREA_HEIGHT;
     public final static int BOTTOM_BAR_HEIGHT = 160;
+    public final static int BOTTOM_BAR_OPTION_BUTTONS_Y_OFFSET = 8;
 
     protected MapState mapState;
     protected TextButton menu, save;
@@ -28,7 +29,7 @@ public abstract class BottomBar extends UIBar {
         int offset = 16;
         float fontSize = 28f;
         menu = new TextButton(TEXT_SMALL_SHORT, X + offset, BOTTOM_BAR_Y + offset, fontSize, "Menu");
-        save = new TextButton(TEXT_SMALL_SHORT, menu.getBounds().x, menu.getBounds().y + menu.getBounds().height + offset / 2, fontSize, "Save");
+        save = new TextButton(TEXT_SMALL_SHORT, menu.getBounds().x, menu.getBounds().y + menu.getBounds().height + BOTTOM_BAR_OPTION_BUTTONS_Y_OFFSET, fontSize, "Save");
 
     }
 

@@ -124,8 +124,11 @@ public class Play extends MapState implements Savable, Serializable {
     @Override
     public void update() {
         super.update();
-        buildingHandler.update();
-        unitHandler.update();
+        if (!paused) {
+            buildingHandler.update();
+            unitHandler.update();
+        }
+
         if (actionBar != null)
             actionBar.update();
         if (gameStatBar != null)
@@ -479,7 +482,7 @@ public class Play extends MapState implements Savable, Serializable {
                 buildingSelection.mouseReleased(x, y, button);
             else if (!showBuildingSelection) {
                 super.mouseReleased(x, y, button);
-                if (inGameArea) {
+                if (inGameArea && !paused) {
 
                     if (selectedBuildingType != -1 && canBuild && canAffordBuilding(selectedBuildingType)) {
                         buildBuilding();
@@ -495,7 +498,7 @@ public class Play extends MapState implements Savable, Serializable {
                         if (clickAction == CA_MOVE) {
                             ArrayList<Point> path = getUnitPathToTile(selectedUnit, tileX, tileY, this);
                             if (path != null && !path.isEmpty()) {
-                                selectedUnit.setPath(getUnitPathToTile(selectedUnit, tileX, tileY, this));
+                                selectedUnit.setPath(path);
                                 selectedUnit.setTargetEntity(null);
                             }
                         } else if ((hoverEntity.getEntityType() == RESOURCE && (clickAction == CA_CHOP || clickAction == CA_MINE)) ||
@@ -503,7 +506,7 @@ public class Play extends MapState implements Savable, Serializable {
                             boolean isInRangeAndReachable = selectedUnit.isTargetInRange(hoverEntity, selectedUnit.getActionRange()) && selectedUnit.isLineOfSightOpen(hoverEntity);
                             ArrayList<Point> path = null;
                             if (!isInRangeAndReachable) {
-                                path = getPathToNearestAdjacentTile(selectedUnit, tileX, tileY, this);
+                                path = getUnitPathToNearestAdjacentTile(selectedUnit, tileX, tileY, this);
                                 if (path != null) {
                                     selectedUnit.setPath(path);
                                 }
@@ -609,6 +612,14 @@ public class Play extends MapState implements Savable, Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
     }
 
     public ArrayList<Player> getPlayers() {

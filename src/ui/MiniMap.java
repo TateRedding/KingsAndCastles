@@ -216,10 +216,12 @@ public class MiniMap implements Serializable {
 
         ArrayList<Unit> units = ((Play) mapState).getUnitHandler().getUnits();
         for (Unit u : units) {
-            g.setColor(Color.ORANGE);
-            int xStart = (int) (toTileX(u.getX()) * scale);
-            int yStart = (int) (toTileY(u.getY()) * scale);
-            g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
+            if (u.isAlive()) {
+                g.setColor(Color.ORANGE);
+                int xStart = (int) (toTileX(u.getX()) * scale);
+                int yStart = (int) (toTileY(u.getY()) * scale);
+                g.fillRect(xStart, yStart, (int) Math.ceil(scale), (int) Math.ceil(scale));
+            }
         }
     }
 

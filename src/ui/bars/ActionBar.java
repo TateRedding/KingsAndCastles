@@ -37,9 +37,9 @@ public class ActionBar extends BottomBar {
     private int selectedBuildingButtonType = VILLAGE;
     private Entity selectedEntity;
 
-    private TextButton buildingInterfaceButton;
+    private TextButton buildingInterfaceButton, pause;
     private ImageButton buildButton, laborerSpawn, meleeUnitSpawn, rangedUnitSpawn;
-    private ArrayList<Button> buildButtons = new ArrayList<>();
+    private ArrayList<Button> actionBarButtons = new ArrayList<>();
 
     private boolean showLaborerSpawnButton, showCombatUnitSpawnButtons;
 
@@ -49,6 +49,11 @@ public class ActionBar extends BottomBar {
         this.player = play.getPlayerByID(play.getActivePlayerID());
         initBuildButtons();
         initSpawnButtons();
+
+        String pauseText = (play.isPaused() ? "Unpause" : "Pause");
+
+        pause = new TextButton(TEXT_SMALL_SHORT, save.getBounds().x, save.getBounds().y + save.getBounds().height + BOTTOM_BAR_OPTION_BUTTONS_Y_OFFSET, 21f, pauseText);
+        actionBarButtons.add(pause);
     }
 
     private void initBuildButtons() {
@@ -61,7 +66,7 @@ public class ActionBar extends BottomBar {
 
         buildingInterfaceButton = new TextButton(TEXT_SMALL_LONG, xOffset, BOTTOM_BAR_Y + getButtonHeight(SPRITE) + (int) (yOffset * 2), 22f, "Choose Building");
 
-        buildButtons.addAll(Arrays.asList(buildingInterfaceButton, buildButton));
+        actionBarButtons.addAll(Arrays.asList(buildingInterfaceButton, buildButton));
     }
 
     private void initSpawnButtons() {
@@ -77,7 +82,7 @@ public class ActionBar extends BottomBar {
     @Override
     public void update() {
         super.update();
-        for (Button b : buildButtons)
+        for (Button b : actionBarButtons)
             b.update();
 
         boolean canSpawn = player.getPopulation() < player.getMaxPopulation();
@@ -98,7 +103,7 @@ public class ActionBar extends BottomBar {
     public void render(Graphics g) {
         super.render(g);
 
-        for (Button b : buildButtons)
+        for (Button b : actionBarButtons)
             b.render(g);
 
         renderBuildingCost(g);
@@ -177,7 +182,7 @@ public class ActionBar extends BottomBar {
     public void mousePressed(int x, int y, int button) {
         super.mousePressed(x, y, button);
         if (button == MouseEvent.BUTTON1) {
-            for (Button b : buildButtons)
+            for (Button b : actionBarButtons)
                 if (b.getBounds().contains(x, y))
                     b.setMousePressed(true);
 
@@ -200,7 +205,10 @@ public class ActionBar extends BottomBar {
         if (button == MouseEvent.BUTTON1 && !play.isShowBuildingSelection()) {
             if (save.getBounds().contains(x, y) && save.isMousePressed())
                 play.saveGame();
-            else if (buildButton.getBounds().contains(x, y) && buildButton.isMousePressed()) {
+            else if (pause.getBounds().contains(x, y) && pause.isMousePressed()) {
+                play.setPaused(!play.isPaused());
+                pause.setText(play.isPaused() ? "Unpause" : "Pause");
+            } else if (buildButton.getBounds().contains(x, y) && buildButton.isMousePressed()) {
                 play.setSelectedBuildingType(selectedBuildingButtonType);
                 play.setSelectedEntity(null);
             } else if (buildingInterfaceButton.getBounds().contains(x, y) && buildingInterfaceButton.isMousePressed()) {
@@ -237,7 +245,7 @@ public class ActionBar extends BottomBar {
         laborerSpawn.reset(x, y);
         meleeUnitSpawn.reset(x, y);
         rangedUnitSpawn.reset(x, y);
-        for (Button b : buildButtons)
+        for (Button b : actionBarButtons)
             b.reset(x, y);
     }
 
@@ -247,7 +255,7 @@ public class ActionBar extends BottomBar {
         laborerSpawn.setMouseOver(false);
         meleeUnitSpawn.setMouseOver(false);
         rangedUnitSpawn.setMouseOver(false);
-        for (Button b : buildButtons) {
+        for (Button b : actionBarButtons) {
             b.setMouseOver(false);
             if (b.getBounds().contains(x, y))
                 b.setMouseOver(true);

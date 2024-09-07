@@ -17,7 +17,7 @@ import static entities.units.Brute.ATTACKING;
 import static entities.units.Laborer.CHOPPING;
 import static entities.units.Laborer.MINING;
 import static main.Game.*;
-import static pathfinding.AStar.getPathToNearestAdjacentTile;
+import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
 import static pathfinding.AStar.isPointOpen;
 
 public abstract class Unit extends Entity implements Serializable {
@@ -308,17 +308,24 @@ public abstract class Unit extends Entity implements Serializable {
             path.remove(0);
             if (!path.isEmpty()) {
                 Point next = path.get(0);
-                Unit u = unitHandler.getUnitAtCoord(toPixelX(next.x), toPixelY(next.y), true);
-                if (u != null) {
-//                    System.out.println("Next tile in path blocked for unit with ID: " + id);
-                    Point start = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
+                boolean isBlocked = unitHandler.getUnitAtCoord(toPixelX(next.x), toPixelY(next.y), true) != null || unitHandler.isTileReserved(this, next.x, next.y);
+                if (isBlocked) {
+//                    System.out.println("Next tile - [" + next.x + "," + next.y + "] - blocked. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "]");
+                    Point start = new Point(toTileX(x), toTileY(y));
                     Point goal = path.get(path.size() - 1);
                     if (unitHandler.getPlay().getEntityAtTile(goal.x, goal.y) != null) {
-                        u.setPath(getPathToNearestAdjacentTile(u, goal.x, goal.y, unitHandler.getPlay()));
-//                        System.out.println("Goal is also blocked, finding path to nearest adjacent tile to goal.");
+//                        System.out.println("Goal tile - [" + goal.x + "," + goal.y + "] - blocked. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "]");
+                        ArrayList<Point> newPath = getUnitPathToNearestAdjacentTile(this, goal.x, goal.y, unitHandler.getPlay());
+
+//                        if (newPath == null)
+//                            System.out.println("Can't re-route, goal entirely blocked.");
+//                        else
+//                            System.out.println("Re-routing. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "] [GOAL: " + newPath.get(newPath.size() - 1).x + "," + newPath.get(newPath.size() - 1).y + "]");
+
+                        setPath(newPath);
                     } else {
                         path = AStar.pathFind(start, goal, unitHandler.getPlay());
-//                        System.out.println("Re-calculating path to goal.");
+//                        System.out.println("Re-calculating path to [" + goal.x + "," + goal.y + "] - blocked. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "]");
                     }
                 }
             }

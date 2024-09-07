@@ -17,7 +17,7 @@ import java.util.Random;
 
 import static entities.units.Unit.*;
 import static main.Game.*;
-import static pathfinding.AStar.getPathToNearestAdjacentTile;
+import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
 
 public class UnitHandler implements Serializable {
 
@@ -26,6 +26,7 @@ public class UnitHandler implements Serializable {
 
     private Play play;
     private ArrayList<Unit> units = new ArrayList<>();
+    private ArrayList<Unit> deadUnits = new ArrayList<>();
 
     private int id = 0;
 
@@ -35,20 +36,20 @@ public class UnitHandler implements Serializable {
     }
 
     public void update() {
+        if (!deadUnits.isEmpty())
+            cleanupUnitList();
         for (Unit u : units) {
             if (u.isAlive()) {
                 u.update();
                 int unitType = u.getSubType();
 
-                // Below concepts to be addressed and reworked at a later point
-
                 // Check if target has moved
-//                if (unitType != LABORER && u.getState() == WALKING && u.getTargetEntity() != null)
-//                    changePathIfTargetMoved(u);
+                if (unitType != LABORER && u.getState() == WALKING && u.getTargetEntity() != null)
+                    changePathIfTargetMovedOutOfActionRange(u);
 
                 // Auto-attack
-//                if (unitType != LABORER && u.getState() == IDLE && u.getTargetEntity() == null)
-//                    findEnemyToAttack(u);
+                if (unitType != LABORER && u.getState() == IDLE && u.getTargetEntity() == null)
+                    findEnemyToAttack(u);
 
                 if (u.getActionTick() >= u.getActionTickMax()) {
                     if (unitType == LABORER)
@@ -59,6 +60,11 @@ public class UnitHandler implements Serializable {
                 }
             }
         }
+    }
+
+    private void cleanupUnitList() {
+        for (Unit deadUnit : deadUnits) units.remove(deadUnit);
+        deadUnits.clear();
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
@@ -160,18 +166,31 @@ public class UnitHandler implements Serializable {
         g.drawString(id, xStart, yStart);
     }
 
-    private void changePathIfTargetMoved(Unit u) {
+    private void changePathIfTargetMovedOutOfActionRange(Unit u) {
         ArrayList<Point> currPath = u.getPath();
-        if (currPath == null || currPath.isEmpty())
+        Entity target = u.getTargetEntity();
+        if (currPath == null || currPath.isEmpty() || target.getEntityType() != UNIT)
             return;
+        Point targetTile = getTargetTile((Unit) target);
+        Point currPathEnd = u.getPath().get(u.getPath().size() - 1);
 
-        int targetTileX = toTileX(u.getTargetEntity().getX());
-        int targetTileY = toTileY(u.getTargetEntity().getY());
-        Point pathGoal = u.getPath().get(u.getPath().size() - 1);
+        if (Math.abs(targetTile.x - currPathEnd.x) > u.getActionRange() || Math.abs(targetTile.y - currPathEnd.y) > u.getActionRange()) {
+//            System.out.println("Target moved out of action range. [UNIT - ID:" + u.getId() +
+//                    " @ Tile: " + toTileX(u.getHitbox().x) + "," + toTileY(u.getHitbox().y) +
+//                    " Coord: " + u.getHitbox().x + "," + u.getHitbox().y + "] [TARGET - ID:" + target.getId() +
+//                    " @ Tile: " + toTileX(target.getX()) + "," + toTileY(target.getY()) +
+//                    " Coord: " + target.getX() + "," + target.getY() + "]");
+            ArrayList<Point> newPath = getUnitPathToNearestAdjacentTile(u, targetTile.x, targetTile.y, play);
 
-        if (Math.abs(targetTileX - pathGoal.x) > 1 || Math.abs(targetTileY - pathGoal.y) > 1) {
-//            System.out.println("Target with ID: " + u.getTargetEntity().getId() + " has moved. Re-calculating path for unit with ID: " + u.getId() + ".");
-            u.setPath(getPathToNearestAdjacentTile(u, targetTileX, targetTileY, play));
+            if (newPath == null) {
+//                System.out.println("Can't re-route, target entirely blocked. Stopping at next tile [" + currPath.get(0) + "]");
+                newPath = new ArrayList<>();
+                newPath.add(currPath.get(0));
+            }
+//            else
+//                System.out.println("Re-routing. [UNIT - ID:" + u.getId() + " @ " + toTileX(u.getHitbox().x) + "," + toTileY(u.getHitbox().y) + "] [GOAL: " + newPath.get(newPath.size() - 1).x + "," + newPath.get(newPath.size() - 1).y + "]");
+
+            u.setPath(newPath);
         }
     }
 
@@ -183,20 +202,32 @@ public class UnitHandler implements Serializable {
                     return;
                 }
 
-                Point targetTile;
-                ArrayList<Point> targetPath = target.getPath();
-                if (targetPath != null && !targetPath.isEmpty())
-                    targetTile = targetPath.get(0);
-                else
-                    targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y));
-                ArrayList<Point> path = getPathToNearestAdjacentTile(attacker, targetTile.x, targetTile.y, play);
+                Point targetTile = getTargetTile(target);
+                ArrayList<Point> path = getUnitPathToNearestAdjacentTile(attacker, targetTile.x, targetTile.y, play);
                 if (path != null) {
                     attacker.setPath(path);
                     attacker.setTargetEntity(target);
+//                    System.out.println("Pathing to Target. [UNIT - ID:" + attacker.getId()
+//                            + " @ Tile: " + toTileX(attacker.getHitbox().x) + "," + toTileY(attacker.getHitbox().y) +
+//                            " Coord: " + attacker.getHitbox().x + "," + attacker.getHitbox().y + "] [TARGET - ID:" + target.getId() +
+//                            " @ Tile: " + toTileX(target.getX()) + "," + toTileY(target.getY()) +
+//                            " Coord: " + target.getX() + "," + target.getY() + "]");
+
                     return;
                 }
             }
         }
+    }
+
+    private Point getTargetTile(Unit target) {
+        // Returns the tile the target is currently in, or the tile they are moving into if their path is not empty
+        Point targetTile;
+        ArrayList<Point> targetPath = target.getPath();
+        if (targetPath != null && !targetPath.isEmpty())
+            targetTile = targetPath.get(0);
+        else
+            targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y));
+        return targetTile;
     }
 
     private void attack(Unit attacker, Unit target) {
@@ -211,6 +242,7 @@ public class UnitHandler implements Serializable {
 
         if (target.getHealth() <= 0) {
             target.setAlive(false);
+            deadUnits.add(target);
             attacker.setState(IDLE);
             attacker.setTargetEntity(null);
             if (play.getSelectedEntity() == target)
@@ -229,6 +261,17 @@ public class UnitHandler implements Serializable {
                 if (u.isAlive() && u.getHitbox().contains(x, y))
                     return u;
         return null;
+    }
+
+    public boolean isTileReserved(Unit currUnit, int tileX, int tileY) {
+        Point p = new Point(tileX, tileY);
+        for (Unit otherUnits : units) {
+            if (currUnit != null && currUnit.getId() == otherUnits.getId())
+                continue;
+            if (otherUnits.isAlive() && otherUnits.getPath() != null && !otherUnits.getPath().isEmpty() && otherUnits.getPath().get(0).equals(p))
+                return true;
+        }
+        return false;
     }
 
     public ArrayList<Unit> getUnits() {

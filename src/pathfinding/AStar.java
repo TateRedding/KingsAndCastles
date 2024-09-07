@@ -136,11 +136,12 @@ public class AStar {
     }
 
     public static boolean isPointOpen(Point point, Play play) {
-        int x = toPixelX(point.x);
-        int y = toPixelY(point.y);
         int tileType = play.getMap().getTileData()[point.y][point.x].getTileType();
-        return (tileType != WATER_GRASS && tileType != WATER_SAND && play.getEntityAtTile(point.x, point.y) == null);
+        return !(tileType == WATER_GRASS || tileType == WATER_SAND ||
+                play.getEntityAtTile(point.x, point.y) != null ||
+                play.getUnitHandler().isTileReserved(null, point.x, point.y));
     }
+
 
     public static double getDistance(Point from, Point to) {
         double xDist = from.getX() - to.getX();
@@ -171,7 +172,7 @@ public class AStar {
         return path;
     }
 
-    public static ArrayList<Point> getPathToNearestAdjacentTile(Unit u, int goalTileX, int goalTileY, Play play) {
+    public static ArrayList<Point> getUnitPathToNearestAdjacentTile(Unit u, int goalTileX, int goalTileY, Play play) {
         HashMap<Double, Point> openTiles = new HashMap<>();
         Point start = (u.getPath() != null && !u.getPath().isEmpty()) ? u.getPath().get(0)
                 : new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
