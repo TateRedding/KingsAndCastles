@@ -199,12 +199,12 @@ public abstract class Unit extends Entity implements Serializable {
         Play play = unitHandler.getPlay();
 
         if (path != null && !path.isEmpty())
-            unitTile = path.get(0);
+            unitTile = path.getFirst();
         else
             unitTile = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
 
         if (target.getEntityType() == UNIT && ((Unit) target).getPath() != null && !(((Unit) target).getPath().isEmpty()))
-            targetTile = ((Unit) target).getPath().get(0);
+            targetTile = ((Unit) target).getPath().getFirst();
         else
             targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y));
 
@@ -221,7 +221,7 @@ public abstract class Unit extends Entity implements Serializable {
                 if (neighbor.equals(targetTile))
                     return true;
 
-                if (isPointOpen(neighbor, play)) {
+                if (isPointOpen(neighbor, play, false)) {
                     nextTile = neighbor;
                     break;
                 }
@@ -293,8 +293,8 @@ public abstract class Unit extends Entity implements Serializable {
         if (state != WALKING)
             setState(WALKING);
         // Check if Unit has reached the current path point based on movement speed
-        int currentX = toPixelX(path.get(0).x);
-        int currentY = toPixelY(path.get(0).y);
+        int currentX = toPixelX(path.getFirst().x);
+        int currentY = toPixelY(path.getFirst().y);
 
         // Round to two decimal places to get rid of any floating point errors
         float roundX = Math.round(x * 100) / 100.0f;
@@ -305,15 +305,15 @@ public abstract class Unit extends Entity implements Serializable {
             x = currentX;
             y = currentY;
             updateHitbox();
-            path.remove(0);
+            path.removeFirst();
             if (!path.isEmpty()) {
-                Point next = path.get(0);
-                boolean isBlocked = unitHandler.getUnitAtCoord(toPixelX(next.x), toPixelY(next.y), true) != null || unitHandler.isTileReserved(this, next.x, next.y);
-                if (isBlocked) {
+                Point next = path.getFirst();
+
+                if (unitHandler.getPlay().isTileBlockedOrReserved(next.x, next.y, this, true)) {
 //                    System.out.println("Next tile - [" + next.x + "," + next.y + "] - blocked. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "]");
                     Point start = new Point(toTileX(x), toTileY(y));
-                    Point goal = path.get(path.size() - 1);
-                    if (unitHandler.getPlay().getEntityAtTile(goal.x, goal.y) != null) {
+                    Point goal = path.getLast();
+                    if (unitHandler.getPlay().isTileBlockedOrReserved(goal.x, goal.y, this, true)) {
 //                        System.out.println("Goal tile - [" + goal.x + "," + goal.y + "] - blocked. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "]");
                         ArrayList<Point> newPath = getUnitPathToNearestAdjacentTile(this, goal.x, goal.y, unitHandler.getPlay());
 
@@ -336,7 +336,7 @@ public abstract class Unit extends Entity implements Serializable {
             return;
         }
 
-        setDirectionWithPath(path.get(0));
+        setDirectionWithPath(path.getFirst());
         moveInDirection(direction);
     }
 

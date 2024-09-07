@@ -250,26 +250,31 @@ public class UnitHandler implements Serializable {
         }
     }
 
-    public Unit getUnitAtCoord(int x, int y, boolean checkEntireTile) {
-        if (checkEntireTile) {
-            Rectangle tileBounds = new Rectangle(x / TILE_SIZE * TILE_SIZE, y / TILE_SIZE * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-            for (Unit u : units)
-                if (u.isAlive() && u.getHitbox().intersects(tileBounds))
-                    return u;
-        } else
+    public Unit getUnitAtCoord(int x, int y) {
             for (Unit u : units)
                 if (u.isAlive() && u.getHitbox().contains(x, y))
                     return u;
         return null;
     }
 
-    public boolean isTileReserved(Unit currUnit, int tileX, int tileY) {
+    public Unit getUnitAtTile(int tileX, int tileY) {
+        Rectangle tileBounds = new Rectangle(toPixelX(tileX), toPixelY(tileY), TILE_SIZE, TILE_SIZE);
+        for (Unit u : units)
+            if (u.isAlive() && u.getHitbox().intersects(tileBounds))
+                return u;
+        return null;
+    }
+
+    public boolean isTileReserved(int tileX, int tileY, Unit excludedUnit, boolean checkPathGoals) {
         Point p = new Point(tileX, tileY);
-        for (Unit otherUnits : units) {
-            if (currUnit != null && currUnit.getId() == otherUnits.getId())
+        for (Unit unit : units) {
+            if (excludedUnit != null && excludedUnit.getId() == unit.getId())
                 continue;
-            if (otherUnits.isAlive() && otherUnits.getPath() != null && !otherUnits.getPath().isEmpty() && otherUnits.getPath().get(0).equals(p))
-                return true;
+
+            ArrayList<Point> path = unit.getPath();
+            if (unit.isAlive() && path != null && !path.isEmpty())
+                if (path.getFirst().equals(p) || (checkPathGoals && (path.size() <= 5 && path.getLast().equals(p))))
+                    return true;
         }
         return false;
     }

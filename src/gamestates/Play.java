@@ -293,7 +293,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public Entity getEntityAtCoordinate(int x, int y) {
-        Unit u = unitHandler.getUnitAtCoord(x, y, false);
+        Unit u = unitHandler.getUnitAtCoord(x, y);
         if (u != null)
             return u;
 
@@ -305,7 +305,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public Entity getEntityAtTile(int tileX, int tileY) {
-        Unit u = unitHandler.getUnitAtCoord(toPixelX(tileX), toPixelY(tileY), true);
+        Unit u = unitHandler.getUnitAtTile(tileX, tileY);
         if (u != null)
             return u;
 
@@ -314,6 +314,11 @@ public class Play extends MapState implements Savable, Serializable {
             return b;
 
         return resourceObjectData[tileY][tileX];
+    }
+
+    public boolean isTileBlockedOrReserved(int tileX, int tileY, Unit excludedUnit, boolean checkPathGoals) {
+        if (getEntityAtTile(tileX, tileY) != null) return true;
+        return unitHandler.isTileReserved(tileX, tileY, excludedUnit, checkPathGoals);
     }
 
     private boolean canBuildHere(int x, int y, boolean checkAllBuildingTiles) {
@@ -331,9 +336,9 @@ public class Play extends MapState implements Savable, Serializable {
 
             for (Point p : tiles) {
                 if (selectedBuildingType == THRONE_ROOM || selectedBuildingType == CASTLE_WALL)
-                    if (!map.getCastleZones().get(0).contains(p))
+                    if (!map.getCastleZones().getFirst().contains(p))
                         return false;
-                if (!isTileBuildable(p))
+                if (isTileBlockedOrReserved(p.x, p.y, null, false))
                     return false;
             }
         }
@@ -358,13 +363,6 @@ public class Play extends MapState implements Savable, Serializable {
                 tiles.add(new Point(currX, currY));
 
         return tiles;
-    }
-
-    private boolean isTileBuildable(Point tile) {
-        if (getEntityAtTile(tile.x, tile.y) != null)
-            return false;
-        int tileType = map.getTileData()[tile.y][tile.x].getTileType();
-        return (tileType != WATER_GRASS && tileType != WATER_SAND);
     }
 
     public boolean canAffordBuilding(int buildingType) {
@@ -447,7 +445,7 @@ public class Play extends MapState implements Savable, Serializable {
                 if (y >= 0 && y < mapHeight && x >= 0 && x < mapWidth)
                     if (!building.getHitbox().contains(toPixelX(x), toPixelY(y))) {
                         Point currPoint = new Point(x, y);
-                        if (isPointOpen(currPoint, this))
+                        if (isPointOpen(currPoint, this, false))
                             spawnPoints.add(currPoint);
                     }
 
