@@ -3,7 +3,7 @@ package utils;
 import gamestates.Debug;
 import gamestates.Play;
 import main.Game;
-import objects.Entity;
+import entities.Entity;
 import objects.Map;
 import ui.MiniMap;
 import ui.bars.ActionBar;

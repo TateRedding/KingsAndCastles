@@ -4,7 +4,7 @@ import entities.units.Laborer;
 import entities.units.Unit;
 import gamestates.Play;
 import main.Game;
-import objects.Entity;
+import entities.Entity;
 import objects.Player;
 import ui.buttons.Button;
 import ui.buttons.ImageButton;
@@ -43,6 +43,21 @@ public class ActionBar extends BottomBar {
     private ArrayList<Button> actionBarButtons = new ArrayList<>();
 
     private boolean showLaborerSpawnButton, showCombatUnitSpawnButtons;
+
+    private ArrayList<BufferedImage> buildingCostIcons =  new ArrayList<>(Arrays.asList(
+            ImageLoader.icons[ICON_GOLD],
+            ImageLoader.icons[ICON_LOG],
+            ImageLoader.icons[ICON_STONE],
+            ImageLoader.icons[ICON_IRON],
+            ImageLoader.icons[ICON_COAL]
+    ));
+    private ArrayList<BufferedImage> inventoryIcons = new ArrayList<>(buildingCostIcons.subList(1, 5));
+    private ArrayList<Integer> maxInventoryCounts = new ArrayList<>(Arrays.asList(
+            Laborer.MAX_LOGS,
+            Laborer.MAX_STONE,
+            Laborer.MAX_IRON,
+            Laborer.MAX_COAL
+    ));
 
     public ActionBar(Play play) {
         super(play);
@@ -133,14 +148,6 @@ public class ActionBar extends BottomBar {
     }
 
     private void drawBuildingCost(Graphics g) {
-        ArrayList<BufferedImage> icons = new ArrayList<>(Arrays.asList(
-                ImageLoader.icons[ICON_GOLD],
-                ImageLoader.icons[ICON_LOG],
-                ImageLoader.icons[ICON_STONE],
-                ImageLoader.icons[ICON_IRON],
-                ImageLoader.icons[ICON_COAL]
-        ));
-
         ArrayList<Integer> costs = new ArrayList<>(Arrays.asList(
                 getCostGold(selectedBuildingButtonType),
                 getCostLogs(selectedBuildingButtonType),
@@ -148,7 +155,7 @@ public class ActionBar extends BottomBar {
                 getCostIron(selectedBuildingButtonType),
                 getCostCoal(selectedBuildingButtonType)
         ));
-        int maxDisplay = Math.min(icons.size(), costs.size());
+        int maxDisplay = Math.min(buildingCostIcons.size(), costs.size());
         int textXOffset = 2;
         int xOffset = 8;
         g.setFont(Game.getGameFont(20f));
@@ -157,7 +164,7 @@ public class ActionBar extends BottomBar {
             int cost = costs.get(i);
             if (cost <= 0)
                 continue;
-            BufferedImage icon = icons.get(i);
+            BufferedImage icon = buildingCostIcons.get(i);
             int iconWidth = icon.getWidth();
             int iconHeight = icon.getHeight();
             int iconX = buildButton.getBounds().x + buildButton.getBounds().width + xOffset;
@@ -180,20 +187,14 @@ public class ActionBar extends BottomBar {
     }
 
     private void drawLaborerInventory(Graphics g, Laborer laborer) {
-        ArrayList<BufferedImage> icons = new ArrayList<>(Arrays.asList(
-                ImageLoader.icons[ICON_LOG],
-                ImageLoader.icons[ICON_STONE],
-                ImageLoader.icons[ICON_IRON],
-                ImageLoader.icons[ICON_COAL]
-        ));
-
-        ArrayList<Integer> counts = new ArrayList<>(Arrays.asList(
+        ArrayList<Integer> currCounts = new ArrayList<>(Arrays.asList(
                 laborer.getLogs(),
                 laborer.getStone(),
                 laborer.getIron(),
                 laborer.getCoal()
         ));
-        int maxDisplay = Math.min(icons.size(), counts.size());
+
+        int maxDisplay = Math.min(inventoryIcons.size(), currCounts.size());
         int textXOffset = 2;
         int xOffset = 8;
         int yOffset = 32;
@@ -208,14 +209,20 @@ public class ActionBar extends BottomBar {
 
         g.setFont(Game.getGameFont(20f));
         for (int i = 0; i < maxDisplay; i++) {
-            int count = counts.get(i);
-            BufferedImage icon = icons.get(i);
+            int count = currCounts.get(i);
+            BufferedImage icon = inventoryIcons.get(i);
             int iconWidth = icon.getWidth();
             int iconHeight = icon.getHeight();
             int iconY = yStart + titleHeight + (iconHeight * i);
             int textX = xStart + iconWidth + textXOffset;
             g.drawImage(icon, xStart, iconY, iconWidth, iconHeight, null);
-            RenderText.renderText(g, String.valueOf(count), RenderText.LEFT, RenderText.CENTER, textX, iconY, g.getFontMetrics().stringWidth(String.valueOf(count)), iconHeight);
+            String countText = String.valueOf(count);
+            if (currCounts.get(i) >= maxInventoryCounts.get(i)) {
+                g.setColor(Color.RED);
+                countText += " Inventory full!";
+            } else
+                g.setColor(Color.BLACK);
+            RenderText.renderText(g, countText, RenderText.LEFT, RenderText.CENTER, textX, iconY, g.getFontMetrics().stringWidth(String.valueOf(count)), iconHeight);
         }
     }
 

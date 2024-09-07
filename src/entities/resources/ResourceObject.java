@@ -1,6 +1,6 @@
 package entities.resources;
 
-import objects.Entity;
+import entities.Entity;
 
 import java.awt.*;
 import java.io.Serializable;

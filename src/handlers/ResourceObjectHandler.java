@@ -304,6 +304,11 @@ public class ResourceObjectHandler implements Serializable {
             handleResourceDepletion(ro, resourceType, laborer);
         else
             ro.setHealth(newAmt);
+
+        if (laborer.isInventoryFull(resourceType)) {
+            laborer.setTargetEntity(null);
+            laborer.emptyInventory();
+        }
     }
 
     private void updateResourceCounts(Player player, Laborer laborer, int resourceType, int gatherAmt) {

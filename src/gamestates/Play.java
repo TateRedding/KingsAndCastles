@@ -2,13 +2,14 @@ package gamestates;
 
 import entities.buildings.Building;
 import entities.resources.ResourceObject;
+import entities.units.Laborer;
 import entities.units.Unit;
 import handlers.BuildingHandler;
 import handlers.ResourceObjectHandler;
 import handlers.UnitHandler;
 import main.Game;
 import objects.Chunk;
-import objects.Entity;
+import entities.Entity;
 import objects.Map;
 import objects.Player;
 import ui.bars.ActionBar;
@@ -494,7 +495,7 @@ public class Play extends MapState implements Savable, Serializable {
                                 selectedUnit.setPath(path);
                                 selectedUnit.setTargetEntity(null);
                             }
-                        } else if ((hoverEntity.getEntityType() == RESOURCE && (clickAction == CA_CHOP || clickAction == CA_MINE)) ||
+                        } else if ((hoverEntity.getEntityType() == RESOURCE && (clickAction == CA_CHOP || clickAction == CA_MINE) && !((Laborer) selectedEntity).isInventoryFull(hoverEntity.getSubType())) ||
                                 (hoverEntity.getEntityType() == UNIT && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED))) {
                             boolean isInRangeAndReachable = selectedUnit.isTargetInRange(hoverEntity, selectedUnit.getActionRange()) && selectedUnit.isLineOfSightOpen(hoverEntity);
                             ArrayList<Point> path = null;

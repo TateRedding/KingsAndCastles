@@ -1,4 +1,6 @@
-package objects;
+package entities;
+
+import objects.Player;
 
 import java.awt.*;
 import java.io.Serializable;

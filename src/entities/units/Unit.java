@@ -2,7 +2,7 @@ package entities.units;
 
 import gamestates.Play;
 import handlers.UnitHandler;
-import objects.Entity;
+import entities.Entity;
 import objects.Player;
 import pathfinding.AStar;
 import utils.ImageLoader;

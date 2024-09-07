@@ -1,6 +1,6 @@
 package entities.buildings;
 
-import objects.Entity;
+import entities.Entity;
 import objects.Player;
 
 import java.awt.*;

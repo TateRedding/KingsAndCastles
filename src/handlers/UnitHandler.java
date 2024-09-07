@@ -6,14 +6,13 @@ import entities.units.Laborer;
 import entities.units.Unit;
 import gamestates.Debug;
 import gamestates.Play;
-import objects.Entity;
+import entities.Entity;
 import objects.Player;
 
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Random;
 
 import static entities.units.Brute.ATTACKING;
