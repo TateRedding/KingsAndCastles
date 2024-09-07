@@ -56,7 +56,7 @@ public class ResourceObjectHandler implements Serializable {
         generateCoalPoints();
         generateIronPoints();
         generateRockPoints();
-//        generateTreePoints();
+        generateTreePoints();
 
         for (int y = 0; y < resourceObjectData.length; y++)
             for (int x = 0; x < resourceObjectData[y].length; x++) {
@@ -290,66 +290,96 @@ public class ResourceObjectHandler implements Serializable {
     }
 
     public void gatherResource(Player player, ResourceObject ro, Laborer laborer) {
-        if (ro.getSubType() == -1)
-            return;
+        if (ro.getSubType() == -1) return;
 
         int resourceType = ro.getSubType();
         int currAmt = ro.getHealth();
-        int gatherAmt = Math.min(ResourceObject.getAmountPerAction(resourceType), currAmt);
-        switch (resourceType) {
-            case GOLD -> player.setGold(player.getGold() + gatherAmt);
-            case TREE -> player.setLogs(player.getLogs() + gatherAmt);
-            case ROCK -> player.setStone(player.getStone() + gatherAmt);
-            case COAL -> player.setCoal(player.getCoal() + gatherAmt);
-            case IRON -> player.setIron(player.getIron() + gatherAmt);
-        }
+        int gatherAmt = getGatherAmt(laborer, resourceType, currAmt);
+
+        updateResourceCounts(player, laborer, resourceType, gatherAmt);
+
         int newAmt = currAmt - gatherAmt;
 
-        // Check if resource is depleted
-        if (newAmt <= 0) {
-            int roTileX = toTileX(ro.getX());
-            int roTileY = toTileY(ro.getY());
-            int laborerTileX = toTileX(laborer.getHitbox().x);
-            int laborerTileY = toTileY(laborer.getHitbox().y);
-            Map map = play.getMap();
-            play.getResourceObjectData()[roTileY][roTileX] = null;
+        if (newAmt <= 0)
+            handleResourceDepletion(ro, resourceType, laborer);
+        else
+            ro.setHealth(newAmt);
+    }
 
-            // If depleted resource is a tree, update its sprite
-            if (resourceType == TREE)
-                for (int y = roTileY - 1; y < roTileY + 2; y++)
-                    for (int x = roTileX - 1; x < roTileX + 2; x++)
-                        if (y >= 0 && y < map.getTileData().length && x >= 0 && x < map.getTileData()[0].length && !(y == roTileY && x == roTileX)) {
-                            ResourceObject currRO = play.getResourceObjectData()[y][x];
-                            if (currRO != null && currRO.getSubType() == TREE)
-                                currRO.setSpriteId(getBitmaskId(x, y));
-                        }
+    private void updateResourceCounts(Player player, Laborer laborer, int resourceType, int gatherAmt) {
+        switch (resourceType) {
+            case GOLD -> player.setGold(player.getGold() + gatherAmt);
+            case TREE -> laborer.setLogs(laborer.getLogs() + gatherAmt);
+            case ROCK -> laborer.setStone(laborer.getStone() + gatherAmt);
+            case COAL -> laborer.setCoal(laborer.getCoal() + gatherAmt);
+            case IRON -> laborer.setIron(laborer.getIron() + gatherAmt);
+        }
+    }
 
-            // Locate the nearest resource of the same type that can be pathed to
-            for (int radius = 1; radius <= laborer.getSightRange(); radius++)
-                for (int y = laborerTileY - radius; y <= laborerTileY + radius; y++)
-                    for (int x = laborerTileX - radius; x <= laborerTileX + radius; x++) {
+    private void handleResourceDepletion(ResourceObject ro, int resourceType, Laborer laborer) {
+        int roTileX = toTileX(ro.getX());
+        int roTileY = toTileY(ro.getY());
+        int laborerTileX = toTileX(laborer.getHitbox().x);
+        int laborerTileY = toTileY(laborer.getHitbox().y);
 
-                        // Skip inner loops when radius > 1
-                        if (Math.abs(x - laborerTileX) != radius && Math.abs(y - laborerTileY) != radius) continue;
-                        if (y >= 0 && y < tileData.length && x >= 0 && x < tileData[0].length) {
-                            ResourceObject currRO = play.getResourceObjectData()[y][x];
-                            if (currRO != null && currRO.getSubType() == resourceType) {
-                                if (laborer.isTargetInRange(currRO, laborer.getActionRange()) && laborer.isLineOfSightOpen(currRO)) {
-                                    laborer.setTargetEntity(currRO);
-                                    return;
-                                }
-                                ArrayList<Point> path = getUnitPathToNearestAdjacentTile(laborer, toTileX(currRO.getX()), toTileY(currRO.getY()), play);
-                                if (path != null) {
-                                    laborer.setPath(path);
-                                    laborer.setTargetEntity(currRO);
-                                    return;
-                                }
+        play.getResourceObjectData()[roTileY][roTileX] = null;
+
+        if (resourceType == TREE)
+            updateTreeSprites(roTileX, roTileY);
+
+        locateNearestResource(laborer, resourceType, laborerTileX, laborerTileY);
+    }
+
+    private void updateTreeSprites(int roTileX, int roTileY) {
+        for (int y = roTileY - 1; y < roTileY + 2; y++)
+            for (int x = roTileX - 1; x < roTileX + 2; x++)
+                if (isValidTile(x, y) && !(y == roTileY && x == roTileX)) {
+                    ResourceObject currRO = play.getResourceObjectData()[y][x];
+                    if (currRO != null && currRO.getSubType() == TREE)
+                        currRO.setSpriteId(getBitmaskId(x, y));
+
+                }
+    }
+
+    private void locateNearestResource(Laborer laborer, int resourceType, int laborerTileX, int laborerTileY) {
+        int sightRange = laborer.getSightRange();
+        for (int radius = 1; radius <= sightRange; radius++)
+            for (int y = laborerTileY - radius; y <= laborerTileY + radius; y++)
+                for (int x = laborerTileX - radius; x <= laborerTileX + radius; x++) {
+                    if (Math.abs(x - laborerTileX) != radius && Math.abs(y - laborerTileY) != radius) continue;
+                    if (isValidTile(x, y)) {
+                        ResourceObject currRO = play.getResourceObjectData()[y][x];
+                        if (currRO != null && currRO.getSubType() == resourceType) {
+                            if (laborer.isTargetInRange(currRO, laborer.getActionRange()) && laborer.isLineOfSightOpen(currRO)) {
+                                laborer.setTargetEntity(currRO);
+                                return;
+                            }
+                            ArrayList<Point> path = getUnitPathToNearestAdjacentTile(laborer, toTileX(currRO.getX()), toTileY(currRO.getY()), play);
+                            if (path != null) {
+                                laborer.setPath(path);
+                                laborer.setTargetEntity(currRO);
+                                return;
                             }
                         }
                     }
-            laborer.setTargetEntity(null);
-        } else
-            ro.setHealth(newAmt);
+                }
+        laborer.setTargetEntity(null);
     }
+
+    private boolean isValidTile(int x, int y) {
+        return y >= 0 && y < tileData.length && x >= 0 && x < tileData[0].length;
+    }
+
+    private static int getGatherAmt(Laborer laborer, int resourceType, int currAmt) {
+        int gatherAmt = Math.min(ResourceObject.getAmountPerAction(resourceType), currAmt);
+        switch (resourceType) {
+            case TREE -> gatherAmt = Math.min(gatherAmt, Laborer.MAX_LOGS - laborer.getLogs());
+            case ROCK -> gatherAmt = Math.min(gatherAmt, Laborer.MAX_STONE - laborer.getStone());
+            case COAL -> gatherAmt = Math.min(gatherAmt, Laborer.MAX_COAL - laborer.getCoal());
+            case IRON -> gatherAmt = Math.min(gatherAmt, Laborer.MAX_IRON - laborer.getIron());
+        }
+        return gatherAmt;
+    }
+
 
 }

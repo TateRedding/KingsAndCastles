@@ -1,5 +1,6 @@
 package ui.bars;
 
+import entities.units.Laborer;
 import entities.units.Unit;
 import gamestates.Play;
 import main.Game;
@@ -106,7 +107,7 @@ public class ActionBar extends BottomBar {
         for (Button b : actionBarButtons)
             b.render(g);
 
-        renderBuildingCost(g);
+        drawBuildingCost(g);
 
         if (selectedEntity != null) {
             BufferedImage sprite = null;
@@ -115,7 +116,7 @@ public class ActionBar extends BottomBar {
             else if (selectedEntity.getEntityType() == Entity.BUILDING)
                 sprite = ImageLoader.buildings[selectedEntity.getSubType()];
 
-            renderSelection(g, sprite);
+            drawSelection(g, sprite);
 
             if (showLaborerSpawnButton)
                 laborerSpawn.render(g);
@@ -124,10 +125,14 @@ public class ActionBar extends BottomBar {
                 meleeUnitSpawn.render(g);
                 rangedUnitSpawn.render(g);
             }
+
+            if (selectedEntity.getEntityType() == UNIT && selectedEntity.getSubType() == LABORER) {
+                drawLaborerInventory(g, (Laborer) selectedEntity);
+            }
         }
     }
 
-    private void renderBuildingCost(Graphics g) {
+    private void drawBuildingCost(Graphics g) {
         ArrayList<BufferedImage> icons = new ArrayList<>(Arrays.asList(
                 ImageLoader.icons[ICON_GOLD],
                 ImageLoader.icons[ICON_LOG],
@@ -153,8 +158,8 @@ public class ActionBar extends BottomBar {
             if (cost <= 0)
                 continue;
             BufferedImage icon = icons.get(i);
-            int iconWidth = (int) (icon.getWidth());
-            int iconHeight = (int) (icon.getHeight());
+            int iconWidth = icon.getWidth();
+            int iconHeight = icon.getHeight();
             int iconX = buildButton.getBounds().x + buildButton.getBounds().width + xOffset;
             int iconY = buildButton.getBounds().y + (iconHeight * i);
             int textX = iconX + iconWidth + textXOffset;
@@ -163,7 +168,7 @@ public class ActionBar extends BottomBar {
         }
     }
 
-    private void renderSelection(Graphics g, BufferedImage sprite) {
+    private void drawSelection(Graphics g, BufferedImage sprite) {
         if (sprite != null) {
             float scale = Math.min(2.0f, MAX_SELECTION_SPRITE_SIZE / Math.max(sprite.getWidth(), sprite.getHeight()));
             int spriteWidth = (int) (sprite.getWidth() * scale);
@@ -171,6 +176,46 @@ public class ActionBar extends BottomBar {
             int xStart = (UI_WIDTH - spriteWidth) / 2;
             int yStart = BOTTOM_BAR_Y + (BOTTOM_BAR_HEIGHT - spriteHeight) / 2;
             g.drawImage(sprite, xStart, yStart, spriteWidth, spriteHeight, null);
+        }
+    }
+
+    private void drawLaborerInventory(Graphics g, Laborer laborer) {
+        ArrayList<BufferedImage> icons = new ArrayList<>(Arrays.asList(
+                ImageLoader.icons[ICON_LOG],
+                ImageLoader.icons[ICON_STONE],
+                ImageLoader.icons[ICON_IRON],
+                ImageLoader.icons[ICON_COAL]
+        ));
+
+        ArrayList<Integer> counts = new ArrayList<>(Arrays.asList(
+                laborer.getLogs(),
+                laborer.getStone(),
+                laborer.getIron(),
+                laborer.getCoal()
+        ));
+        int maxDisplay = Math.min(icons.size(), counts.size());
+        int textXOffset = 2;
+        int xOffset = 8;
+        int yOffset = 32;
+        g.setFont(Game.getGameFont(32f));
+        g.setColor(Color.BLACK);
+
+        int xStart = ((UI_WIDTH - (int) MAX_SELECTION_SPRITE_SIZE) / 2) + (int) MAX_SELECTION_SPRITE_SIZE + xOffset;
+        int yStart = BOTTOM_BAR_Y + yOffset;
+        int titleHeight = g.getFontMetrics().getHeight();
+        String title = "Inventory";
+        RenderText.renderText(g, title, RenderText.LEFT, RenderText.TOP, xStart, yStart, g.getFontMetrics().stringWidth(title), titleHeight);
+
+        g.setFont(Game.getGameFont(20f));
+        for (int i = 0; i < maxDisplay; i++) {
+            int count = counts.get(i);
+            BufferedImage icon = icons.get(i);
+            int iconWidth = icon.getWidth();
+            int iconHeight = icon.getHeight();
+            int iconY = yStart + titleHeight + (iconHeight * i);
+            int textX = xStart + iconWidth + textXOffset;
+            g.drawImage(icon, xStart, iconY, iconWidth, iconHeight, null);
+            RenderText.renderText(g, String.valueOf(count), RenderText.LEFT, RenderText.CENTER, textX, iconY, g.getFontMetrics().stringWidth(String.valueOf(count)), iconHeight);
         }
     }
 
