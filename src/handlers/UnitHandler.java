@@ -13,8 +13,10 @@ import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Random;
 
+import static entities.units.Brute.ATTACKING;
 import static entities.units.Unit.*;
 import static main.Game.*;
 import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
@@ -36,17 +38,14 @@ public class UnitHandler implements Serializable {
     }
 
     public void update() {
-        if (!deadUnits.isEmpty())
-            cleanupUnitList();
-
         for (Unit u : units) {
             if (u.isAlive()) {
                 u.update();
                 int unitType = u.getSubType();
 
                 // Check if target has moved
-                if (unitType != LABORER && u.getState() == WALKING && u.getTargetEntity() != null)
-                    changePathIfTargetMovedOutOfActionRange(u);
+                if (unitType != LABORER && (u.getState() == WALKING || u.getState() == ATTACKING) && u.getTargetEntity() != null)
+                    adjustPathIfTargetMovedOutOfActionRange(u);
 
                 // Auto-attack
                 if (unitType != LABORER && u.getState() == IDLE && u.getTargetEntity() == null)
@@ -61,11 +60,6 @@ public class UnitHandler implements Serializable {
                 }
             }
         }
-    }
-
-    private void cleanupUnitList() {
-        for (Unit deadUnit : deadUnits) units.remove(deadUnit);
-        deadUnits.clear();
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
@@ -93,6 +87,13 @@ public class UnitHandler implements Serializable {
                     drawUnitIDs(u, g, xOffset, yOffset);
             }
         }
+        if (!deadUnits.isEmpty())
+            cleanupUnitList();
+    }
+
+    private void cleanupUnitList() {
+        units.removeIf(unit -> deadUnits.contains(unit));
+        deadUnits.clear();
     }
 
     private void createStartingUnits() {
@@ -167,30 +168,27 @@ public class UnitHandler implements Serializable {
         g.drawString(id, xStart, yStart);
     }
 
-    private void changePathIfTargetMovedOutOfActionRange(Unit u) {
+    private void adjustPathIfTargetMovedOutOfActionRange(Unit u) {
         ArrayList<Point> currPath = u.getPath();
         Entity target = u.getTargetEntity();
-        if (currPath == null || currPath.isEmpty() || target.getEntityType() != UNIT)
+        if (target.getEntityType() != UNIT)
             return;
-        Point targetTile = getTargetTile((Unit) target);
-        Point currPathEnd = u.getPath().get(u.getPath().size() - 1);
 
-        if (Math.abs(targetTile.x - currPathEnd.x) > u.getActionRange() || Math.abs(targetTile.y - currPathEnd.y) > u.getActionRange()) {
-//            System.out.println("Target moved out of action range. [UNIT - ID:" + u.getId() +
-//                    " @ Tile: " + toTileX(u.getHitbox().x) + "," + toTileY(u.getHitbox().y) +
-//                    " Coord: " + u.getHitbox().x + "," + u.getHitbox().y + "] [TARGET - ID:" + target.getId() +
-//                    " @ Tile: " + toTileX(target.getX()) + "," + toTileY(target.getY()) +
-//                    " Coord: " + target.getX() + "," + target.getY() + "]");
+        Point targetTile = getTargetTile((Unit) target);
+        Point unitTile;
+
+        if (currPath != null && !currPath.isEmpty())
+            unitTile = u.getPath().get(u.getPath().size() - 1);
+        else
+            unitTile = new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
+
+        if (Math.abs(targetTile.x - unitTile.x) > u.getActionRange() || Math.abs(targetTile.y - unitTile.y) > u.getActionRange()) {
             ArrayList<Point> newPath = getUnitPathToNearestAdjacentTile(u, targetTile.x, targetTile.y, play);
 
-            if (newPath == null) {
-//                System.out.println("Can't re-route, target entirely blocked. Stopping at next tile [" + currPath.get(0) + "]");
+            if (newPath == null && currPath != null && !currPath.isEmpty()) {
                 newPath = new ArrayList<>();
                 newPath.add(currPath.get(0));
             }
-//            else
-//                System.out.println("Re-routing. [UNIT - ID:" + u.getId() + " @ " + toTileX(u.getHitbox().x) + "," + toTileY(u.getHitbox().y) + "] [GOAL: " + newPath.get(newPath.size() - 1).x + "," + newPath.get(newPath.size() - 1).y + "]");
-
             u.setPath(newPath);
         }
     }
@@ -208,12 +206,6 @@ public class UnitHandler implements Serializable {
                 if (path != null) {
                     attacker.setPath(path);
                     attacker.setTargetEntity(target);
-//                    System.out.println("Pathing to Target. [UNIT - ID:" + attacker.getId()
-//                            + " @ Tile: " + toTileX(attacker.getHitbox().x) + "," + toTileY(attacker.getHitbox().y) +
-//                            " Coord: " + attacker.getHitbox().x + "," + attacker.getHitbox().y + "] [TARGET - ID:" + target.getId() +
-//                            " @ Tile: " + toTileX(target.getX()) + "," + toTileY(target.getY()) +
-//                            " Coord: " + target.getX() + "," + target.getY() + "]");
-
                     return;
                 }
             }

@@ -322,43 +322,45 @@ public class Play extends MapState implements Savable, Serializable {
         if (selectedBuildingType == CASTLE_TURRET) {
             Building b = buildingHandler.getBuildingAt(gameX, gameY);
             return b != null && b.getSubType() == CASTLE_WALL;
-        } else {
-            int tileX = toTileX(x);
-            int tileY = toTileY(y);
-            ArrayList<Point> tiles = new ArrayList<Point>();
-            if (checkAllBuildingTiles)
-                tiles = getBuildingTiles(x, y);
-            else
-                tiles.add(new Point(tileX, tileY));
-
-            for (Point p : tiles) {
-                if (selectedBuildingType == THRONE_ROOM || selectedBuildingType == CASTLE_WALL)
-                    if (!map.getCastleZones().get(0).contains(p))
-                        return false;
-                if (isTileBlockedOrReserved(p.x, p.y, null))
-                    return false;
-            }
         }
+
+        int tileX = toTileX(x);
+        int tileY = toTileY(y);
+        ArrayList<Point> tiles;
+        if (checkAllBuildingTiles)
+            tiles = getBuildingTiles(x, y);
+        else {
+            tiles = new ArrayList<>();
+            tiles.add(new Point(tileX, tileY));
+        }
+
+        for (Point p : tiles)
+            if (isRestrictedBuilding(p) || isTileBlockedOrReserved(p.x, p.y, null))
+                return false;
+
         return true;
     }
 
+    private boolean isRestrictedBuilding(Point p) {
+        return (selectedBuildingType == THRONE_ROOM || selectedBuildingType == CASTLE_WALL)
+                && !map.getCastleZones().get(0).contains(p);
+    }
+
     private ArrayList<Point> getBuildingTiles(int x, int y) {
-        int buildingTileWidth = getBuildingTileWidth(selectedBuildingType);
-        int buildingTileHeight = getBuildingTileHeight(selectedBuildingType);
-        int maxTileX = map.getTileData()[0].length - buildingTileWidth;
-        int maxTileY = map.getTileData().length - buildingTileHeight;
-        int tileX = toTileX(gameX);
-        if (tileX > maxTileX)
-            tileX = maxTileX;
-        int tileY = toTileY(gameY);
-        if (tileY > maxTileY)
-            tileY = maxTileY;
+        int width = getBuildingTileWidth(selectedBuildingType);
+        int height = getBuildingTileHeight(selectedBuildingType);
+        int maxX = map.getTileData()[0].length - width;
+        int maxY = map.getTileData().length - height;
+
+        int tileX = Math.min(toTileX(x), maxX);
+        int tileY = Math.min(toTileY(y), maxY);
 
         ArrayList<Point> tiles = new ArrayList<>();
-        for (int currY = tileY; currY < tileY + buildingTileHeight; currY++)
-            for (int currX = tileX; currX < tileX + buildingTileWidth; currX++)
+        for (int currY = tileY; currY < tileY + height; currY++) {
+            for (int currX = tileX; currX < tileX + width; currX++) {
                 tiles.add(new Point(currX, currY));
-
+            }
+        }
         return tiles;
     }
 
@@ -384,19 +386,15 @@ public class Play extends MapState implements Savable, Serializable {
 
     private void buildBuilding() {
         Player player = getPlayerByID(activePlayerID);
-        if (player != null) {
+        if (player == null) return;
 
-            int maxX = toPixelX(map.getTileData()[0].length - getBuildingTileWidth(selectedBuildingType));
-            int maxY = toPixelY(map.getTileData().length - getBuildingTileHeight(selectedBuildingType));
-            int tileX = gameX;
-            if (tileX > maxX)
-                tileX = maxX;
-            int tileY = gameY;
-            if (tileY > maxY)
-                tileY = maxY;
+        int maxX = toPixelX(map.getTileData()[0].length - getBuildingTileWidth(selectedBuildingType));
+        int maxY = toPixelY(map.getTileData().length - getBuildingTileHeight(selectedBuildingType));
 
-            buildingHandler.createBuilding(player, tileX, tileY, selectedBuildingType);
-        }
+        int tileX = Math.min(gameX, maxX);
+        int tileY = Math.min(gameY, maxY);
+
+        buildingHandler.createBuilding(player, tileX, tileY, selectedBuildingType);
     }
 
     public Player getPlayerByID(long playerID) {

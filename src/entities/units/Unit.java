@@ -310,23 +310,14 @@ public abstract class Unit extends Entity implements Serializable {
                 Point next = path.get(0);
 
                 if (unitHandler.getPlay().isTileBlockedOrReserved(next.x, next.y, this)) {
-//                    System.out.println("Next tile - [" + next.x + "," + next.y + "] - blocked. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "]");
                     Point start = new Point(toTileX(x), toTileY(y));
                     Point goal = path.get(path.size() - 1);
                     if (unitHandler.getPlay().isTileBlockedOrReserved(goal.x, goal.y, this)) {
-//                        System.out.println("Goal tile - [" + goal.x + "," + goal.y + "] - blocked. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "]");
                         ArrayList<Point> newPath = getUnitPathToNearestAdjacentTile(this, goal.x, goal.y, unitHandler.getPlay());
-
-//                        if (newPath == null)
-//                            System.out.println("Can't re-route, goal entirely blocked.");
-//                        else
-//                            System.out.println("Re-routing. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "] [GOAL: " + newPath.get(newPath.size() - 1).x + "," + newPath.get(newPath.size() - 1).y + "]");
-
                         setPath(newPath);
-                    } else {
+                    } else
                         path = AStar.pathFind(start, goal, unitHandler.getPlay());
-//                        System.out.println("Re-calculating path to [" + goal.x + "," + goal.y + "] - blocked. [UNIT - ID:" + id + " @ " + toTileX(x) + "," + toTileY(y) + "]");
-                    }
+
                 }
             }
         }
