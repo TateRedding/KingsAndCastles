@@ -381,10 +381,10 @@ public class ResourceObjectHandler implements Serializable {
     private static int getGatherAmt(Laborer laborer, int resourceType, int currAmt) {
         int gatherAmt = Math.min(ResourceObject.getAmountPerAction(resourceType), currAmt);
         switch (resourceType) {
-            case TREE -> gatherAmt = Math.min(gatherAmt, Laborer.MAX_LOGS - laborer.getLogs());
-            case ROCK -> gatherAmt = Math.min(gatherAmt, Laborer.MAX_STONE - laborer.getStone());
-            case COAL -> gatherAmt = Math.min(gatherAmt, Laborer.MAX_COAL - laborer.getCoal());
-            case IRON -> gatherAmt = Math.min(gatherAmt, Laborer.MAX_IRON - laborer.getIron());
+            case TREE -> gatherAmt = Math.min(gatherAmt, Laborer.L_MAX_LOGS - laborer.getLogs());
+            case ROCK -> gatherAmt = Math.min(gatherAmt, Laborer.L_MAX_STONE - laborer.getStone());
+            case COAL -> gatherAmt = Math.min(gatherAmt, Laborer.L_MAX_COAL - laborer.getCoal());
+            case IRON -> gatherAmt = Math.min(gatherAmt, Laborer.L_MAX_IRON - laborer.getIron());
         }
         return gatherAmt;
     }

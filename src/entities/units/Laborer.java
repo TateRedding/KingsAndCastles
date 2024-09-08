@@ -1,6 +1,8 @@
 package entities.units;
 
 import entities.buildings.Building;
+import entities.buildings.Refinery;
+import entities.buildings.StorageHut;
 import entities.resources.ResourceObject;
 import handlers.UnitHandler;
 import objects.Player;
@@ -10,6 +12,10 @@ import java.util.ArrayList;
 
 import static entities.buildings.Building.REFINERY;
 import static entities.buildings.Building.STORAGE_HUT;
+import static entities.buildings.Refinery.R_MAX_COAL;
+import static entities.buildings.Refinery.R_MAX_IRON;
+import static entities.buildings.StorageHut.SH_MAX_LOGS;
+import static entities.buildings.StorageHut.SH_MAX_STONE;
 import static entities.resources.ResourceObject.*;
 import static main.Game.toTileX;
 import static main.Game.toTileY;
@@ -22,10 +28,10 @@ public class Laborer extends Unit {
     public static final int MINING = 4;
 
     // Inventory Maximums
-    public static final int MAX_COAL = 20;
-    public static final int MAX_IRON = 35;
-    public static final int MAX_LOGS = 50;
-    public static final int MAX_STONE = 50;
+    public static final int L_MAX_COAL = 20;
+    public static final int L_MAX_IRON = 15;
+    public static final int L_MAX_LOGS = 10;
+    public static final int L_MAX_STONE = 50;
 
     private int coal, iron, logs, stone;
 
@@ -80,7 +86,7 @@ public class Laborer extends Unit {
 
             if (entityType == BUILDING) {
                 if (state == IDLE && isTargetInRange(targetEntity, actionRange)) {
-                    emptyInventory();
+                    depositResources();
                     if (previousTargetTile != null && previousTargetType != -1) {
                         ResourceObject previousTarget = unitHandler.getPlay().getResourceObjectData()[previousTargetTile.y][previousTargetTile.x];
                         if (previousTarget != null) {
@@ -103,10 +109,10 @@ public class Laborer extends Unit {
 
     public boolean isInventoryFull(int resourceType) {
         return switch (resourceType) {
-            case TREE -> logs >= MAX_LOGS;
-            case ROCK -> stone >= MAX_STONE;
-            case IRON -> iron >= MAX_IRON;
-            case COAL -> coal >= MAX_COAL;
+            case TREE -> logs >= L_MAX_LOGS;
+            case ROCK -> stone >= L_MAX_STONE;
+            case IRON -> iron >= L_MAX_IRON;
+            case COAL -> coal >= L_MAX_COAL;
             default -> false;
         };
 
@@ -123,8 +129,16 @@ public class Laborer extends Unit {
             ArrayList<Building> buildings = unitHandler.getPlay().getBuildingHandler().getBuildings();
             Building closest = null;
             ArrayList<Point> pathToClosest = null;
-            for (Building b : buildings)
+            for (Building b : buildings) {
                 if (b.getSubType() == buildingType) {
+                    boolean hasRoom = switch (resourceType) {
+                        case TREE -> ((StorageHut) b).getLogs() < SH_MAX_LOGS;
+                        case ROCK -> ((StorageHut) b).getStone() < SH_MAX_STONE;
+                        case IRON -> ((Refinery) b).getIron() < R_MAX_IRON;
+                        case COAL -> ((Refinery) b).getCoal() < R_MAX_COAL;
+                        default -> false;
+                    };
+                    if (!hasRoom) continue;
                     if (isTargetInRange(b, actionRange) && isLineOfSightOpen(b)) {
                         closest = b;
                         break;
@@ -135,35 +149,58 @@ public class Laborer extends Unit {
                         pathToClosest = currPath;
                     }
                 }
+            }
             targetEntity = closest;
             path = pathToClosest;
             if (closest == null) {
-                System.out.println("Could not locate a " + (buildingType == STORAGE_HUT ? "storage hut" : "refinery") + "!");
+                System.out.println("Could not locate a " + (buildingType == STORAGE_HUT ? "storage hut" : "refinery") + " with enough space!");
                 setState(IDLE);
             }
         }
     }
 
-    public boolean hasResourcesToDeposit(int buildingType) {
+    public boolean canDepositResources(Building building) {
+        int buildingType = building.getSubType();
         return switch (buildingType) {
-            case STORAGE_HUT -> logs > 0 || stone > 0;
-            case REFINERY -> iron > 0 || coal > 0;
-            default -> false;
+            case STORAGE_HUT: {
+                StorageHut sh = (StorageHut) building;
+                yield ((logs > 0 && sh.getLogs() < SH_MAX_LOGS) || (stone > 0 && sh.getStone() < SH_MAX_STONE));
+            }
+            case REFINERY: {
+                Refinery r = (Refinery) building;
+                yield ((iron > 0 && r.getIron() < R_MAX_IRON) || (coal > 0 && r.getCoal() < R_MAX_COAL));
+            }
+            default:
+                yield false;
         };
     }
 
-    private void emptyInventory() {
+    private void depositResources() {
         int buildingType = targetEntity.getSubType();
         if (buildingType == STORAGE_HUT) {
-            player.setLogs(player.getLogs() + logs);
-            player.setStone(player.getStone() + stone);
-            logs = 0;
-            stone = 0;
+            StorageHut sh = (StorageHut) targetEntity;
+
+            int logsAmt = Math.min(logs, SH_MAX_LOGS - sh.getLogs());
+            player.setLogs(player.getLogs() + logsAmt);
+            sh.setLogs(sh.getLogs() + logsAmt);
+            logs -= logsAmt;
+
+            int stoneAmt = Math.min(stone, SH_MAX_STONE - sh.getStone());
+            player.setStone(player.getStone() + stoneAmt);
+            sh.setStone(sh.getStone() + stoneAmt);
+            stone -= stoneAmt;
         } else if (buildingType == REFINERY) {
-            player.setIron(player.getIron() + iron);
-            player.setCoal(player.getCoal() + coal);
-            iron = 0;
-            coal = 0;
+            Refinery r = (Refinery) targetEntity;
+
+            int ironAmt = Math.min(iron, R_MAX_IRON - r.getIron());
+            player.setIron(player.getIron() + ironAmt);
+            r.setIron(r.getIron() + ironAmt);
+            iron -= ironAmt;
+
+            int coalAmt = Math.min(coal, R_MAX_COAL - r.getCoal());
+            player.setCoal(player.getCoal() + coalAmt);
+            r.setCoal(r.getCoal() + coalAmt);
+            coal -= coalAmt;
         }
     }
 

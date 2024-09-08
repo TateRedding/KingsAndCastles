@@ -1,5 +1,7 @@
 package ui.bars;
 
+import entities.buildings.Refinery;
+import entities.buildings.StorageHut;
 import entities.units.Laborer;
 import entities.units.Unit;
 import gamestates.Play;
@@ -22,6 +24,11 @@ import java.util.Arrays;
 
 import static entities.buildings.Building.BUILDING;
 import static entities.buildings.Building.*;
+import static entities.buildings.Refinery.R_MAX_COAL;
+import static entities.buildings.Refinery.R_MAX_IRON;
+import static entities.buildings.StorageHut.SH_MAX_LOGS;
+import static entities.buildings.StorageHut.SH_MAX_STONE;
+import static entities.units.Laborer.*;
 import static entities.units.Unit.*;
 import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
@@ -44,19 +51,30 @@ public class ActionBar extends BottomBar {
 
     private boolean showLaborerSpawnButton, showCombatUnitSpawnButtons;
 
-    private ArrayList<BufferedImage> buildingCostIcons =  new ArrayList<>(Arrays.asList(
+    private ArrayList<BufferedImage> buildingCostIcons = new ArrayList<>(Arrays.asList(
             ImageLoader.icons[ICON_GOLD],
             ImageLoader.icons[ICON_LOG],
             ImageLoader.icons[ICON_STONE],
             ImageLoader.icons[ICON_IRON],
             ImageLoader.icons[ICON_COAL]
     ));
-    private ArrayList<BufferedImage> inventoryIcons = new ArrayList<>(buildingCostIcons.subList(1, 5));
-    private ArrayList<Integer> maxInventoryCounts = new ArrayList<>(Arrays.asList(
-            Laborer.MAX_LOGS,
-            Laborer.MAX_STONE,
-            Laborer.MAX_IRON,
-            Laborer.MAX_COAL
+    private ArrayList<BufferedImage> laborerInventoryIcons = new ArrayList<>(buildingCostIcons.subList(1, 5));
+    private ArrayList<BufferedImage> storageHutInventoryIcons = new ArrayList<>(laborerInventoryIcons.subList(0, 2));
+    private ArrayList<BufferedImage> refineryInventoryIcons = new ArrayList<>(laborerInventoryIcons.subList(2, 4));
+
+    private ArrayList<Integer> laborerMaxInventoryCounts = new ArrayList<>(Arrays.asList(
+            L_MAX_LOGS,
+            L_MAX_STONE,
+            L_MAX_IRON,
+            L_MAX_COAL
+    ));
+    private ArrayList<Integer> storageHutMaxInventoryCounts = new ArrayList<>(Arrays.asList(
+            SH_MAX_LOGS,
+            SH_MAX_STONE
+    ));
+    private ArrayList<Integer> refineryMaxInventoryCounts = new ArrayList<>(Arrays.asList(
+            R_MAX_IRON,
+            R_MAX_COAL
     ));
 
     public ActionBar(Play play) {
@@ -126,10 +144,12 @@ public class ActionBar extends BottomBar {
 
         if (selectedEntity != null) {
             BufferedImage sprite = null;
-            if (selectedEntity.getEntityType() == Entity.UNIT)
-                sprite = Unit.getSprite(selectedEntity.getSubType(), IDLE, DOWN, 0);
-            else if (selectedEntity.getEntityType() == Entity.BUILDING)
-                sprite = ImageLoader.buildings[selectedEntity.getSubType()];
+            int entityType = selectedEntity.getEntityType();
+            int subType = selectedEntity.getSubType();
+            if (entityType == UNIT)
+                sprite = Unit.getSprite(subType, IDLE, DOWN, 0);
+            else if (entityType == BUILDING)
+                sprite = ImageLoader.buildings[subType];
 
             drawSelection(g, sprite);
 
@@ -141,8 +161,13 @@ public class ActionBar extends BottomBar {
                 rangedUnitSpawn.render(g);
             }
 
-            if (selectedEntity.getEntityType() == UNIT && selectedEntity.getSubType() == LABORER) {
-                drawLaborerInventory(g, (Laborer) selectedEntity);
+            if (entityType == UNIT && subType == LABORER)
+                drawInventory(g, entityType, subType, laborerInventoryIcons, laborerMaxInventoryCounts);
+            else if (entityType == BUILDING) {
+                if (subType == STORAGE_HUT)
+                    drawInventory(g, entityType, subType, storageHutInventoryIcons, storageHutMaxInventoryCounts);
+                else if (subType == REFINERY)
+                    drawInventory(g, entityType, subType, refineryInventoryIcons, refineryMaxInventoryCounts);
             }
         }
     }
@@ -186,15 +211,10 @@ public class ActionBar extends BottomBar {
         }
     }
 
-    private void drawLaborerInventory(Graphics g, Laborer laborer) {
-        ArrayList<Integer> currCounts = new ArrayList<>(Arrays.asList(
-                laborer.getLogs(),
-                laborer.getStone(),
-                laborer.getIron(),
-                laborer.getCoal()
-        ));
+    private void drawInventory(Graphics g, int entityType, int subType, ArrayList<BufferedImage> icons, ArrayList<Integer> maxCounts) {
+        ArrayList<Integer> currCounts = getCounts(entityType, subType);
 
-        int maxDisplay = Math.min(inventoryIcons.size(), currCounts.size());
+        int maxDisplay = Math.min(icons.size(), currCounts.size());
         int textXOffset = 2;
         int xOffset = 8;
         int yOffset = 32;
@@ -210,20 +230,48 @@ public class ActionBar extends BottomBar {
         g.setFont(Game.getGameFont(20f));
         for (int i = 0; i < maxDisplay; i++) {
             int count = currCounts.get(i);
-            BufferedImage icon = inventoryIcons.get(i);
+            BufferedImage icon = icons.get(i);
             int iconWidth = icon.getWidth();
             int iconHeight = icon.getHeight();
             int iconY = yStart + titleHeight + (iconHeight * i);
             int textX = xStart + iconWidth + textXOffset;
             g.drawImage(icon, xStart, iconY, iconWidth, iconHeight, null);
             String countText = String.valueOf(count);
-            if (currCounts.get(i) >= maxInventoryCounts.get(i)) {
+            if (currCounts.get(i) >= maxCounts.get(i)) {
                 g.setColor(Color.RED);
                 countText += " Inventory full!";
             } else
                 g.setColor(Color.BLACK);
             RenderText.renderText(g, countText, RenderText.LEFT, RenderText.CENTER, textX, iconY, g.getFontMetrics().stringWidth(String.valueOf(count)), iconHeight);
         }
+    }
+
+    private ArrayList<Integer> getCounts(int entityType, int subType) {
+        ArrayList<Integer> currCounts = null;
+        if (entityType == UNIT && subType == LABORER) {
+            Laborer l = (Laborer) selectedEntity;
+            currCounts = new ArrayList<>(Arrays.asList(
+                    l.getLogs(),
+                    l.getStone(),
+                    l.getIron(),
+                    l.getCoal()
+            ));
+        } else if (entityType == BUILDING) {
+            if (subType == STORAGE_HUT) {
+                StorageHut sh = (StorageHut) selectedEntity;
+                currCounts = new ArrayList<>(Arrays.asList(
+                        sh.getLogs(),
+                        sh.getStone()
+                ));
+            } else if (subType == REFINERY) {
+                Refinery r = (Refinery) selectedEntity;
+                currCounts = new ArrayList<>(Arrays.asList(
+                        r.getIron(),
+                        r.getCoal()
+                ));
+            }
+        }
+        return currCounts;
     }
 
     private float getSelectedBuildingSpriteScale() {

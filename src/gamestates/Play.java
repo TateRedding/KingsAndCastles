@@ -509,10 +509,10 @@ public class Play extends MapState implements Savable, Serializable {
                                 (hoverEntity.getEntityType() == UNIT && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED)))
                             setSelectedUnitTargetToHoverEntity(selectedUnit);
                         else if (hoverEntity.getEntityType() == BUILDING && clickAction == CA_EMPTY_INVENTORY) {
-                            if (((Laborer) selectedUnit).hasResourcesToDeposit(hoverEntity.getSubType()))
+                            if (((Laborer) selectedUnit).canDepositResources((Building) hoverEntity))
                                 setSelectedUnitTargetToHoverEntity(selectedUnit);
                             else
-                                System.out.println("Nothing to deposit!");
+                                System.out.println("Nothing to deposit, or not enough space!");
                         }
 
                     }
