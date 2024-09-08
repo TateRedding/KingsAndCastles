@@ -4,7 +4,6 @@ import entities.resources.*;
 import entities.units.Laborer;
 import gamestates.Play;
 import objects.Chunk;
-import objects.Map;
 import objects.Player;
 import objects.Tile;
 import utils.ImageLoader;
@@ -306,8 +305,12 @@ public class ResourceObjectHandler implements Serializable {
             ro.setHealth(newAmt);
 
         if (laborer.isInventoryFull(resourceType)) {
-            laborer.setTargetEntity(null);
-            laborer.emptyInventory();
+            laborer.targetClosestDepositBuilding(resourceType);
+            if (laborer.getTargetEntity() != null) {
+                laborer.setPreviousTargetTile(new Point(toTileX(ro.getX()), toTileY(ro.getY())));
+                laborer.setPreviousTargetType(resourceType);
+            } else
+                laborer.clearPreviousTarget();
         }
     }
 
@@ -332,7 +335,7 @@ public class ResourceObjectHandler implements Serializable {
         if (resourceType == TREE)
             updateTreeSprites(roTileX, roTileY);
 
-        locateNearestResource(laborer, resourceType, laborerTileX, laborerTileY);
+        locateAndTargetNearestResource(laborer, resourceType, laborerTileX, laborerTileY);
     }
 
     private void updateTreeSprites(int roTileX, int roTileY) {
@@ -346,12 +349,12 @@ public class ResourceObjectHandler implements Serializable {
                 }
     }
 
-    private void locateNearestResource(Laborer laborer, int resourceType, int laborerTileX, int laborerTileY) {
+    public void locateAndTargetNearestResource(Laborer laborer, int resourceType, int tileX, int tileY) {
         int sightRange = laborer.getSightRange();
         for (int radius = 1; radius <= sightRange; radius++)
-            for (int y = laborerTileY - radius; y <= laborerTileY + radius; y++)
-                for (int x = laborerTileX - radius; x <= laborerTileX + radius; x++) {
-                    if (Math.abs(x - laborerTileX) != radius && Math.abs(y - laborerTileY) != radius) continue;
+            for (int y = tileY - radius; y <= tileY + radius; y++)
+                for (int x = tileX - radius; x <= tileX + radius; x++) {
+                    if (Math.abs(x - tileX) != radius && Math.abs(y - tileY) != radius) continue;
                     if (isValidTile(x, y)) {
                         ResourceObject currRO = play.getResourceObjectData()[y][x];
                         if (currRO != null && currRO.getSubType() == resourceType) {

@@ -44,9 +44,10 @@ public class Play extends MapState implements Savable, Serializable {
     private static final int CA_CHOP = 2;
     private static final int CA_MINE = 3;
     private static final int CA_FARM = 4;
-    private static final int CA_REPAIR = 5;
-    private static final int CA_ATTACK_MELEE = 6;
-    private static final int CA_ATTACK_RANGED = 7;
+    private static final int CA_EMPTY_INVENTORY = 5;
+    private static final int CA_REPAIR = 6;
+    private static final int CA_ATTACK_MELEE = 7;
+    private static final int CA_ATTACK_RANGED = 8;
 
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
@@ -226,7 +227,7 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public void determineAction() {
-        clickAction = -1;  // Default action
+        clickAction = -1;
         int sgoType = (selectedEntity != null) ? selectedEntity.getEntityType() : -1;
         int hoverType = (hoverEntity != null) ? hoverEntity.getEntityType() : -1;
 
@@ -234,46 +235,44 @@ public class Play extends MapState implements Savable, Serializable {
             return;
 
         if (sgoType == BUILDING || sgoType == -1) {
-            if (hoverType == UNIT || hoverType == BUILDING) {
+            if (hoverType == UNIT || hoverType == BUILDING)
                 clickAction = CA_SELECT;
-            }
             return;
         }
 
         if (sgoType == UNIT) {
             if (selectedEntity.getPlayer().getPlayerID() != activePlayerID) {
-                if (hoverType == UNIT || hoverType == BUILDING) {
+                if (hoverType == UNIT || hoverType == BUILDING)
                     clickAction = CA_SELECT;
-                }
-            } else {
-                handlePlayerUnitAction(hoverType, (Unit) selectedEntity);
-            }
+            } else
+                handleOwnedUnitAction(hoverType, (Unit) selectedEntity);
         }
     }
 
-    private void handlePlayerUnitAction(int hoverType, Unit selectedUnit) {
+    private void handleOwnedUnitAction(int hoverType, Unit selectedUnit) {
         int unitType = selectedUnit.getSubType();
 
-        if (unitType == LABORER && (hoverType == UNIT || hoverType == BUILDING)) {
+        if (unitType == LABORER && (hoverType == UNIT))
             clickAction = CA_SELECT;
-        } else if (hoverType == -1) {
+        else if (hoverType == -1)
             clickAction = CA_MOVE;
-        } else if (unitType == LABORER) {
+        else if (unitType == LABORER)
             handleLaborerAction(hoverType);
-        } else {
+        else
             handleCombatAction(hoverType, selectedUnit);
-        }
     }
 
     private void handleLaborerAction(int hoverType) {
-        if (hoverType == RESOURCE) {
+        if (hoverType == RESOURCE)
             clickAction = (hoverEntity.getSubType() == TREE) ? CA_CHOP : CA_MINE;
-        } else if (hoverType == BUILDING) {
-            if (hoverEntity.getSubType() == Building.FARM && hoverEntity.getHealth() == hoverEntity.getMaxHealth()) {
-                clickAction = CA_FARM;
-            } else if (hoverEntity.getHealth() < hoverEntity.getMaxHealth()) {
+        else if (hoverType == BUILDING) {
+            int buildingType = hoverEntity.getSubType();
+            if (hoverEntity.getHealth() < hoverEntity.getMaxHealth())
                 clickAction = CA_REPAIR;
-            }
+            else if (buildingType == FARM)
+                clickAction = CA_FARM;
+            else if (buildingType == STORAGE_HUT || buildingType == REFINERY)
+                clickAction = CA_EMPTY_INVENTORY;
         }
     }
 
@@ -452,6 +451,17 @@ public class Play extends MapState implements Savable, Serializable {
         return spawnPoints.get(r.nextInt(spawnPoints.size()));
     }
 
+    private void setSelectedUnitTargetToHoverEntity(Unit selectedUnit) {
+        boolean isInRangeAndReachable = selectedUnit.isTargetInRange(hoverEntity, selectedUnit.getActionRange()) && selectedUnit.isLineOfSightOpen(hoverEntity);
+        ArrayList<Point> path = null;
+        if (!isInRangeAndReachable) {
+            path = getUnitPathToNearestAdjacentTile(selectedUnit, tileX, tileY, this);
+            if (path != null)
+                selectedUnit.setPath(path);
+        }
+        if (isInRangeAndReachable || path != null)
+            selectedUnit.setTargetEntity(hoverEntity);
+    }
 
     @Override
     public void mousePressed(int x, int y, int button) {
@@ -496,18 +506,13 @@ public class Play extends MapState implements Savable, Serializable {
                                 selectedUnit.setTargetEntity(null);
                             }
                         } else if ((hoverEntity.getEntityType() == RESOURCE && (clickAction == CA_CHOP || clickAction == CA_MINE) && !((Laborer) selectedEntity).isInventoryFull(hoverEntity.getSubType())) ||
-                                (hoverEntity.getEntityType() == UNIT && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED))) {
-                            boolean isInRangeAndReachable = selectedUnit.isTargetInRange(hoverEntity, selectedUnit.getActionRange()) && selectedUnit.isLineOfSightOpen(hoverEntity);
-                            ArrayList<Point> path = null;
-                            if (!isInRangeAndReachable) {
-                                path = getUnitPathToNearestAdjacentTile(selectedUnit, tileX, tileY, this);
-                                if (path != null) {
-                                    selectedUnit.setPath(path);
-                                }
-                            }
-                            if (isInRangeAndReachable || path != null) {
-                                selectedUnit.setTargetEntity(hoverEntity);
-                            }
+                                (hoverEntity.getEntityType() == UNIT && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED)))
+                            setSelectedUnitTargetToHoverEntity(selectedUnit);
+                        else if (hoverEntity.getEntityType() == BUILDING && clickAction == CA_EMPTY_INVENTORY) {
+                            if (((Laborer) selectedUnit).hasResourcesToDeposit(hoverEntity.getSubType()))
+                                setSelectedUnitTargetToHoverEntity(selectedUnit);
+                            else
+                                System.out.println("Nothing to deposit!");
                         }
 
                     }

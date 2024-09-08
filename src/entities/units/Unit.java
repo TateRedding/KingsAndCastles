@@ -307,18 +307,36 @@ public abstract class Unit extends Entity implements Serializable {
             updateHitbox();
             path.remove(0);
             if (!path.isEmpty()) {
+                Play play = unitHandler.getPlay();
                 Point next = path.get(0);
+                Point last = path.get(path.size() - 1);
 
-                if (unitHandler.getPlay().isTileBlockedOrReserved(next.x, next.y, this)) {
-                    Point start = new Point(toTileX(x), toTileY(y));
-                    Point goal = path.get(path.size() - 1);
-                    if (unitHandler.getPlay().isTileBlockedOrReserved(goal.x, goal.y, this)) {
-                        ArrayList<Point> newPath = getUnitPathToNearestAdjacentTile(this, goal.x, goal.y, unitHandler.getPlay());
-                        setPath(newPath);
-                    } else
-                        path = AStar.pathFind(start, goal, unitHandler.getPlay());
+                boolean isNextTileBlocked = play.isTileBlockedOrReserved(next.x, next.y, this);
+                boolean isLastTileBlocked = play.isTileBlockedOrReserved(last.x, last.y, this);
 
+                if (isLastTileBlocked) {
+                    Point goal = targetEntity == null ? last : new Point(toTileX(targetEntity.getX()), toTileY(targetEntity.getY()));
+                    if (isNextTileBlocked)
+                        // Both the next and last tiles are blocked. Setting path to null ensures the next tile will not be used
+                        setPath(null);
+                    setPath(AStar.getUnitPathToNearestAdjacentTile(this, goal.x, goal.y, play));
+                } else {
+                    if (isNextTileBlocked) {
+                        // Next tile is blocked, last tile is open
+                        Point start = new Point(toTileX(x), toTileY(y));
+                        path = AStar.pathFind(start, last, play);
+                    }
                 }
+
+//                if (play.isTileBlockedOrReserved(next.x, next.y, this)) {
+//                    Point start = new Point(toTileX(x), toTileY(y));
+//                    if (play.isTileBlockedOrReserved(last.x, last.y, this)) {
+//                        ArrayList<Point> newPath = getUnitPathToNearestAdjacentTile(this, last.x, last.y, play);
+//                        setPath(newPath);
+//                    } else
+//                        path = AStar.pathFind(start, last, play);
+//
+//                }
             }
         }
 

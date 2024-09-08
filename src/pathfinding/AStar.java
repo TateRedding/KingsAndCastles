@@ -158,6 +158,7 @@ public class AStar {
     }
 
     public static ArrayList<Point> getUnitPathToTile(Unit u, int tileX, int tileY, Play play) {
+        // Returns a path to the specified tile, preserving the unit's current next tile in their path
         Point goal = new Point(tileX, tileY);
         Point start = (u.getPath() != null && !u.getPath().isEmpty()) ? u.getPath().get(0)
                 : new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));
@@ -165,6 +166,7 @@ public class AStar {
     }
 
     public static ArrayList<Point> getUnitPathToNearestAdjacentTile(Unit u, int goalTileX, int goalTileY, Play play) {
+        // Returns a path to the nearest open adjacent tile to the goal, preserving the unit's current next tile in their path
         HashMap<Double, Point> openTiles = new HashMap<>();
         Point start = (u.getPath() != null && !u.getPath().isEmpty()) ? u.getPath().get(0)
                 : new Point(toTileX(u.getHitbox().x), toTileY(u.getHitbox().y));

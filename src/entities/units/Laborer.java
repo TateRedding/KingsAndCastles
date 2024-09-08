@@ -1,7 +1,6 @@
 package entities.units;
 
 import entities.buildings.Building;
-import entities.buildings.StorageHut;
 import entities.resources.ResourceObject;
 import handlers.UnitHandler;
 import objects.Player;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import static entities.buildings.Building.REFINERY;
 import static entities.buildings.Building.STORAGE_HUT;
 import static entities.resources.ResourceObject.*;
-import static java.lang.Float.POSITIVE_INFINITY;
 import static main.Game.toTileX;
 import static main.Game.toTileY;
 import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
@@ -24,13 +22,15 @@ public class Laborer extends Unit {
     public static final int MINING = 4;
 
     // Inventory Maximums
-    public static final int MAX_COAL = 50;
-    public static final int MAX_IRON = 50;
-    public static final int MAX_LOGS = 250;
-    public static final int MAX_STONE = 100;
+    public static final int MAX_COAL = 20;
+    public static final int MAX_IRON = 35;
+    public static final int MAX_LOGS = 50;
+    public static final int MAX_STONE = 50;
 
     private int coal, iron, logs, stone;
-    private ArrayList<Building> closestDepositBuildings = new ArrayList<>();
+
+    private Point previousTargetTile;
+    private int previousTargetType = -1;
 
     public Laborer(Player player, int x, int y, int id, UnitHandler unitHandler) {
         super(player, x, y, LABORER, id, unitHandler);
@@ -69,18 +69,40 @@ public class Laborer extends Unit {
                 animationFrame = 0;
         }
 
-        if (targetEntity != null && targetEntity.getEntityType() == RESOURCE) {
-            if (state == IDLE)
-                setState((targetEntity.getSubType() == TREE) ? CHOPPING : MINING);
-        } else if (state == CHOPPING || state == MINING)
-            setState(IDLE);
+        if (targetEntity != null) {
+            int entityType = targetEntity.getEntityType();
 
-        // Need to add logic of what to when closesDepositBuildings has something in it, from emptyInventory.
-        // Perhaps a boolean like isEmptying thats true when emptyInventory is called, but can be interrupted?
+            if (entityType == RESOURCE) {
+                if (state == IDLE && isTargetInRange(targetEntity, actionRange))
+                    setState(targetEntity.getSubType() == TREE ? CHOPPING : MINING);
+            } else if (state == CHOPPING || state == MINING)
+                setState(IDLE);
+
+            if (entityType == BUILDING) {
+                if (state == IDLE && isTargetInRange(targetEntity, actionRange)) {
+                    emptyInventory();
+                    if (previousTargetTile != null && previousTargetType != -1) {
+                        ResourceObject previousTarget = unitHandler.getPlay().getResourceObjectData()[previousTargetTile.y][previousTargetTile.x];
+                        if (previousTarget != null) {
+                            path = getUnitPathToNearestAdjacentTile(this, previousTargetTile.x, previousTargetTile.y, unitHandler.getPlay());
+                            if (path != null)
+                                targetEntity = previousTarget;
+                        } else
+                            locateAndTargetNearestResource(previousTargetType, previousTargetTile.x, previousTargetTile.y);
+                    }
+                    clearPreviousTarget();
+                }
+            }
+        }
+    }
+
+    public void clearPreviousTarget() {
+        previousTargetTile = null;
+        previousTargetType = -1;
     }
 
     public boolean isInventoryFull(int resourceType) {
-        return switch(resourceType) {
+        return switch (resourceType) {
             case TREE -> logs >= MAX_LOGS;
             case ROCK -> stone >= MAX_STONE;
             case IRON -> iron >= MAX_IRON;
@@ -90,46 +112,63 @@ public class Laborer extends Unit {
 
     }
 
-    public void emptyInventory() {
-        ArrayList<Building> buildings = unitHandler.getPlay().getBuildingHandler().getBuildings();
-        closestDepositBuildings.clear();
-        if (logs > 0 || stone > 0) {
-            Building closestStorageHut = null;
-            int shortestDist = (int) POSITIVE_INFINITY;
-            for (Building b : buildings)
-                if (b.getSubType() == STORAGE_HUT) {
-                    if (isTargetInRange(b, actionRange) && isLineOfSightOpen(b)) {
-                        closestStorageHut = b;
-                        break;
-                    }
-                    ArrayList<Point> shPath = getUnitPathToNearestAdjacentTile(this, toTileX(b.getX()), toTileY(b.getY()), unitHandler.getPlay());
-                    if (shPath != null && shPath.size() < shortestDist) {
-                        closestStorageHut = b;
-                        shortestDist = shPath.size();
-                    }
-                }
-            if (closestStorageHut != null)
-                closestDepositBuildings.add(closestStorageHut);
-        }
+    public void targetClosestDepositBuilding(int resourceType) {
+        int buildingType = switch (resourceType) {
+            case TREE, ROCK -> STORAGE_HUT;
+            case IRON, COAL -> REFINERY;
+            default -> -1;
+        };
 
-        if (iron > 0 || coal > 0) {
-            Building closestRefinery = null;
-            int shortestDist = (int) POSITIVE_INFINITY;
+        if (buildingType != -1) {
+            ArrayList<Building> buildings = unitHandler.getPlay().getBuildingHandler().getBuildings();
+            Building closest = null;
+            ArrayList<Point> pathToClosest = null;
             for (Building b : buildings)
-                if (b.getSubType() == REFINERY) {
+                if (b.getSubType() == buildingType) {
                     if (isTargetInRange(b, actionRange) && isLineOfSightOpen(b)) {
-                        closestRefinery = b;
+                        closest = b;
                         break;
                     }
-                    ArrayList<Point> shPath = getUnitPathToNearestAdjacentTile(this, toTileX(b.getX()), toTileY(b.getY()), unitHandler.getPlay());
-                    if (shPath != null && shPath.size() < shortestDist) {
-                        closestRefinery = b;
-                        shortestDist = shPath.size();
+                    ArrayList<Point> currPath = getUnitPathToNearestAdjacentTile(this, toTileX(b.getX()), toTileY(b.getY()), unitHandler.getPlay());
+                    if (currPath != null && (pathToClosest == null || (currPath.size() < pathToClosest.size()))) {
+                        closest = b;
+                        pathToClosest = currPath;
                     }
                 }
-            if (closestRefinery != null)
-                closestDepositBuildings.add(closestRefinery);
+            targetEntity = closest;
+            path = pathToClosest;
+            if (closest == null) {
+                System.out.println("Could not locate a " + (buildingType == STORAGE_HUT ? "storage hut" : "refinery") + "!");
+                setState(IDLE);
+            }
         }
+    }
+
+    public boolean hasResourcesToDeposit(int buildingType) {
+        return switch (buildingType) {
+            case STORAGE_HUT -> logs > 0 || stone > 0;
+            case REFINERY -> iron > 0 || coal > 0;
+            default -> false;
+        };
+    }
+
+    private void emptyInventory() {
+        int buildingType = targetEntity.getSubType();
+        if (buildingType == STORAGE_HUT) {
+            player.setLogs(player.getLogs() + logs);
+            player.setStone(player.getStone() + stone);
+            logs = 0;
+            stone = 0;
+        } else if (buildingType == REFINERY) {
+            player.setIron(player.getIron() + iron);
+            player.setCoal(player.getCoal() + coal);
+            iron = 0;
+            coal = 0;
+        }
+    }
+
+    private void locateAndTargetNearestResource(int resourceType, int tileX, int tileY) {
+        unitHandler.getPlay().getResourceObjectHandler().locateAndTargetNearestResource(this, resourceType, tileX, tileY);
     }
 
     public int getCoal() {
@@ -154,6 +193,14 @@ public class Laborer extends Unit {
 
     public void setLogs(int logs) {
         this.logs = logs;
+    }
+
+    public void setPreviousTargetTile(Point previousTargetTile) {
+        this.previousTargetTile = previousTargetTile;
+    }
+
+    public void setPreviousTargetType(int previousTargetType) {
+        this.previousTargetType = previousTargetType;
     }
 
     public int getStone() {

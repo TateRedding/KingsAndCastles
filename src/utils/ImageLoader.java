@@ -144,7 +144,7 @@ public class ImageLoader {
         dropDownBarSmall = LoadSave.loadImage(DROP_DOWN_BAR_SMALL);
 
         // Misc
-        actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 8);
+        actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 9);
         buildIndicators = getSpriteArray(BUILD_INDICATORS, 0, 0, 1, 2, 2);
         editorBarButtonSprites = new ArrayList<>(Arrays.asList(
                 tiles.get(GRASS).get(0),

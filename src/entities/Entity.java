@@ -63,8 +63,7 @@ public abstract class Entity implements Serializable {
     public float getY() {
         return y;
     }
-
-
+    
     public int getEntityType() {
         return entityType;
     }
