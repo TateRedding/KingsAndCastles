@@ -307,6 +307,13 @@ public abstract class Unit extends Entity implements Serializable {
             updateHitbox();
             path.remove(0);
             if (!path.isEmpty()) {
+                // Check if they can reach their target from where they currently are
+                if (targetEntity != null && isTargetInRange(targetEntity, actionRange) && isLineOfSightOpen(targetEntity)) {
+                    path = null;
+                    setState(IDLE);
+                    return;
+                }
+
                 Play play = unitHandler.getPlay();
                 Point next = path.get(0);
                 Point last = path.get(path.size() - 1);
@@ -327,16 +334,6 @@ public abstract class Unit extends Entity implements Serializable {
                         path = AStar.pathFind(start, last, play);
                     }
                 }
-
-//                if (play.isTileBlockedOrReserved(next.x, next.y, this)) {
-//                    Point start = new Point(toTileX(x), toTileY(y));
-//                    if (play.isTileBlockedOrReserved(last.x, last.y, this)) {
-//                        ArrayList<Point> newPath = getUnitPathToNearestAdjacentTile(this, last.x, last.y, play);
-//                        setPath(newPath);
-//                    } else
-//                        path = AStar.pathFind(start, last, play);
-//
-//                }
             }
         }
 
