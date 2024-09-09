@@ -29,8 +29,8 @@ public class Laborer extends Unit {
 
     // Inventory Maximums
     public static final int L_MAX_COAL = 20;
-    public static final int L_MAX_IRON = 15;
-    public static final int L_MAX_LOGS = 10;
+    public static final int L_MAX_IRON = 75;
+    public static final int L_MAX_LOGS = 100;
     public static final int L_MAX_STONE = 50;
 
     private int coal, iron, logs, stone;
@@ -181,25 +181,21 @@ public class Laborer extends Unit {
             StorageHut sh = (StorageHut) targetEntity;
 
             int logsAmt = Math.min(logs, SH_MAX_LOGS - sh.getLogs());
-            player.setLogs(player.getLogs() + logsAmt);
-            sh.setLogs(sh.getLogs() + logsAmt);
+            sh.addLogs(logsAmt);
             logs -= logsAmt;
 
             int stoneAmt = Math.min(stone, SH_MAX_STONE - sh.getStone());
-            player.setStone(player.getStone() + stoneAmt);
-            sh.setStone(sh.getStone() + stoneAmt);
+            sh.addStone(stoneAmt);
             stone -= stoneAmt;
         } else if (buildingType == REFINERY) {
             Refinery r = (Refinery) targetEntity;
 
             int ironAmt = Math.min(iron, R_MAX_IRON - r.getIron());
-            player.setIron(player.getIron() + ironAmt);
-            r.setIron(r.getIron() + ironAmt);
+            r.addIron(ironAmt);
             iron -= ironAmt;
 
             int coalAmt = Math.min(coal, R_MAX_COAL - r.getCoal());
-            player.setCoal(player.getCoal() + coalAmt);
-            r.setCoal(r.getCoal() + coalAmt);
+            r.addCoal(coalAmt);
             coal -= coalAmt;
         }
     }

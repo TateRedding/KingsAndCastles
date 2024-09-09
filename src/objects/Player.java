@@ -12,12 +12,12 @@ public class Player implements Serializable {
     private Play play;
     private long playerID;
 
-    private int coal = 1000;
-    private int food = 100;
-    private int gold = 10000;
-    private int iron = 1000;
-    private int stone = 250;
-    private int logs = 500;
+    private int coal = 100;
+    private int food = 10;
+    private int gold = 350;
+    private int iron = 100;
+    private int stone = 150;
+    private int logs = 100;
 
     private int population, maxPopulation;
 

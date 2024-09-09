@@ -29,7 +29,6 @@ import static entities.buildings.Refinery.R_MAX_IRON;
 import static entities.buildings.StorageHut.SH_MAX_LOGS;
 import static entities.buildings.StorageHut.SH_MAX_STONE;
 import static entities.units.Laborer.*;
-import static entities.units.Unit.*;
 import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 import static ui.buttons.Button.*;
@@ -45,7 +44,7 @@ public class ActionBar extends BottomBar {
     private int selectedBuildingButtonType = VILLAGE;
     private Entity selectedEntity;
 
-    private TextButton buildingInterfaceButton, pause;
+    private TextButton chooseBuilding, pause;
     private ImageButton buildButton, laborerSpawn, meleeUnitSpawn, rangedUnitSpawn;
     private ArrayList<Button> actionBarButtons = new ArrayList<>();
 
@@ -98,9 +97,9 @@ public class ActionBar extends BottomBar {
         float scale = getSelectedBuildingSpriteScale();
         buildButton = new ImageButton(SPRITE, buildButtonXStart, BOTTOM_BAR_Y + (int) yOffset, ImageLoader.buildings[selectedBuildingButtonType], scale);
 
-        buildingInterfaceButton = new TextButton(TEXT_SMALL_LONG, xOffset, BOTTOM_BAR_Y + getButtonHeight(SPRITE) + (int) (yOffset * 2), 22f, "Choose Building");
+        chooseBuilding = new TextButton(TEXT_SMALL_LONG, xOffset, BOTTOM_BAR_Y + getButtonHeight(SPRITE) + (int) (yOffset * 2), 22f, "Choose Building");
 
-        actionBarButtons.addAll(Arrays.asList(buildingInterfaceButton, buildButton));
+        actionBarButtons.addAll(Arrays.asList(chooseBuilding, buildButton));
     }
 
     private void initSpawnButtons() {
@@ -311,7 +310,7 @@ public class ActionBar extends BottomBar {
             } else if (buildButton.getBounds().contains(x, y) && buildButton.isMousePressed()) {
                 play.setSelectedBuildingType(selectedBuildingButtonType);
                 play.setSelectedEntity(null);
-            } else if (buildingInterfaceButton.getBounds().contains(x, y) && buildingInterfaceButton.isMousePressed()) {
+            } else if (chooseBuilding.getBounds().contains(x, y) && chooseBuilding.isMousePressed()) {
                 if (play.getBuildingSelection() == null) {
                     int xStart = (GAME_AREA_WIDTH - Overlay.getOverlayWidth(Overlay.OVERLAY_LARGE)) / 2;
                     int yStart = TOP_BAR_HEIGHT + (GAME_AREA_HEIGHT - Overlay.getOverlayHeight(Overlay.OVERLAY_LARGE)) / 2;
