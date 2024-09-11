@@ -38,7 +38,8 @@ public class MapStatBar extends TopBar {
                 terrainToolTip,
                 terrainToolTip,
                 {"Left-click: Place zone", "Right-click: Delete zone", "Scroll: Switch player", "Esc: Unselect"},
-                {"Left-click: Place mine", "Right-click: Delete mine", "Esc: Unselect", "Right-click & Drag: Move Map"}
+                {"Left-click: Place mine", "Right-click: Delete mine", "Esc: Unselect", "Right-click & Drag: Move Map"},
+                {"Left-click: Place Throne Room", "Right-click: Delete Throne Room", "Scroll: Switch player", "Esc: Unselect"},
         };
     }
 
@@ -118,10 +119,6 @@ public class MapStatBar extends TopBar {
 
     public void mouseMoved(int x, int y) {
 
-    }
-
-    public Edit getEdit() {
-        return edit;
     }
 
 }

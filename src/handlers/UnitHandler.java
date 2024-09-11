@@ -109,6 +109,9 @@ public class UnitHandler implements Serializable {
 
             int maxStartingUnits = Math.min(NUM_MAX_STARTING_UNITS, castleZones.get(i).size());
             ArrayList<Point> spawnPoints = new ArrayList<>(castleZones.get(i));
+            Point throneRoomPoint = play.getMap().getThroneRoomPoints()[i];
+            if (throneRoomPoint != null)
+                spawnPoints.remove(throneRoomPoint);
             Collections.shuffle(spawnPoints, random);
             for (int j = 0; j < maxStartingUnits; j++) {
                 Point spawn = spawnPoints.get(j);

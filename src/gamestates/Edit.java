@@ -14,6 +14,7 @@ import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static entities.buildings.Building.THRONE_ROOM;
 import static entities.resources.ResourceObject.GOLD;
 import static gamestates.Play.CA_SELECT;
 import static main.Game.*;
@@ -26,6 +27,7 @@ public class Edit extends MapState {
 
     public static final int CASTLE_ZONE = 5;
     public static final int GOLD_MINE_TILE = 6;
+    public static final int THRONE_ROOM_TILE = 7;
 
     private EditorBar editorBar;
     private MapStatBar mapStatBar;
@@ -34,7 +36,7 @@ public class Edit extends MapState {
     private int maxBrushSize = 10;
     private int brushSize = 1;
     private int brushShape = SQUARE;
-    private int selectedZone = 0;
+    private int selectedPlayer = 0;
     private int selectedType = -1;
     private int lastTileX, lastTileY;
 
@@ -88,11 +90,12 @@ public class Edit extends MapState {
         super.render(g);
         if (inGameArea) {
             drawSelectedType(g);
-            if (selectedType == CASTLE_ZONE)
+            if (selectedType == CASTLE_ZONE || selectedType == THRONE_ROOM_TILE)
                 drawPlayerIndicator(g);
         }
 
         drawGoldMines(g, mapXOffset, mapYOffset);
+        drawThroneRooms(g, mapXOffset, mapYOffset);
         editorBar.render(g);
         mapStatBar.render(g);
         miniMap.render(g, mapXOffset, mapYOffset);
@@ -114,7 +117,7 @@ public class Edit extends MapState {
     private void drawPlayerIndicator(Graphics g) {
         g.setColor(Color.BLACK);
         g.setFont(Game.getGameFont(24f));
-        String indicator = "P" + (selectedZone + 1);
+        String indicator = "P" + (selectedPlayer + 1);
         int x = mouseX + (TILE_SIZE - g.getFontMetrics().stringWidth(indicator)) / 2;
         int y = mouseY - 2;
         g.drawString(indicator, x, y);
@@ -123,6 +126,12 @@ public class Edit extends MapState {
     private void drawGoldMines(Graphics g, int mapXOffset, int mapYOffset) {
         for (Point p : map.getGoldMinePoints())
             g.drawImage(ImageLoader.resourceObjects[GOLD][0], toPixelX(p.x) - mapXOffset, toPixelY(p.y) - mapYOffset, null);
+    }
+
+    private void drawThroneRooms(Graphics g, int mapXOffset, int mapYOffset) {
+        for (Point p : map.getThroneRoomPoints())
+            if (p != null)
+                g.drawImage(ImageLoader.buildings[THRONE_ROOM], toPixelX(p.x) - mapXOffset, toPixelY(p.y) - mapYOffset, null);
     }
 
     private void changeTile(int mouseEvent) {
@@ -240,12 +249,12 @@ public class Edit extends MapState {
             if (cz.contains(currPoint))
                 return;
 
-        castleZones.get(selectedZone).add(currPoint);
+        castleZones.get(selectedPlayer).add(currPoint);
         validateCastleZones();
     }
 
     private void unsetCastleZone() {
-        ArrayList<Point> selectedZoneList = map.getCastleZones().get(selectedZone);
+        ArrayList<Point> selectedZoneList = map.getCastleZones().get(selectedPlayer);
         for (int i = 0; i < selectedZoneList.size(); i++) {
             Point currPoint = selectedZoneList.get(i);
             if (tileX == currPoint.x && tileY == currPoint.y) {
@@ -287,6 +296,22 @@ public class Edit extends MapState {
             map.getGoldMinePoints().remove(new Point(tileX, tileY));
     }
 
+    private void placeThroneRoom() {
+        Tile currTile = tileData[tileY][tileX];
+        int tileType = currTile.getTileType();
+        if (tileType == WATER_GRASS || tileType == WATER_SAND)
+            return;
+        Point throneRoomPoint = new Point(tileX, tileY);
+        if (map.getCastleZones().get(selectedPlayer).contains(throneRoomPoint))
+            map.getThroneRoomPoints()[selectedPlayer] = throneRoomPoint;
+    }
+
+    private void removeThroneRoom() {
+        Point throneRoomPoint = new Point(tileX, tileY);
+        if (map.getThroneRoomPoints()[selectedPlayer].equals(throneRoomPoint))
+            map.getThroneRoomPoints()[selectedPlayer] = null;
+    }
+
     public void saveMap() {
         game.getSaveFileHandler().saveMap(map);
     }
@@ -315,6 +340,9 @@ public class Edit extends MapState {
                     case GOLD_MINE_TILE:
                         placeGoldMine();
                         break;
+                    case THRONE_ROOM_TILE:
+                        placeThroneRoom();
+                        break;
                     default:
                         changeTile(MouseEvent.MOUSE_RELEASED);
                 }
@@ -323,6 +351,8 @@ public class Edit extends MapState {
                     unsetCastleZone();
                 else if (selectedType == GOLD_MINE_TILE)
                     removeGoldMine();
+                else if (selectedType == THRONE_ROOM_TILE)
+                    removeThroneRoom();
 
         leftMouseDown = false;
         rightMouseDown = false;
@@ -360,15 +390,15 @@ public class Edit extends MapState {
     public void mouseWheelMoved(int dir, int amt) {
         super.mouseWheelMoved(dir, amt);
         if (dir == -1) {
-            if (selectedType == CASTLE_ZONE) {
-                if (selectedZone < map.getNumPlayers() - 1)
-                    selectedZone++;
+            if (selectedType == CASTLE_ZONE || selectedType == THRONE_ROOM_TILE) {
+                if (selectedPlayer < map.getNumPlayers() - 1)
+                    selectedPlayer++;
             } else if (selectedType != GOLD_MINE_TILE && brushSize < maxBrushSize)
                 brushSize++;
         } else {
-            if (selectedType == CASTLE_ZONE) {
-                if (selectedZone > 0)
-                    selectedZone--;
+            if (selectedType == CASTLE_ZONE || selectedType == THRONE_ROOM_TILE) {
+                if (selectedPlayer > 0)
+                    selectedPlayer--;
             } else if (selectedType != GOLD_MINE_TILE && brushSize > 1)
                 brushSize--;
         }

@@ -28,19 +28,21 @@ public class Map implements Savable, Serializable {
     private int numPlayers = 2;
     private ArrayList<ArrayList<Point>> castleZones = new ArrayList<ArrayList<Point>>();
     private ArrayList<Point> goldMinePoints;
+    private Point[] throneRoomPoints;
     private int[] tileCounts = new int[5];
 
     public Map(String name, int tileWidth, int tileHeight) {
         this.name = name;
         for (int i = 0; i < numPlayers; i++)
-            castleZones.add(new ArrayList<Point>());
+            castleZones.add(new ArrayList<>());
         createDefaultMap(tileWidth, tileHeight);
         initChunks();
     }
 
     private void createDefaultMap(int tileWidth, int tileHeight) {
         tileData = new Tile[tileHeight][tileWidth];
-        goldMinePoints = new ArrayList<Point>();
+        goldMinePoints = new ArrayList<>();
+        throneRoomPoints = new Point[numPlayers];
         for (int j = 0; j < tileData.length; j++)
             for (int i = 0; i < tileData[j].length; i++) {
                 tileData[j][i] = new Tile(GRASS, 0);
@@ -110,8 +112,8 @@ public class Map implements Savable, Serializable {
         return goldMinePoints;
     }
 
-    public void setGoldMinePoints(ArrayList<Point> goldMinePoints) {
-        this.goldMinePoints = goldMinePoints;
+    public Point[] getThroneRoomPoints() {
+        return throneRoomPoints;
     }
 
     public int[] getTileCounts() {

@@ -1,6 +1,7 @@
 package handlers;
 
 import entities.buildings.*;
+import entities.resources.GoldMine;
 import gamestates.Play;
 import objects.Player;
 import utils.ImageLoader;
@@ -10,6 +11,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import static entities.buildings.Building.*;
+import static main.Game.toPixelX;
+import static main.Game.toPixelY;
 
 public class BuildingHandler implements Serializable {
 
@@ -20,6 +23,7 @@ public class BuildingHandler implements Serializable {
 
     public BuildingHandler(Play play) {
         this.play = play;
+        addThroneRooms();
     }
 
 
@@ -32,9 +36,16 @@ public class BuildingHandler implements Serializable {
             g.drawImage(ImageLoader.buildings[b.getSubType()], b.getHitbox().x - xOffset, b.getHitbox().y - yOffset, null);
     }
 
+    private void addThroneRooms() {
+        for (int i = 0; i < play.getMap().getNumPlayers(); i++) {
+            Point p = play.getMap().getThroneRoomPoints()[i];
+            if (p != null)
+                buildings.add(new ThroneRoom(play.getPlayers().get(i), id++, toPixelX(p.x), toPixelY(p.y)));
+        }
+    }
+
     public void createBuilding(Player player, int x, int y, int buildingType) {
         switch (buildingType) {
-            case THRONE_ROOM -> buildings.add(new ThroneRoom(player, id, x, y));
             case CASTLE_WALL -> buildings.add(new CastleWall(player, id, x, y));
             case CASTLE_TURRET -> buildings.add(new CastleTurret(player, id, x, y));
             case VILLAGE -> buildings.add(new Village(player, id, x, y));

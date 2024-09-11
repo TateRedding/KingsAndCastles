@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static entities.buildings.Building.THRONE_ROOM;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static main.Game.TILE_SIZE;
 import static objects.Tile.*;
@@ -153,7 +154,8 @@ public class ImageLoader {
                 tiles.get(WATER_GRASS).get(0),
                 tiles.get(WATER_SAND).get(0),
                 getSprite(LoadSave.loadImage(CASTLE_ZONE), 0, 0),
-                ores[0]
+                ores[0],
+                buildings[THRONE_ROOM]
         ));
         icons = getImageArray(ICONS, 16, 16, 4, 5, 16);
         selectIndicator = getSpriteArray(SELECT_INDICATOR, 0, 0, 1, 4, 4);

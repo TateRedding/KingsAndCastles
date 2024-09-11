@@ -49,7 +49,7 @@ public class EditorBar extends BottomBar {
             spriteButtons.add(new ImageButton(SPRITE, x, y, ImageLoader.editorBarButtonSprites.get(i), scale));
             x += buttonWidth + xOffset;
         }
-        buttonLabels.addAll(Arrays.asList("Grass", "Dirt", "Sand", "Watery Grass", "Watery Sand", "Castle Zones", "Gold Mine"));
+        buttonLabels.addAll(Arrays.asList("Grass", "Dirt", "Sand", "Watery Grass", "Watery Sand", "Castle Zones", "Gold Mine", "Throne Room"));
     }
 
     private void initBrushButtons() {
@@ -215,10 +215,6 @@ public class EditorBar extends BottomBar {
             if (bb.getBounds().contains(x, y))
                 bb.setMouseOver(true);
         }
-    }
-
-    public Edit getMapState() {
-        return edit;
     }
 
     public void setShowCastleZoneWarning(boolean showCastleZoneWarning) {
