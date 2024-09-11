@@ -75,42 +75,31 @@ public class BuildingHandler implements Serializable {
         for (Building b : buildings) {
             if (costCoal <= 0 && costIron <= 0 && costLogs <= 0 && costStone <= 0)
                 return;
-            int subType = b.getSubType();
-            if (subType == THRONE_ROOM) {
-                ThroneRoom tr = (ThroneRoom) b;
-                if (costLogs > 0 && tr.getLogs() > 0) {
-                    int logsAmt = Math.min(costLogs, tr.getLogs());
-                    tr.removeLogs(logsAmt);
-                    costLogs -= logsAmt;
+            if (b.hasInventory()) {
+                BuildingWithInventory bwi = (BuildingWithInventory) b;
+                if (bwi.holdsCoalAndIron()) {
+                    if (costCoal > 0 && bwi.getCoal() > 0) {
+                        int coalAmt = Math.min(costCoal, bwi.getCoal());
+                        bwi.removeCoal(coalAmt);
+                        costCoal -= coalAmt;
+                    }
+                    if (costIron > 0 && bwi.getIron() > 0) {
+                        int ironAmt = Math.min(costIron, bwi.getIron());
+                        bwi.removeIron(ironAmt);
+                        costIron -= ironAmt;
+                    }
                 }
-                if (costStone > 0 && tr.getStone() > 0) {
-                    int stoneAmt = Math.min(costStone, tr.getStone());
-                    tr.removeStone(stoneAmt);
-                    costStone -= stoneAmt;
-                }
-            } else if (subType == STORAGE_HUT) {
-                StorageHut sh = (StorageHut) b;
-                if (costLogs > 0 && sh.getLogs() > 0) {
-                    int logsAmt = Math.min(costLogs, sh.getLogs());
-                    sh.removeLogs(logsAmt);
-                    costLogs -= logsAmt;
-                }
-                if (costStone > 0 && sh.getStone() > 0) {
-                    int stoneAmt = Math.min(costStone, sh.getStone());
-                    sh.removeStone(stoneAmt);
-                    costStone -= stoneAmt;
-                }
-            } else if (subType == REFINERY) {
-                Refinery r = (Refinery) b;
-                if (costCoal > 0 && r.getCoal() > 0) {
-                    int coalAmt = Math.min(costCoal, r.getCoal());
-                    r.removeCoal(coalAmt);
-                    costCoal -= coalAmt;
-                }
-                if (costIron > 0 && r.getIron() > 0) {
-                    int ironAmt = Math.min(costIron, r.getIron());
-                    r.removeIron(ironAmt);
-                    costIron -= ironAmt;
+                if (bwi.holdsLogsAndStone()) {
+                    if (costLogs > 0 && bwi.getLogs() > 0) {
+                        int logsAmt = Math.min(costLogs, bwi.getLogs());
+                        bwi.removeLogs(logsAmt);
+                        costLogs -= logsAmt;
+                    }
+                    if (costStone > 0 && bwi.getStone() > 0) {
+                        int stoneAmt = Math.min(costStone, bwi.getStone());
+                        bwi.removeStone(stoneAmt);
+                        costStone -= stoneAmt;
+                    }
                 }
             }
         }

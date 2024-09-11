@@ -22,6 +22,8 @@ public abstract class Building extends Entity {
     public static final int BARRACKS_TIER_2 = 9;
     public static final int BARRACKS_TIER_3 = 10;
 
+    protected boolean hasInventory = false;
+
     public Building(Player player, int id, int x, int y, int buildingType) {
         super(player, BUILDING, buildingType, x, y, id);
         this.maxHealth = getDefaultMaxHealth(buildingType);
@@ -203,4 +205,7 @@ public abstract class Building extends Entity {
         };
     }
 
+    public boolean hasInventory() {
+        return hasInventory;
+    }
 }
