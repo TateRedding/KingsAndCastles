@@ -77,7 +77,7 @@ public class BuildingHandler implements Serializable {
                 return;
             if (b.hasInventory()) {
                 BuildingWithInventory bwi = (BuildingWithInventory) b;
-                if (bwi.holdsCoalAndIron()) {
+                if (bwi.getSubType() == REFINERY) {
                     if (costCoal > 0 && bwi.getCoal() > 0) {
                         int coalAmt = Math.min(costCoal, bwi.getCoal());
                         bwi.removeCoal(coalAmt);
@@ -88,8 +88,7 @@ public class BuildingHandler implements Serializable {
                         bwi.removeIron(ironAmt);
                         costIron -= ironAmt;
                     }
-                }
-                if (bwi.holdsLogsAndStone()) {
+                } else if (bwi.getSubType() == THRONE_ROOM || bwi.getSubType() == STORAGE_HUT) {
                     if (costLogs > 0 && bwi.getLogs() > 0) {
                         int logsAmt = Math.min(costLogs, bwi.getLogs());
                         bwi.removeLogs(logsAmt);
