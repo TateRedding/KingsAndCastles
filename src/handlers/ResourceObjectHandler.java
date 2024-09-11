@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static entities.resources.ResourceObject.*;
+import static entities.units.Unit.IDLE;
 import static main.Game.*;
 import static objects.Chunk.MAX_CHUNK_SIZE;
 import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
@@ -372,6 +373,7 @@ public class ResourceObjectHandler implements Serializable {
                     }
                 }
         laborer.setTargetEntity(null);
+        laborer.setState(IDLE);
     }
 
     private boolean isValidTile(int x, int y) {

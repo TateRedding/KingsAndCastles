@@ -12,12 +12,12 @@ public class Player implements Serializable {
     private Play play;
     private long playerID;
 
-    private int coal = 100;
-    private int food = 10;
-    private int gold = 350;
-    private int iron = 100;
-    private int stone = 150;
-    private int logs = 100;
+    private int coal = 0;
+    private int food = 25;
+    private int gold = 1000;
+    private int iron = 0;
+    private int logs = 0;
+    private int stone = 0;
 
     private int population, maxPopulation;
 
@@ -33,8 +33,8 @@ public class Player implements Serializable {
         coal -= Building.getCostCoal(buildingType);
         gold -= Building.getCostGold(buildingType);
         iron -= Building.getCostIron(buildingType);
-        stone -= Building.getCostStone(buildingType);
         logs -= Building.getCostLogs(buildingType);
+        stone -= Building.getCostStone(buildingType);
 
         if (buildingType == VILLAGE)
             maxPopulation += 4;
@@ -72,8 +72,20 @@ public class Player implements Serializable {
         this.iron = iron;
     }
 
+    public int getLogs() {
+        return logs;
+    }
+
+    public void setLogs(int logs) {
+        this.logs = logs;
+    }
+
     public int getMaxPopulation() {
         return maxPopulation;
+    }
+
+    public void setMaxPopulation(int maxPopulation) {
+        this.maxPopulation = maxPopulation;
     }
 
     public Play getPlay() {
@@ -98,13 +110,5 @@ public class Player implements Serializable {
 
     public void setStone(int stone) {
         this.stone = stone;
-    }
-
-    public int getLogs() {
-        return logs;
-    }
-
-    public void setLogs(int logs) {
-        this.logs = logs;
     }
 }

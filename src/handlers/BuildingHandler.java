@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import static entities.buildings.Building.*;
+import static entities.buildings.ThroneRoom.*;
 import static main.Game.toPixelX;
 import static main.Game.toPixelY;
 
@@ -39,8 +40,13 @@ public class BuildingHandler implements Serializable {
     private void addThroneRooms() {
         for (int i = 0; i < play.getMap().getNumPlayers(); i++) {
             Point p = play.getMap().getThroneRoomPoints()[i];
-            if (p != null)
-                buildings.add(new ThroneRoom(play.getPlayers().get(i), id++, toPixelX(p.x), toPixelY(p.y)));
+            if (p != null) {
+                Player currPlayer = play.getPlayers().get(i);
+                buildings.add(new ThroneRoom(currPlayer, id++, toPixelX(p.x), toPixelY(p.y)));
+                currPlayer.setLogs(STARTING_LOGS);
+                currPlayer.setStone(STARTING_STONE);
+                currPlayer.setMaxPopulation(STARTING_POPULATION);
+            }
         }
     }
 
@@ -57,7 +63,57 @@ public class BuildingHandler implements Serializable {
             case BARRACKS_TIER_2 -> buildings.add(new Barracks(player, id, x, y, 2));
             case BARRACKS_TIER_3 -> buildings.add(new Barracks(player, id, x, y, 3));
         }
-        player.buildBuilding(buildingType);
+        adjustResources(buildingType);
+    }
+
+    private void adjustResources(int buildingType) {
+        int costCoal = getCostCoal(buildingType);
+        int costIron = getCostIron(buildingType);
+        int costLogs = getCostLogs(buildingType);
+        int costStone = getCostStone(buildingType);
+
+        for (Building b : buildings) {
+            if (costCoal <= 0 && costIron <= 0 && costLogs <= 0 && costStone <= 0)
+                return;
+            int subType = b.getSubType();
+            if (subType == THRONE_ROOM) {
+                ThroneRoom tr = (ThroneRoom) b;
+                if (costLogs > 0 && tr.getLogs() > 0) {
+                    int logsAmt = Math.min(costLogs, tr.getLogs());
+                    tr.removeLogs(logsAmt);
+                    costLogs -= logsAmt;
+                }
+                if (costStone > 0 && tr.getStone() > 0) {
+                    int stoneAmt = Math.min(costStone, tr.getStone());
+                    tr.removeStone(stoneAmt);
+                    costStone -= stoneAmt;
+                }
+            } else if (subType == STORAGE_HUT) {
+                StorageHut sh = (StorageHut) b;
+                if (costLogs > 0 && sh.getLogs() > 0) {
+                    int logsAmt = Math.min(costLogs, sh.getLogs());
+                    sh.removeLogs(logsAmt);
+                    costLogs -= logsAmt;
+                }
+                if (costStone > 0 && sh.getStone() > 0) {
+                    int stoneAmt = Math.min(costStone, sh.getStone());
+                    sh.removeStone(stoneAmt);
+                    costStone -= stoneAmt;
+                }
+            } else if (subType == REFINERY) {
+                Refinery r = (Refinery) b;
+                if (costCoal > 0 && r.getCoal() > 0) {
+                    int coalAmt = Math.min(costCoal, r.getCoal());
+                    r.removeCoal(coalAmt);
+                    costCoal -= coalAmt;
+                }
+                if (costIron > 0 && r.getIron() > 0) {
+                    int ironAmt = Math.min(costIron, r.getIron());
+                    r.removeIron(ironAmt);
+                    costIron -= ironAmt;
+                }
+            }
+        }
     }
 
     public Building getBuildingAt(int x, int y) {
