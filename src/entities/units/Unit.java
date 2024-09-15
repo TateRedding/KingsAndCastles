@@ -188,9 +188,19 @@ public abstract class Unit extends Entity implements Serializable {
         float size = (tileRange * 2 + 1) * TILE_SIZE;
         Ellipse2D range = new Ellipse2D.Double(startX, startY, size, size);
         Rectangle targetBounds = target.getHitbox();
-        int middleX = targetBounds.x + targetBounds.width / 2;
-        int middleY = targetBounds.y + targetBounds.height / 2;
-        return range.contains(middleX, middleY);
+
+        int numTilesX = targetBounds.width / TILE_SIZE;
+        int numTilesY = targetBounds.height / TILE_SIZE;
+        int halfTileSize = TILE_SIZE / 2;
+
+        for (int tilesX = 0; tilesX < numTilesX; tilesX++)
+            for (int tilesY = 0; tilesY < numTilesY; tilesY++) {
+                int middleX = targetBounds.x + (tilesX * TILE_SIZE) + halfTileSize;
+                int middleY = targetBounds.y + (tilesY * TILE_SIZE) + halfTileSize;
+                if (range.contains(middleX, middleY))
+                    return true;
+            }
+        return false;
     }
 
     public boolean isLineOfSightOpen(Entity target) {
@@ -412,7 +422,7 @@ public abstract class Unit extends Entity implements Serializable {
     }
 
 
-    protected void updateHitbox() {
+    public void updateHitbox() {
         hitbox.x = (int) x;
         hitbox.y = (int) y;
     }
@@ -462,6 +472,10 @@ public abstract class Unit extends Entity implements Serializable {
 
     public int getDirection() {
         return direction;
+    }
+
+    public void setDirection(int direction) {
+        this.direction = direction;
     }
 
     public ArrayList<Point> getPath() {

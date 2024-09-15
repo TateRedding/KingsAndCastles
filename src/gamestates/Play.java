@@ -1,6 +1,7 @@
 package gamestates;
 
 import entities.buildings.Building;
+import entities.buildings.Farm;
 import entities.resources.ResourceObject;
 import entities.units.Laborer;
 import entities.units.Unit;
@@ -30,6 +31,7 @@ import static entities.buildings.Building.BUILDING;
 import static entities.buildings.Building.RESOURCE;
 import static entities.buildings.Building.UNIT;
 import static entities.buildings.Building.*;
+import static entities.buildings.Farm.MAX_FARMERS;
 import static entities.resources.ResourceObject.TREE;
 import static entities.units.Unit.*;
 import static main.Game.*;
@@ -43,7 +45,7 @@ public class Play extends MapState implements Savable, Serializable {
     private static final int CA_MOVE = 1;
     private static final int CA_CHOP = 2;
     private static final int CA_MINE = 3;
-    private static final int CA_FARM = 4;
+    public static final int CA_FARM = 4;
     private static final int CA_EMPTY_INVENTORY = 5;
     private static final int CA_REPAIR = 6;
     private static final int CA_ATTACK_MELEE = 7;
@@ -291,25 +293,25 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     public Entity getEntityAtCoordinate(int x, int y) {
-        Unit u = unitHandler.getUnitAtCoord(x, y);
-        if (u != null)
-            return u;
-
         Building b = buildingHandler.getBuildingAt(x, y);
         if (b != null)
             return b;
+
+        Unit u = unitHandler.getUnitAtCoord(x, y);
+        if (u != null)
+            return u;
 
         return resourceObjectData[toTileY(y)][toTileX(x)];
     }
 
     public Entity getEntityAtTile(int tileX, int tileY) {
-        Unit u = unitHandler.getUnitAtTile(tileX, tileY);
-        if (u != null)
-            return u;
-
         Building b = buildingHandler.getBuildingAt(toPixelX(tileX), toPixelY(tileY));
         if (b != null)
             return b;
+
+        Unit u = unitHandler.getUnitAtTile(tileX, tileY);
+        if (u != null)
+            return u;
 
         return resourceObjectData[tileY][tileX];
     }
@@ -413,7 +415,7 @@ public class Play extends MapState implements Savable, Serializable {
             if (activePlayer.getPopulation() >= activePlayer.getMaxPopulation())
                 System.out.println("Not enough villages!");
 
-            Point spawnPoint = getSpawnTile((Building) selectedEntity);
+            Point spawnPoint = buildingHandler.getSpawnTile((Building) selectedEntity);
 
             if (spawnPoint == null) {
                 System.out.println("No spawnable tiles!");
@@ -422,33 +424,6 @@ public class Play extends MapState implements Savable, Serializable {
 
             unitHandler.createUnit(activePlayer, spawnPoint, unitType);
         }
-    }
-
-    private Point getSpawnTile(Building building) {
-        int buildingType = building.getSubType();
-        int tileWidth = getBuildingTileWidth(buildingType);
-        int tileHeight = getBuildingTileHeight(buildingType);
-        int tileXStart = toTileX(building.getX()) - 1;
-        int tileYStart = toTileY(building.getY()) - 1;
-
-        ArrayList<Point> spawnPoints = new ArrayList<>();
-        int mapHeight = map.getTileData().length;
-        int mapWidth = map.getTileData()[0].length;
-
-        for (int y = tileYStart; y < tileYStart + tileHeight + 2; y++)
-            for (int x = tileXStart; x < tileXStart + tileWidth + 2; x++)
-                if (y >= 0 && y < mapHeight && x >= 0 && x < mapWidth)
-                    if (!building.getHitbox().contains(toPixelX(x), toPixelY(y))) {
-                        Point currPoint = new Point(x, y);
-                        if (isPointOpen(currPoint, this))
-                            spawnPoints.add(currPoint);
-                    }
-
-        if (spawnPoints.isEmpty())
-            return null;
-
-        Random r = new Random(seed);
-        return spawnPoints.get(r.nextInt(spawnPoints.size()));
     }
 
     private void setSelectedUnitTargetToHoverEntity(Unit selectedUnit) {
@@ -505,8 +480,7 @@ public class Play extends MapState implements Savable, Serializable {
                                 selectedUnit.setPath(path);
                                 selectedUnit.setTargetEntity(null);
                             }
-                        } else if ((hoverEntity.getEntityType() == RESOURCE && (clickAction == CA_CHOP || clickAction == CA_MINE) && !((Laborer) selectedEntity).isInventoryFull(hoverEntity.getSubType())) ||
-                                (hoverEntity.getEntityType() == UNIT && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED)))
+                        } else if (canAttackOnClick() || canFarmOnClick() || canGatherOnClick())
                             setSelectedUnitTargetToHoverEntity(selectedUnit);
                         else if (hoverEntity.getEntityType() == BUILDING && clickAction == CA_EMPTY_INVENTORY) {
                             if (((Laborer) selectedUnit).canDepositResources((Building) hoverEntity))
@@ -521,6 +495,20 @@ public class Play extends MapState implements Savable, Serializable {
         }
         leftMouseDown = false;
         rightMouseDown = false;
+    }
+
+    private boolean canAttackOnClick() {
+        return hoverEntity.getEntityType() == UNIT && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED);
+    }
+
+    private boolean canFarmOnClick() {
+        return hoverEntity.getEntityType() == BUILDING && (hoverEntity.getSubType() == FARM || hoverEntity.getSubType() == FARM_ROTATED)
+                && clickAction == CA_FARM && ((Farm) hoverEntity).getFarmers().size() < MAX_FARMERS;
+    }
+
+    private boolean canGatherOnClick() {
+        return hoverEntity.getEntityType() == RESOURCE && (clickAction == CA_CHOP || clickAction == CA_MINE)
+                && !((Laborer) selectedEntity).isInventoryFull(hoverEntity.getSubType());
     }
 
     @Override

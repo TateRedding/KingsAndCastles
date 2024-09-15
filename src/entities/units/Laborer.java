@@ -1,6 +1,7 @@
 package entities.units;
 
 import entities.buildings.Building;
+import entities.buildings.Farm;
 import entities.buildings.Refinery;
 import entities.buildings.StorageHut;
 import entities.resources.ResourceObject;
@@ -10,15 +11,13 @@ import objects.Player;
 import java.awt.*;
 import java.util.ArrayList;
 
-import static entities.buildings.Building.REFINERY;
-import static entities.buildings.Building.STORAGE_HUT;
+import static entities.buildings.Building.*;
 import static entities.buildings.Refinery.R_MAX_COAL;
 import static entities.buildings.Refinery.R_MAX_IRON;
 import static entities.buildings.StorageHut.SH_MAX_LOGS;
 import static entities.buildings.StorageHut.SH_MAX_STONE;
 import static entities.resources.ResourceObject.*;
-import static main.Game.toTileX;
-import static main.Game.toTileY;
+import static main.Game.*;
 import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
 
 public class Laborer extends Unit {
@@ -34,6 +33,8 @@ public class Laborer extends Unit {
     public static final int L_MAX_STONE = 50;
 
     private int coal, iron, logs, stone;
+
+    private boolean farming;
 
     private Point previousTargetTile;
     private int previousTargetType = -1;
@@ -86,17 +87,21 @@ public class Laborer extends Unit {
 
             if (entityType == BUILDING) {
                 if (state == IDLE && isTargetInRange(targetEntity, actionRange)) {
-                    depositResources();
-                    if (previousTargetTile != null && previousTargetType != -1) {
-                        ResourceObject previousTarget = unitHandler.getPlay().getResourceObjectData()[previousTargetTile.y][previousTargetTile.x];
-                        if (previousTarget != null) {
-                            path = getUnitPathToNearestAdjacentTile(this, previousTargetTile.x, previousTargetTile.y, unitHandler.getPlay());
-                            if (path != null)
-                                targetEntity = previousTarget;
-                        } else
-                            locateAndTargetNearestResource(previousTargetType, previousTargetTile.x, previousTargetTile.y);
-                    }
-                    clearPreviousTarget();
+                    int subType = targetEntity.getSubType();
+                    if (subType == STORAGE_HUT || subType == REFINERY) {
+                        depositResources();
+                        if (previousTargetTile != null && previousTargetType != -1) {
+                            ResourceObject previousTarget = unitHandler.getPlay().getResourceObjectData()[previousTargetTile.y][previousTargetTile.x];
+                            if (previousTarget != null) {
+                                path = getUnitPathToNearestAdjacentTile(this, previousTargetTile.x, previousTargetTile.y, unitHandler.getPlay());
+                                if (path != null)
+                                    targetEntity = previousTarget;
+                            } else
+                                locateAndTargetNearestResource(previousTargetType, previousTargetTile.x, previousTargetTile.y);
+                        }
+                        clearPreviousTarget();
+                    } else if ((subType == FARM || subType == FARM_ROTATED) && !farming)
+                        startFarming();
                 }
             }
         }
@@ -204,12 +209,43 @@ public class Laborer extends Unit {
         unitHandler.getPlay().getResourceObjectHandler().locateAndTargetNearestResource(this, resourceType, tileX, tileY);
     }
 
+    private void startFarming() {
+        Farm targetFarm = (Farm) targetEntity;
+        ArrayList<Laborer> currFarmers = targetFarm.getFarmers();
+        int farmType = targetEntity.getSubType();
+        int farmX = (int) targetEntity.getX();
+        int farmY = (int) targetEntity.getY();
+
+        farming = true;
+        x = farmX;
+        y = farmY;
+        if (!currFarmers.isEmpty()) {
+            int offset = TILE_SIZE * currFarmers.size();
+            if (farmType == FARM)
+                y = farmY + offset;
+            else if (farmType == FARM_ROTATED)
+                x = farmX + offset;
+        }
+        if (unitHandler.getPlay().getSelectedEntity() == this)
+            unitHandler.getPlay().setSelectedEntity(targetFarm);
+        currFarmers.add(this);
+        updateHitbox();
+    }
+
     public int getCoal() {
         return coal;
     }
 
     public void setCoal(int coal) {
         this.coal = coal;
+    }
+
+    public boolean isFarming() {
+        return farming;
+    }
+
+    public void setFarming(boolean farming) {
+        this.farming = farming;
     }
 
     public int getIron() {

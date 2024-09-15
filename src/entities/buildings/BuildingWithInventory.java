@@ -1,13 +1,14 @@
 package entities.buildings;
 
+import handlers.BuildingHandler;
 import objects.Player;
 
 public abstract class BuildingWithInventory extends Building {
 
     protected int coal, iron, logs, stone;
 
-    public BuildingWithInventory(Player player, int id, int x, int y, int buildingType) {
-        super(player, id, x, y, buildingType);
+    public BuildingWithInventory(Player player, int id, int x, int y, int buildingType, BuildingHandler buildingHandler) {
+        super(player, id, x, y, buildingType, buildingHandler);
         hasInventory = true;
     }
 

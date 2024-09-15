@@ -3,17 +3,20 @@ package handlers;
 import entities.buildings.*;
 import entities.resources.GoldMine;
 import gamestates.Play;
+import objects.Map;
 import objects.Player;
 import utils.ImageLoader;
 
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Random;
 
 import static entities.buildings.Building.*;
 import static entities.buildings.ThroneRoom.*;
-import static main.Game.toPixelX;
-import static main.Game.toPixelY;
+import static main.Game.*;
+import static main.Game.toTileY;
+import static pathfinding.AStar.isPointOpen;
 
 public class BuildingHandler implements Serializable {
 
@@ -42,7 +45,7 @@ public class BuildingHandler implements Serializable {
             Point p = play.getMap().getThroneRoomPoints()[i];
             if (p != null) {
                 Player currPlayer = play.getPlayers().get(i);
-                buildings.add(new ThroneRoom(currPlayer, id++, toPixelX(p.x), toPixelY(p.y)));
+                buildings.add(new ThroneRoom(currPlayer, id++, toPixelX(p.x), toPixelY(p.y), this));
                 currPlayer.setLogs(STARTING_LOGS);
                 currPlayer.setStone(STARTING_STONE);
                 currPlayer.setMaxPopulation(STARTING_POPULATION);
@@ -52,16 +55,16 @@ public class BuildingHandler implements Serializable {
 
     public void createBuilding(Player player, int x, int y, int buildingType) {
         switch (buildingType) {
-            case CASTLE_WALL -> buildings.add(new CastleWall(player, id, x, y));
-            case CASTLE_TURRET -> buildings.add(new CastleTurret(player, id, x, y));
-            case VILLAGE -> buildings.add(new Village(player, id, x, y));
-            case STORAGE_HUT -> buildings.add(new StorageHut(player, id, x, y));
-            case REFINERY -> buildings.add(new Refinery(player, id, x, y));
-            case FARM -> buildings.add(new Farm(player, id, x, y, false));
-            case FARM_ROTATED -> buildings.add(new Farm(player, id, x, y, true));
-            case BARRACKS_TIER_1 -> buildings.add(new Barracks(player, id, x, y, 1));
-            case BARRACKS_TIER_2 -> buildings.add(new Barracks(player, id, x, y, 2));
-            case BARRACKS_TIER_3 -> buildings.add(new Barracks(player, id, x, y, 3));
+            case CASTLE_WALL -> buildings.add(new CastleWall(player, id, x, y, this));
+            case CASTLE_TURRET -> buildings.add(new CastleTurret(player, id, x, y, this));
+            case VILLAGE -> buildings.add(new Village(player, id, x, y, this));
+            case STORAGE_HUT -> buildings.add(new StorageHut(player, id, x, y, this));
+            case REFINERY -> buildings.add(new Refinery(player, id, x, y, this));
+            case FARM -> buildings.add(new Farm(player, id, x, y, false, this));
+            case FARM_ROTATED -> buildings.add(new Farm(player, id, x, y, true, this));
+            case BARRACKS_TIER_1 -> buildings.add(new Barracks(player, id, x, y, 1, this));
+            case BARRACKS_TIER_2 -> buildings.add(new Barracks(player, id, x, y, 2, this));
+            case BARRACKS_TIER_3 -> buildings.add(new Barracks(player, id, x, y, 3, this));
         }
         adjustResources(buildingType);
     }
@@ -109,6 +112,34 @@ public class BuildingHandler implements Serializable {
             if (b.getHitbox().contains(x, y))
                 return b;
         return null;
+    }
+
+    public Point getSpawnTile(Building building) {
+        Map map = play.getMap();
+        int buildingType = building.getSubType();
+        int tileWidth = getBuildingTileWidth(buildingType);
+        int tileHeight = getBuildingTileHeight(buildingType);
+        int tileXStart = toTileX(building.getX()) - 1;
+        int tileYStart = toTileY(building.getY()) - 1;
+
+        ArrayList<Point> spawnPoints = new ArrayList<>();
+        int mapHeight = map.getTileData().length;
+        int mapWidth = map.getTileData()[0].length;
+
+        for (int y = tileYStart; y < tileYStart + tileHeight + 2; y++)
+            for (int x = tileXStart; x < tileXStart + tileWidth + 2; x++)
+                if (y >= 0 && y < mapHeight && x >= 0 && x < mapWidth)
+                    if (!building.getHitbox().contains(toPixelX(x), toPixelY(y))) {
+                        Point currPoint = new Point(x, y);
+                        if (isPointOpen(currPoint, play))
+                            spawnPoints.add(currPoint);
+                    }
+
+        if (spawnPoints.isEmpty())
+            return null;
+
+        Random r = new Random(play.getSeed());
+        return spawnPoints.get(r.nextInt(spawnPoints.size()));
     }
 
     public ArrayList<Building> getBuildings() {

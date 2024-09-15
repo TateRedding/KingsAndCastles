@@ -64,6 +64,8 @@ public class UnitHandler implements Serializable {
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Unit u : units) {
             if (u.isAlive()) {
+                if (u.getSubType() == LABORER && ((Laborer) u).isFarming())
+                    continue;
                 int dir = u.getDirection();
                 if (dir == UP_LEFT || dir == DOWN_LEFT)
                     dir = LEFT;
@@ -198,6 +200,8 @@ public class UnitHandler implements Serializable {
     private void findEnemyToAttack(Unit attacker) {
         for (Unit target : units) {
             if (target.isAlive() && target.getPlayer().getPlayerID() != attacker.getPlayer().getPlayerID() && attacker.isTargetInRange(target, attacker.getSightRange())) {
+                if (target.getSubType() == LABORER && ((Laborer) target).isFarming())
+                    continue;
                 if (attacker.isTargetInRange(target, attacker.getActionRange()) && attacker.isLineOfSightOpen(target)) {
                     attacker.setTargetEntity(target);
                     return;

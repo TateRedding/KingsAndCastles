@@ -1,11 +1,12 @@
 package entities.buildings;
 
+import handlers.BuildingHandler;
 import objects.Player;
 
 public class Barracks extends Building {
 
-    public Barracks(Player player, int id, int x, int y, int tier) {
-        super(player, id, x, y, getSubTypeByTier(tier));
+    public Barracks(Player player, int id, int x, int y, int tier, BuildingHandler buildingHandler) {
+        super(player, id, x, y, getSubTypeByTier(tier), buildingHandler);
     }
 
     private static int getSubTypeByTier(int tier) {

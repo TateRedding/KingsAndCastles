@@ -1,5 +1,6 @@
 package ui.bars;
 
+import entities.buildings.Farm;
 import entities.buildings.Refinery;
 import entities.buildings.StorageHut;
 import entities.units.Laborer;
@@ -24,11 +25,13 @@ import java.util.Arrays;
 
 import static entities.buildings.Building.BUILDING;
 import static entities.buildings.Building.*;
+import static entities.buildings.Farm.MAX_FARMERS;
 import static entities.buildings.Refinery.R_MAX_COAL;
 import static entities.buildings.Refinery.R_MAX_IRON;
 import static entities.buildings.StorageHut.SH_MAX_LOGS;
 import static entities.buildings.StorageHut.SH_MAX_STONE;
 import static entities.units.Laborer.*;
+import static gamestates.Play.CA_FARM;
 import static main.Game.*;
 import static ui.bars.TopBar.TOP_BAR_HEIGHT;
 import static ui.buttons.Button.*;
@@ -38,17 +41,19 @@ public class ActionBar extends BottomBar {
     private static final float MAX_BUTTON_SPRITE_SIZE = TILE_SIZE * 2;
     private static final float MAX_SELECTION_SPRITE_SIZE = TILE_SIZE * 4;
 
+    private static final int RELEASE_FARMER_BUTTON_Y_OFFSET = 3;
+
     private Play play;
     private Player player;
 
     private int selectedBuildingButtonType = VILLAGE;
     private Entity selectedEntity;
 
-    private TextButton chooseBuilding, pause;
+    private TextButton chooseBuilding, releaseFarmer, pause;
     private ImageButton buildButton, laborerSpawn, meleeUnitSpawn, rangedUnitSpawn;
     private ArrayList<Button> actionBarButtons = new ArrayList<>();
 
-    private boolean showLaborerSpawnButton, showCombatUnitSpawnButtons;
+    private boolean showLaborerSpawnButton, showCombatUnitSpawnButtons, showReleaseFarmerButton;
 
     private ArrayList<BufferedImage> buildingCostIcons = new ArrayList<>(Arrays.asList(
             ImageLoader.icons[ICON_GOLD],
@@ -80,11 +85,18 @@ public class ActionBar extends BottomBar {
         super(play);
         this.play = (Play) mapState;
         this.player = play.getPlayerByID(play.getActivePlayerID());
+        initButtons();
+    }
+
+    private void initButtons() {
         initBuildButtons();
         initSpawnButtons();
 
-        String pauseText = (play.isPaused() ? "Unpause" : "Pause");
+        int xStart = laborerSpawn.getBounds().x;
+        int yStart = BOTTOM_BAR_Y + (BOTTOM_BAR_HEIGHT / 2) + RELEASE_FARMER_BUTTON_Y_OFFSET;
+        releaseFarmer = new TextButton(TEXT_SMALL_LONG, xStart, yStart, 22f, "Release Farmer");
 
+        String pauseText = (play.isPaused() ? "Unpause" : "Pause");
         pause = new TextButton(TEXT_SMALL_SHORT, save.getBounds().x, save.getBounds().y + save.getBounds().height + BOTTOM_BAR_OPTION_BUTTONS_Y_OFFSET, 21f, pauseText);
         actionBarButtons.add(pause);
     }
@@ -130,6 +142,9 @@ public class ActionBar extends BottomBar {
             meleeUnitSpawn.update();
             rangedUnitSpawn.update();
         }
+
+        if (showReleaseFarmerButton)
+            releaseFarmer.update();
     }
 
     @Override
@@ -160,6 +175,9 @@ public class ActionBar extends BottomBar {
                 rangedUnitSpawn.render(g);
             }
 
+            if (showReleaseFarmerButton)
+                releaseFarmer.render(g);
+
             if (entityType == UNIT && subType == LABORER)
                 drawInventory(g, entityType, subType, laborerInventoryIcons, laborerMaxInventoryCounts);
             else if (entityType == BUILDING) {
@@ -167,6 +185,8 @@ public class ActionBar extends BottomBar {
                     drawInventory(g, entityType, subType, storageHutInventoryIcons, storageHutMaxInventoryCounts);
                 else if (subType == REFINERY)
                     drawInventory(g, entityType, subType, refineryInventoryIcons, refineryMaxInventoryCounts);
+                else if (subType == FARM || subType == FARM_ROTATED)
+                    drawFarmerCount(g);
             }
         }
     }
@@ -273,6 +293,22 @@ public class ActionBar extends BottomBar {
         return currCounts;
     }
 
+    private void drawFarmerCount(Graphics g) {
+        int textXOffset = 2;
+        BufferedImage icon = ImageLoader.actions[CA_FARM];
+        int iconWidth = icon.getWidth();
+        int iconHeight = icon.getHeight();
+        int iconY = BOTTOM_BAR_Y + (BOTTOM_BAR_HEIGHT / 2) - RELEASE_FARMER_BUTTON_Y_OFFSET - iconHeight;
+        int xStart = releaseFarmer.getBounds().x;
+        int textX = xStart + iconWidth + textXOffset;
+        int farmerCount = ((Farm) selectedEntity).getFarmers().size();
+        g.drawImage(icon, xStart, iconY, iconWidth, iconHeight, null);
+        String countText = farmerCount + "/" + MAX_FARMERS + " Farmers";
+        g.setColor(Color.BLACK);
+        RenderText.renderText(g, countText, RenderText.LEFT, RenderText.CENTER, textX, iconY, g.getFontMetrics().stringWidth(countText), iconHeight);
+
+    }
+
     private float getSelectedBuildingSpriteScale() {
         return MAX_BUTTON_SPRITE_SIZE / Math.max((float) getBuildingTileWidth(selectedBuildingButtonType) * TILE_SIZE, (float) getBuildingTileHeight(selectedBuildingButtonType) * TILE_SIZE);
     }
@@ -295,6 +331,10 @@ public class ActionBar extends BottomBar {
                 else if (rangedUnitSpawn.getBounds().contains(x, y))
                     rangedUnitSpawn.setMousePressed(true);
             }
+
+            if (showReleaseFarmerButton)
+                if (releaseFarmer.getBounds().contains(x, y))
+                    releaseFarmer.setMousePressed(true);
         }
     }
 
@@ -338,12 +378,17 @@ public class ActionBar extends BottomBar {
                         }
                     }
                 }
+                if (showReleaseFarmerButton)
+                    if (releaseFarmer.getBounds().contains(x, y) && releaseFarmer.isMousePressed()) {
+                        ((Farm) selectedEntity).releaseFarmer();
+                    }
             }
         }
         save.reset(x, y);
         laborerSpawn.reset(x, y);
         meleeUnitSpawn.reset(x, y);
         rangedUnitSpawn.reset(x, y);
+        releaseFarmer.reset(x, y);
         for (Button b : actionBarButtons)
             b.reset(x, y);
     }
@@ -354,6 +399,7 @@ public class ActionBar extends BottomBar {
         laborerSpawn.setMouseOver(false);
         meleeUnitSpawn.setMouseOver(false);
         rangedUnitSpawn.setMouseOver(false);
+        releaseFarmer.setMouseOver(false);
         for (Button b : actionBarButtons) {
             b.setMouseOver(false);
             if (b.getBounds().contains(x, y))
@@ -369,6 +415,10 @@ public class ActionBar extends BottomBar {
             else if (rangedUnitSpawn.getBounds().contains(x, y))
                 rangedUnitSpawn.setMouseOver(true);
         }
+
+        if (showReleaseFarmerButton)
+            if (releaseFarmer.getBounds().contains(x, y))
+                releaseFarmer.setMouseOver(true);
     }
 
     public Play getPlay() {
@@ -384,12 +434,16 @@ public class ActionBar extends BottomBar {
 
     public void setSelectedEntity(Entity selectedEntity) {
         this.selectedEntity = selectedEntity;
-        showLaborerSpawnButton = false;
         showCombatUnitSpawnButtons = false;
+        showLaborerSpawnButton = false;
+        showReleaseFarmerButton = false;
         if (selectedEntity != null && selectedEntity.getEntityType() == BUILDING) {
             switch (selectedEntity.getSubType()) {
                 case VILLAGE:
                     showLaborerSpawnButton = true;
+                    break;
+                case FARM, FARM_ROTATED:
+                    showReleaseFarmerButton = true;
                     break;
                 case BARRACKS_TIER_1:
                     showCombatUnitSpawnButtons = true;

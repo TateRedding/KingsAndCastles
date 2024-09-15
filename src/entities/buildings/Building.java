@@ -1,6 +1,7 @@
 package entities.buildings;
 
 import entities.Entity;
+import handlers.BuildingHandler;
 import objects.Player;
 
 import java.awt.*;
@@ -24,8 +25,11 @@ public abstract class Building extends Entity {
 
     protected boolean hasInventory = false;
 
-    public Building(Player player, int id, int x, int y, int buildingType) {
+    protected BuildingHandler buildingHandler;
+
+    public Building(Player player, int id, int x, int y, int buildingType, BuildingHandler buildingHandler) {
         super(player, BUILDING, buildingType, x, y, id);
+        this.buildingHandler = buildingHandler;
         this.maxHealth = getDefaultMaxHealth(buildingType);
         this.health = maxHealth;
         this.hitbox = new Rectangle(x, y, getBuildingTileWidth(buildingType) * TILE_SIZE, getBuildingTileHeight(buildingType) * TILE_SIZE);
