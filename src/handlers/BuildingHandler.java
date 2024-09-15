@@ -2,6 +2,7 @@ package handlers;
 
 import entities.buildings.*;
 import entities.resources.GoldMine;
+import entities.units.Laborer;
 import gamestates.Play;
 import objects.Map;
 import objects.Player;
@@ -13,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static entities.buildings.Building.*;
+import static entities.buildings.Farm.FOOD_PER_FARMER;
 import static entities.buildings.ThroneRoom.*;
+import static entities.buildings.Village.POPULATION_PER_VILLAGE;
 import static main.Game.*;
 import static main.Game.toTileY;
 import static pathfinding.AStar.isPointOpen;
@@ -31,8 +34,16 @@ public class BuildingHandler implements Serializable {
     }
 
 
-    public void update() {
-
+    public void update(boolean foodCycleThisUpdate) {
+        if (foodCycleThisUpdate)
+            for (Building b : buildings)
+                if ((b.getSubType() == FARM || b.getSubType() == FARM_ROTATED)) {
+                    ArrayList<Laborer> farmers = ((Farm) b).getFarmers();
+                    if (!farmers.isEmpty()) {
+                        Player p = b.getPlayer();
+                        p.setFood(p.getFood() + (FOOD_PER_FARMER * farmers.size()));
+                    }
+                }
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
@@ -57,7 +68,10 @@ public class BuildingHandler implements Serializable {
         switch (buildingType) {
             case CASTLE_WALL -> buildings.add(new CastleWall(player, id, x, y, this));
             case CASTLE_TURRET -> buildings.add(new CastleTurret(player, id, x, y, this));
-            case VILLAGE -> buildings.add(new Village(player, id, x, y, this));
+            case VILLAGE -> {
+                buildings.add(new Village(player, id, x, y, this));
+                player.setMaxPopulation(player.getMaxPopulation() + POPULATION_PER_VILLAGE);
+            }
             case STORAGE_HUT -> buildings.add(new StorageHut(player, id, x, y, this));
             case REFINERY -> buildings.add(new Refinery(player, id, x, y, this));
             case FARM -> buildings.add(new Farm(player, id, x, y, false, this));

@@ -36,7 +36,7 @@ public class UnitHandler implements Serializable {
         createStartingUnits();
     }
 
-    public void update() {
+    public void update(boolean foodCycleThisUpdate) {
         for (Unit u : units) {
             if (u.isAlive()) {
                 u.update();

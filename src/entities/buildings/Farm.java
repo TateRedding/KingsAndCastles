@@ -14,6 +14,7 @@ import static main.Game.*;
 public class Farm extends Building {
 
     public static final int MAX_FARMERS = 2;
+    public static final int FOOD_PER_FARMER = 5;
 
     private ArrayList<Laborer> farmers = new ArrayList<>();
 

@@ -25,7 +25,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Random;
 
 import static entities.buildings.Building.BUILDING;
 import static entities.buildings.Building.RESOURCE;
@@ -50,6 +49,10 @@ public class Play extends MapState implements Savable, Serializable {
     private static final int CA_REPAIR = 6;
     private static final int CA_ATTACK_MELEE = 7;
     private static final int CA_ATTACK_RANGED = 8;
+
+    public static final int FOOD_CYCLE_MS = 30000;
+    private long lastFoodCycle = System.currentTimeMillis();
+    private boolean foodCycleThisUpdate;
 
     private ActionBar actionBar;
     private GameStatBar gameStatBar;
@@ -126,9 +129,13 @@ public class Play extends MapState implements Savable, Serializable {
     @Override
     public void update() {
         super.update();
+        if (System.currentTimeMillis() - lastFoodCycle >= FOOD_CYCLE_MS) {
+            foodCycleThisUpdate = true;
+            lastFoodCycle = System.currentTimeMillis();
+        }
         if (!paused) {
-            buildingHandler.update();
-            unitHandler.update();
+            buildingHandler.update(foodCycleThisUpdate);
+            unitHandler.update(foodCycleThisUpdate);
         }
 
         if (actionBar != null)
@@ -147,6 +154,7 @@ public class Play extends MapState implements Savable, Serializable {
         if (showBuildingSelection && buildingSelection != null)
             buildingSelection.update();
 
+        foodCycleThisUpdate = false;
     }
 
     @Override
@@ -247,11 +255,11 @@ public class Play extends MapState implements Savable, Serializable {
                 if (hoverType == UNIT || hoverType == BUILDING)
                     clickAction = CA_SELECT;
             } else
-                handleOwnedUnitAction(hoverType, (Unit) selectedEntity);
+                determineOwnedUnitAction(hoverType, (Unit) selectedEntity);
         }
     }
 
-    private void handleOwnedUnitAction(int hoverType, Unit selectedUnit) {
+    private void determineOwnedUnitAction(int hoverType, Unit selectedUnit) {
         int unitType = selectedUnit.getSubType();
 
         if (unitType == LABORER && (hoverType == UNIT))
@@ -259,12 +267,12 @@ public class Play extends MapState implements Savable, Serializable {
         else if (hoverType == -1)
             clickAction = CA_MOVE;
         else if (unitType == LABORER)
-            handleLaborerAction(hoverType);
+            determineLaborerAction(hoverType);
         else
-            handleCombatAction(hoverType, selectedUnit);
+            determineCombatAction(hoverType, selectedUnit);
     }
 
-    private void handleLaborerAction(int hoverType) {
+    private void determineLaborerAction(int hoverType) {
         if (hoverType == RESOURCE)
             clickAction = (hoverEntity.getSubType() == TREE) ? CA_CHOP : CA_MINE;
         else if (hoverType == BUILDING) {
@@ -278,7 +286,7 @@ public class Play extends MapState implements Savable, Serializable {
         }
     }
 
-    private void handleCombatAction(int hoverType, Unit selectedUnit) {
+    private void determineCombatAction(int hoverType, Unit selectedUnit) {
         if (hoverType == UNIT || hoverType == BUILDING) {
             Player player = hoverEntity.getPlayer();
             if (player.getPlayerID() != activePlayerID) {
