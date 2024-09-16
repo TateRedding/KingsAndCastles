@@ -17,7 +17,6 @@ import static entities.units.Brute.ATTACKING;
 import static entities.units.Laborer.CHOPPING;
 import static entities.units.Laborer.MINING;
 import static main.Game.*;
-import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
 import static pathfinding.AStar.isPointOpen;
 
 public abstract class Unit extends Entity implements Serializable {
@@ -48,6 +47,8 @@ public abstract class Unit extends Entity implements Serializable {
     public static final int IDLE = 1;
     public static final int WALKING = 2;
 
+    private static final int MAX_CYCLES_WITHOUT_FOOD = 2;
+
     protected ArrayList<Point> path;
     protected UnitHandler unitHandler;
 
@@ -61,6 +62,8 @@ public abstract class Unit extends Entity implements Serializable {
     protected int animationFrame = 0;
     protected int animationTick = 0;
     protected float speed;
+
+    protected int cyclesSinceLastFed = 0;
 
     protected boolean isAlive = true;
 
@@ -164,6 +167,14 @@ public abstract class Unit extends Entity implements Serializable {
             case LABORER -> Laborer.getMaxAnimationTick(state);
             case BRUTE -> Brute.getMaxAnimationTick(state);
             default -> 0;
+        };
+    }
+
+    private static String getUnitName(int unitType) {
+        return switch (unitType) {
+            case LABORER -> "Laborer";
+            case BRUTE -> "Brute";
+            default -> "Unknown unit";
         };
     }
 
@@ -421,6 +432,21 @@ public abstract class Unit extends Entity implements Serializable {
         updateHitbox();
     }
 
+    public void eat() {
+        cyclesSinceLastFed = 0;
+        player.setFood(player.getFood() - 1);
+    }
+
+    public void starve() {
+        cyclesSinceLastFed++;
+        if (cyclesSinceLastFed > MAX_CYCLES_WITHOUT_FOOD) {
+            System.out.println(getUnitName(unitType) + " ID: " + id + " has starved to death!");
+            isAlive = false;
+            if (unitHandler.getPlay().getSelectedEntity() == this)
+                unitHandler.getPlay().setSelectedEntity(null);
+        }
+    }
+
 
     public void updateHitbox() {
         hitbox.x = (int) x;
@@ -453,6 +479,10 @@ public abstract class Unit extends Entity implements Serializable {
 
     public int getAnimationFrame() {
         return animationFrame;
+    }
+
+    public int getCyclesSinceLastFed() {
+        return cyclesSinceLastFed;
     }
 
     public int getState() {

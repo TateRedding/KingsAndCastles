@@ -11,9 +11,7 @@ import objects.Player;
 
 import java.awt.*;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 
 import static entities.units.Brute.ATTACKING;
 import static entities.units.Unit.*;
@@ -38,28 +36,65 @@ public class UnitHandler implements Serializable {
 
     public void update(boolean foodCycleThisUpdate) {
         for (Unit u : units) {
-            if (u.isAlive()) {
-                u.update();
-                int unitType = u.getSubType();
+            if (!u.isAlive()) continue;
 
-                // Check if target has moved
-                if (unitType != LABORER && (u.getState() == WALKING || u.getState() == ATTACKING) && u.getTargetEntity() != null)
-                    adjustPathIfTargetMovedOutOfActionRange(u);
+            if (foodCycleThisUpdate) {
+                if (u.getPlayer().getFood() > 0)
+                    u.eat();
+                else
+                    u.starve();
 
-                // Auto-attack
-                if (unitType != LABORER && u.getState() == IDLE && u.getTargetEntity() == null)
-                    findEnemyToAttack(u);
+                if (!u.isAlive()) continue;
+            }
 
-                if (u.getActionTick() >= u.getActionTickMax()) {
-                    if (unitType == LABORER)
-                        play.getResourceObjectHandler().gatherResource(u.getPlayer(), (ResourceObject) u.getTargetEntity(), (Laborer) u);
-                    else
-                        attack(u, (Unit) u.getTargetEntity());
-                    u.setActionTick(0);
+            u.update();
+            int unitType = u.getSubType();
+            Entity target = u.getTargetEntity();
+
+            // Check if the target is valid
+            if (unitType != LABORER && target != null && target.getEntityType() == UNIT) {
+                boolean isTargetFarming = target.getSubType() == LABORER && ((Laborer) target).isFarming();
+                if (!((Unit) target).isAlive() || isTargetFarming) {
+                    u.setTargetEntity(null);
+                    target = null;
+                    resetPathToFirstTile(u);
                 }
             }
+
+            // Check if target has moved out of range
+            if (unitType != LABORER && (u.getState() == WALKING || u.getState() == ATTACKING) && target != null) {
+                adjustPathIfTargetMovedOutOfActionRange(u);
+            }
+
+            // Auto-attack if idle and no target
+            if (unitType != LABORER && u.getState() == IDLE && target == null) {
+                findEnemyToAttack(u);
+            }
+
+            if (u.getActionTick() >= u.getActionTickMax()) {
+                performUnitAction(u, target, unitType);
+                u.setActionTick(0);
+            }
         }
+
+        if (foodCycleThisUpdate)
+            units.sort(Comparator.comparingInt(Unit::getCyclesSinceLastFed));
     }
+
+    private void resetPathToFirstTile(Unit u) {
+        if (u.getPath() != null && !u.getPath().isEmpty())
+            u.setPath(new ArrayList<>(Arrays.asList(u.getPath().get(0))));
+        else
+            u.setPath(null);
+    }
+
+    private void performUnitAction(Unit u, Entity target, int unitType) {
+        if (unitType == LABORER && target instanceof ResourceObject)
+            play.getResourceObjectHandler().gatherResource(u.getPlayer(), (ResourceObject) target, (Laborer) u);
+        else if (target instanceof Unit)
+            attack(u, (Unit) target);
+    }
+
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Unit u : units) {
