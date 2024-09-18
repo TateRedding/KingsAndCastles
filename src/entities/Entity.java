@@ -10,8 +10,9 @@ import static main.Game.TILE_SIZE;
 public abstract class Entity implements Serializable {
 
     public static final int BUILDING = 0;
-    public static final int UNIT = 1;
-    public static final int RESOURCE = 2;
+    public static final int PROJECTILE = 1;
+    public static final int RESOURCE = 1;
+    public static final int UNIT = 2;
 
     public static final int HEALTH_BAR_MAX_WIDTH = TILE_SIZE / 4 * 3;
 
@@ -50,6 +51,15 @@ public abstract class Entity implements Serializable {
         g.setColor(new Color(189, 79, 79));
         g.drawRect(xStart, yStart + 1, fillWidth, 1);
 
+    }
+
+    public void updateHitbox() {
+        hitbox.x = (int) x;
+        hitbox.y = (int) y;
+    }
+
+    public void hurt(int damage) {
+        health -= damage;
     }
 
     public int getSubType() {

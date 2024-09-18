@@ -2,10 +2,12 @@ package gamestates;
 
 import entities.buildings.Building;
 import entities.buildings.Farm;
+import entities.projectiles.Projectile;
 import entities.resources.ResourceObject;
 import entities.units.Laborer;
 import entities.units.Unit;
 import handlers.BuildingHandler;
+import handlers.ProjectileHandler;
 import handlers.ResourceObjectHandler;
 import handlers.UnitHandler;
 import main.Game;
@@ -62,6 +64,7 @@ public class Play extends MapState implements Savable, Serializable {
 
     private BuildingHandler buildingHandler;
     private UnitHandler unitHandler;
+    private ProjectileHandler projectileHandler;
     private ResourceObjectHandler resourceObjectHandler;
     private ResourceObject[][] resourceObjectData;
 
@@ -106,6 +109,7 @@ public class Play extends MapState implements Savable, Serializable {
 
         this.buildingHandler = new BuildingHandler(this);
         this.unitHandler = new UnitHandler(this);
+        this.projectileHandler = new ProjectileHandler(this);
         this.resourceObjectHandler = new ResourceObjectHandler(this);
 
         this.actionBar = new ActionBar(this);
@@ -135,6 +139,7 @@ public class Play extends MapState implements Savable, Serializable {
         }
         if (!paused) {
             buildingHandler.update(foodCycleThisUpdate);
+            projectileHandler.update();
             unitHandler.update(foodCycleThisUpdate);
         }
 
@@ -163,6 +168,7 @@ public class Play extends MapState implements Savable, Serializable {
 
         buildingHandler.render(g, mapXOffset, mapYOffset);
         resourceObjectHandler.render(g, mapXOffset, mapYOffset);
+        projectileHandler.render(g, mapXOffset, mapYOffset);
         unitHandler.render(g, mapXOffset, mapYOffset);
 
         highlightSelectedObject(g, mapXOffset, mapYOffset);
@@ -189,6 +195,9 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private void renderAction(Graphics g, int xOffset, int yOffset) {
+        if (clickAction == CA_ATTACK_RANGED) {
+            int test = 0;
+        }
         if (clickAction != -1) {
             int x = gameX;
             int y = gameY;
@@ -619,6 +628,10 @@ public class Play extends MapState implements Savable, Serializable {
 
     public ArrayList<Player> getPlayers() {
         return players;
+    }
+
+    public ProjectileHandler getProjectileHandler() {
+        return projectileHandler;
     }
 
     public ResourceObject[][] getResourceObjectData() {

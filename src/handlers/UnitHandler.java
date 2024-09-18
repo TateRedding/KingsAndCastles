@@ -3,6 +3,7 @@ package handlers;
 import entities.resources.ResourceObject;
 import entities.units.Brute;
 import entities.units.Laborer;
+import entities.units.StoneThrower;
 import entities.units.Unit;
 import gamestates.Debug;
 import gamestates.Play;
@@ -137,13 +138,7 @@ public class UnitHandler implements Serializable {
         ArrayList<Player> players = play.getPlayers();
         Random random = new Random(play.getSeed());
 
-        // Debugging
-        int maxLaborers = 2;
-
         for (int i = 0; i < players.size(); i++) {
-            // Debugging
-            int numLaborers = 0;
-
             int maxStartingUnits = Math.min(NUM_MAX_STARTING_UNITS, castleZones.get(i).size());
             ArrayList<Point> spawnPoints = new ArrayList<>(castleZones.get(i));
             Point throneRoomPoint = play.getMap().getThroneRoomPoints()[i];
@@ -153,14 +148,18 @@ public class UnitHandler implements Serializable {
             for (int j = 0; j < maxStartingUnits; j++) {
                 Point spawn = spawnPoints.get(j);
 
-                // Debugging
-                if (numLaborers < maxLaborers) {
-                    createUnit(players.get(i), spawn, LABORER);
-                    numLaborers++;
-                    continue;
+                //Debugging
+                switch (j) {
+                    case 1:
+                        createUnit(players.get(i), spawn, BRUTE);
+                        break;
+                    case 2:
+                        createUnit(players.get(i), spawn, STONE_THROWER);
+                        break;
+                    default:
+                        createUnit(players.get(i), spawn, LABORER);
+                        break;
                 }
-
-                createUnit(players.get(i), spawn, BRUTE);
             }
         }
     }
@@ -169,6 +168,7 @@ public class UnitHandler implements Serializable {
         switch (unitType) {
             case LABORER -> units.add(new Laborer(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
             case BRUTE -> units.add(new Brute(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
+            case STONE_THROWER -> units.add(new StoneThrower(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
         }
         player.setPopulation(player.getPopulation() + 1);
     }
@@ -265,10 +265,14 @@ public class UnitHandler implements Serializable {
     }
 
     private void attack(Unit attacker, Unit target) {
-        if (attacker.getSubType() == -1 || target.getSubType() == -1)
-            return;
+        int attackStyle = getAttackStyle(attacker.getSubType());
+        if (attackStyle == MELEE) {
+            if (attacker.getSubType() == -1 || target.getSubType() == -1)
+                return;
+            target.hurt(attacker.getDamage());
 
-        target.setHealth(target.getHealth() - attacker.getDamage());
+        } else if (attackStyle == RANGED)
+            play.getProjectileHandler().newProjectile(attacker, target);
 
         // Auto-retaliate
         if (target.getSubType() != LABORER && target.getTargetEntity() == null && target.getState() == IDLE)

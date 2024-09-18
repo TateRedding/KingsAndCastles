@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import static entities.projectiles.Projectile.THROWING_ROCK;
 import static entities.units.Brute.ATTACKING;
 import static entities.units.Laborer.CHOPPING;
 import static entities.units.Laborer.MINING;
@@ -29,6 +30,7 @@ public abstract class Unit extends Entity implements Serializable {
     // Unit SubTypes
     public static final int LABORER = 0;
     public static final int BRUTE = 1;
+    public static final int STONE_THROWER = 2;
 
     // Cardinal Directions
     public static final int UP = 0;
@@ -86,7 +88,7 @@ public abstract class Unit extends Entity implements Serializable {
     public static int getDefaultMaxHealth(int unitType) {
         return switch (unitType) {
             case LABORER -> 50;
-            case BRUTE -> 100;
+            case BRUTE, STONE_THROWER -> 100;
             default -> 0;
         };
     }
@@ -94,6 +96,7 @@ public abstract class Unit extends Entity implements Serializable {
     public static int getDefaultDamage(int unitType) {
         return switch (unitType) {
             case BRUTE -> 5;
+            case STONE_THROWER -> 4;
             default -> 0;
         };
     }
@@ -101,7 +104,8 @@ public abstract class Unit extends Entity implements Serializable {
     public static int getDefaultActionSpeed(int unitType) {
         return switch (unitType) {
             case LABORER -> Laborer.getMaxAnimationTick(CHOPPING) * Laborer.getNumberOfFrames(CHOPPING);
-            case BRUTE -> Brute.getMaxAnimationTick(ATTACKING) * Brute.getNumberOfFrames(ATTACKING);
+            case BRUTE, STONE_THROWER ->
+                    CombatUnit.getMaxAnimationTick(ATTACKING) * CombatUnit.getNumberOfFrames(ATTACKING);
             default -> 0;
         };
     }
@@ -110,6 +114,7 @@ public abstract class Unit extends Entity implements Serializable {
         return switch (unitType) {
             case LABORER -> 0.8f;
             case BRUTE -> 1.0f;
+            case STONE_THROWER -> 1.2f;
             default -> 0.0f;
         };
     }
@@ -117,6 +122,7 @@ public abstract class Unit extends Entity implements Serializable {
     public static int getDefaultActionRange(int unitType) {
         return switch (unitType) {
             case LABORER, BRUTE -> 1;
+            case STONE_THROWER -> 5;
             default -> 0;
         };
     }
@@ -124,7 +130,7 @@ public abstract class Unit extends Entity implements Serializable {
     public static int getDefaultSightRange(int unitType) {
         return switch (unitType) {
             case LABORER -> 2;
-            case BRUTE -> 5;
+            case BRUTE, STONE_THROWER -> 5;
             default -> 0;
         };
     }
@@ -133,6 +139,7 @@ public abstract class Unit extends Entity implements Serializable {
         return switch (unitType) {
             case LABORER -> ImageLoader.laborer[state][dir][frame];
             case BRUTE -> ImageLoader.brute[state][dir][frame];
+            case STONE_THROWER -> ImageLoader.stoneThrower[state][dir][frame];
             default -> null;
         };
     }
@@ -141,6 +148,7 @@ public abstract class Unit extends Entity implements Serializable {
         return switch (unitType) {
             case LABORER -> NONE;
             case BRUTE -> MELEE;
+            case STONE_THROWER -> RANGED;
             default -> -1;
         };
     }
@@ -149,7 +157,7 @@ public abstract class Unit extends Entity implements Serializable {
         // Which animation frame should the action be performed on?
         return switch (unitType) {
             case LABORER -> Laborer.getActionFrameIndex(state);
-            case BRUTE -> Brute.getActionFrameIndex(state);
+            case BRUTE, STONE_THROWER -> CombatUnit.getActionFrameIndex(state);
             default -> 0;
         };
     }
@@ -157,7 +165,7 @@ public abstract class Unit extends Entity implements Serializable {
     private static int getNumberOfFrames(int unitType, int state) {
         return switch (unitType) {
             case LABORER -> Laborer.getNumberOfFrames(state);
-            case BRUTE -> Brute.getNumberOfFrames(state);
+            case BRUTE, STONE_THROWER -> CombatUnit.getNumberOfFrames(state);
             default -> 0;
         };
     }
@@ -165,7 +173,14 @@ public abstract class Unit extends Entity implements Serializable {
     private static int getMaxAnimationTick(int unitType, int state) {
         return switch (unitType) {
             case LABORER -> Laborer.getMaxAnimationTick(state);
-            case BRUTE -> Brute.getMaxAnimationTick(state);
+            case BRUTE, STONE_THROWER -> CombatUnit.getMaxAnimationTick(state);
+            default -> 0;
+        };
+    }
+
+    public static int getProjectileType(int unitType) {
+        return switch (unitType) {
+            case STONE_THROWER -> THROWING_ROCK;
             default -> 0;
         };
     }
@@ -174,6 +189,7 @@ public abstract class Unit extends Entity implements Serializable {
         return switch (unitType) {
             case LABORER -> "Laborer";
             case BRUTE -> "Brute";
+            case STONE_THROWER -> "Stone Thrower";
             default -> "Unknown unit";
         };
     }
@@ -188,6 +204,14 @@ public abstract class Unit extends Entity implements Serializable {
                     || (targetEntity.getEntityType() == UNIT && state == ATTACKING))) {
                 turnTowardsTarget();
                 actionTick++;
+            }
+
+            animationTick++;
+            if (animationTick >= getMaxAnimationTick(subType, state)) {
+                animationTick = 0;
+                animationFrame++;
+                if (animationFrame >= getNumberOfFrames(subType, state))
+                    animationFrame = 0;
             }
 
         }
@@ -445,12 +469,6 @@ public abstract class Unit extends Entity implements Serializable {
             if (unitHandler.getPlay().getSelectedEntity() == this)
                 unitHandler.getPlay().setSelectedEntity(null);
         }
-    }
-
-
-    public void updateHitbox() {
-        hitbox.x = (int) x;
-        hitbox.y = (int) y;
     }
 
     public int getActionRange() {

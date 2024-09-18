@@ -23,8 +23,7 @@ public abstract class ResourceObject extends Entity implements Serializable {
         this.spriteId = spriteId;
         this.maxHealth = getStartingTotal(resourceType);
         this.health = maxHealth;
-
-        hitbox = new Rectangle(toPixelX(tileX), toPixelY(tileY), TILE_SIZE, TILE_SIZE);
+        this.hitbox = new Rectangle(toPixelX(tileX), toPixelY(tileY), TILE_SIZE, TILE_SIZE);
     }
 
     public static int getStartingTotal(int resourceType) {

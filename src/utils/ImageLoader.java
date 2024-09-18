@@ -39,9 +39,11 @@ public class ImageLoader {
     private static final String ORES = "ores.png";
     private static final String OVERLAY_BG_LARGE = "overlay_bg_large.png";
     private static final String OVERLAY_BG_SMALL = "overlay_bg_small.png";
+    private static final String PROJECTILES = "projectiles.png";
     private static final String ROCKS = "rocks.png";
     private static final String SELECT_INDICATOR = "select_indicator.png";
     private static final String SPRITE_BUTTON = "sprite_button.png";
+    private static final String STONE_THROWER = "stone_thrower.png";
     private static final String TEXT_BOX_BG = "text_box_bg.png";
     private static final String TEXT_BUTTON_LARGE = "text_button_large.png";
     private static final String TEXT_BUTTON_SMALL_LONG = "text_button_small_long.png";
@@ -54,9 +56,9 @@ public class ImageLoader {
     public static ArrayList<ArrayList<BufferedImage>> tiles;
     public static ArrayList<BufferedImage> editorBarButtonSprites;
     public static BufferedImage bottomBar, dropDownBodyLarge, dropDownBarLarge, dropDownBarSmall, overlayBgLarge, overlayBgSmall, topBar;
-    public static BufferedImage[] actions, buildIndicators, buildings, dropDownArrowLarge, iconButton, icons, largeTextButton, ores, rocks, selectIndicator, smallTextButtonLong, smallTextButtonShort, spriteButton, textBoxBg, trees;
+    public static BufferedImage[] actions, buildIndicators, buildings, dropDownArrowLarge, iconButton, icons, largeTextButton, ores, projectiles, rocks, selectIndicator, smallTextButtonLong, smallTextButtonShort, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
-    public static BufferedImage[][][] brute, laborer;
+    public static BufferedImage[][][] brute, laborer, stoneThrower;
 
     public static void loadImages() {
         loadBuildingImages();
@@ -103,6 +105,9 @@ public class ImageLoader {
     private static void loadUnitImages() {
         brute = getUnitAnimationArray(BRUTE, 4, 4);
         laborer = getUnitAnimationArray(LABORER, 5, 5);
+        stoneThrower = getUnitAnimationArray(STONE_THROWER, 4, 4);
+
+        projectiles = getImageArray(PROJECTILES, 16, 16, 1, 3, 3);
     }
 
     private static void loadTerrainTiles() {
@@ -145,7 +150,7 @@ public class ImageLoader {
         dropDownBarSmall = LoadSave.loadImage(DROP_DOWN_BAR_SMALL);
 
         // Misc
-        actions = getSpriteArray(ACTIONS, 0, 0, 1, 8, 9);
+        actions = getSpriteArray(ACTIONS, 0, 0, 1, 9, 9);
         buildIndicators = getSpriteArray(BUILD_INDICATORS, 0, 0, 1, 2, 2);
         editorBarButtonSprites = new ArrayList<>(Arrays.asList(
                 tiles.get(GRASS).get(0),
