@@ -216,7 +216,7 @@ public class MiniMap implements Serializable {
 
         ArrayList<Unit> units = ((Play) mapState).getUnitHandler().getUnits();
         for (Unit u : units) {
-            if (u.isAlive()) {
+            if (u.isActive()) {
                 g.setColor(Color.ORANGE);
                 int xStart = (int) (toTileX(u.getX()) * scale);
                 int yStart = (int) (toTileY(u.getY()) * scale);

@@ -34,7 +34,7 @@ public class Farm extends Building {
             l.setTargetEntity(null);
             l.setState(IDLE);
             l.setDirection(DOWN);
-            l.setFarming(false);
+            l.setActive(true);
         }
     }
 

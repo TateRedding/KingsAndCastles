@@ -47,8 +47,12 @@ public class BuildingHandler implements Serializable {
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
-        for (Building b : buildings)
+        for (Building b : buildings) {
             g.drawImage(ImageLoader.buildings[b.getSubType()], b.getHitbox().x - xOffset, b.getHitbox().y - yOffset, null);
+
+            if (b.getHealth() < b.getMaxHealth())
+                b.drawHealthBar(g, b.getHealth(), b.getMaxHealth(), xOffset, yOffset);
+        }
     }
 
     private void addThroneRooms() {
@@ -119,6 +123,10 @@ public class BuildingHandler implements Serializable {
                 }
             }
         }
+    }
+
+    public void killBuilding(Building b) {
+        buildings.remove(b);
     }
 
     public Building getBuildingAt(int x, int y) {

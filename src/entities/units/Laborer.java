@@ -34,8 +34,6 @@ public class Laborer extends Unit {
 
     private int coal, iron, logs, stone;
 
-    private boolean farming;
-
     private Point previousTargetTile;
     private int previousTargetType = -1;
 
@@ -100,7 +98,7 @@ public class Laborer extends Unit {
                                 locateAndTargetNearestResource(previousTargetType, previousTargetTile.x, previousTargetTile.y);
                         }
                         clearPreviousTarget();
-                    } else if ((subType == FARM || subType == FARM_ROTATED) && !farming)
+                    } else if ((subType == FARM || subType == FARM_ROTATED) && active)
                         startFarming();
                 }
             }
@@ -216,7 +214,7 @@ public class Laborer extends Unit {
         int farmX = (int) targetEntity.getX();
         int farmY = (int) targetEntity.getY();
 
-        farming = true;
+        active = false;
         x = farmX;
         y = farmY;
         if (!currFarmers.isEmpty()) {
@@ -238,14 +236,6 @@ public class Laborer extends Unit {
 
     public void setCoal(int coal) {
         this.coal = coal;
-    }
-
-    public boolean isFarming() {
-        return farming;
-    }
-
-    public void setFarming(boolean farming) {
-        this.farming = farming;
     }
 
     public int getIron() {

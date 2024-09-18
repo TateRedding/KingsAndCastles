@@ -67,8 +67,6 @@ public abstract class Unit extends Entity implements Serializable {
 
     protected int cyclesSinceLastFed = 0;
 
-    protected boolean isAlive = true;
-
     protected Entity targetEntity;
 
     public Unit(Player player, float x, float y, int unitType, int id, UnitHandler unitHandler) {
@@ -195,15 +193,17 @@ public abstract class Unit extends Entity implements Serializable {
     }
 
     public void update() {
-        if (isAlive) {
+        if (active) {
             if (path != null && !path.isEmpty())
                 move();
 
-            if (targetEntity != null
-                    && ((targetEntity.getEntityType() == RESOURCE && (state == CHOPPING || state == MINING))
-                    || (targetEntity.getEntityType() == UNIT && state == ATTACKING))) {
-                turnTowardsTarget();
-                actionTick++;
+            if (targetEntity != null) {
+                int targetEntityType = targetEntity.getEntityType();
+                if ((targetEntityType == RESOURCE && (state == CHOPPING || state == MINING)
+                        || ((targetEntityType == UNIT || targetEntityType == BUILDING) && state == ATTACKING))) {
+                    turnTowardsTarget();
+                    actionTick++;
+                }
             }
 
             animationTick++;
@@ -266,7 +266,7 @@ public abstract class Unit extends Entity implements Serializable {
                 if (neighbor.equals(targetTile))
                     return true;
 
-                if (isPointOpen(neighbor, play)) {
+                if (!play.isTileBlockedOrReserved(neighbor.x, neighbor.y, null)) {
                     nextTile = neighbor;
                     break;
                 }
@@ -465,7 +465,7 @@ public abstract class Unit extends Entity implements Serializable {
         cyclesSinceLastFed++;
         if (cyclesSinceLastFed > MAX_CYCLES_WITHOUT_FOOD) {
             System.out.println(getUnitName(unitType) + " ID: " + id + " has starved to death!");
-            isAlive = false;
+            active = false;
             if (unitHandler.getPlay().getSelectedEntity() == this)
                 unitHandler.getPlay().setSelectedEntity(null);
         }
@@ -485,14 +485,6 @@ public abstract class Unit extends Entity implements Serializable {
 
     public int getActionTick() {
         return actionTick;
-    }
-
-    public boolean isAlive() {
-        return isAlive;
-    }
-
-    public void setAlive(boolean alive) {
-        isAlive = alive;
     }
 
     public int getAnimationFrame() {

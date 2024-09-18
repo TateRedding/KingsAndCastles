@@ -1,5 +1,6 @@
 package handlers;
 
+import entities.buildings.Building;
 import entities.resources.ResourceObject;
 import entities.units.Brute;
 import entities.units.Laborer;
@@ -37,7 +38,7 @@ public class UnitHandler implements Serializable {
 
     public void update(boolean foodCycleThisUpdate) {
         for (Unit u : units) {
-            if (!u.isAlive()) continue;
+            if (!u.isActive()) continue;
 
             if (foodCycleThisUpdate) {
                 if (u.getPlayer().getFood() > 0)
@@ -45,17 +46,16 @@ public class UnitHandler implements Serializable {
                 else
                     u.starve();
 
-                if (!u.isAlive()) continue;
+                if (!u.isActive()) continue;
             }
 
             u.update();
             int unitType = u.getSubType();
             Entity target = u.getTargetEntity();
 
-            // Check if the target is valid
+            // Check if the target is now inactive
             if (unitType != LABORER && target != null && target.getEntityType() == UNIT) {
-                boolean isTargetFarming = target.getSubType() == LABORER && ((Laborer) target).isFarming();
-                if (!((Unit) target).isAlive() || isTargetFarming) {
+                if (!target.isActive()) {
                     u.setTargetEntity(null);
                     target = null;
                     resetPathToFirstTile(u);
@@ -73,7 +73,7 @@ public class UnitHandler implements Serializable {
             }
 
             if (u.getActionTick() >= u.getActionTickMax()) {
-                performUnitAction(u, target, unitType);
+                performUnitAction(u, target);
                 u.setActionTick(0);
             }
         }
@@ -89,19 +89,17 @@ public class UnitHandler implements Serializable {
             u.setPath(null);
     }
 
-    private void performUnitAction(Unit u, Entity target, int unitType) {
-        if (unitType == LABORER && target instanceof ResourceObject)
+    private void performUnitAction(Unit u, Entity target) {
+        if (u.getSubType() == LABORER && target instanceof ResourceObject)
             play.getResourceObjectHandler().gatherResource(u.getPlayer(), (ResourceObject) target, (Laborer) u);
-        else if (target instanceof Unit)
-            attack(u, (Unit) target);
+        else if (target instanceof Unit || target instanceof Building)
+            attack(u, target);
     }
 
 
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Unit u : units) {
-            if (u.isAlive()) {
-                if (u.getSubType() == LABORER && ((Laborer) u).isFarming())
-                    continue;
+            if (u.isActive()) {
                 int dir = u.getDirection();
                 if (dir == UP_LEFT || dir == DOWN_LEFT)
                     dir = LEFT;
@@ -233,10 +231,11 @@ public class UnitHandler implements Serializable {
     }
 
     private void findEnemyToAttack(Unit attacker) {
-        for (Unit target : units) {
-            if (target.isAlive() && target.getPlayer().getPlayerID() != attacker.getPlayer().getPlayerID() && attacker.isTargetInRange(target, attacker.getSightRange())) {
-                if (target.getSubType() == LABORER && ((Laborer) target).isFarming())
-                    continue;
+        ArrayList<Entity> targets = new ArrayList<>();
+        targets.addAll(units);
+        targets.addAll(play.getBuildingHandler().getBuildings());
+        for (Entity target : targets) {
+            if (target.isActive() && target.getPlayer().getPlayerID() != attacker.getPlayer().getPlayerID() && attacker.isTargetInRange(target, attacker.getSightRange())) {
                 if (attacker.isTargetInRange(target, attacker.getActionRange()) && attacker.isLineOfSightOpen(target)) {
                     attacker.setTargetEntity(target);
                     return;
@@ -253,18 +252,21 @@ public class UnitHandler implements Serializable {
         }
     }
 
-    private Point getTargetTile(Unit target) {
+    private Point getTargetTile(Entity target) {
         // Returns the tile the target is currently in, or the tile they are moving into if their path is not empty
-        Point targetTile;
-        ArrayList<Point> targetPath = target.getPath();
-        if (targetPath != null && !targetPath.isEmpty())
-            targetTile = targetPath.get(0);
-        else
+        Point targetTile = null;
+        if (target instanceof Unit) {
+            ArrayList<Point> targetPath = ((Unit) target).getPath();
+            if (targetPath != null && !targetPath.isEmpty())
+                targetTile = targetPath.get(0);
+            else
+                targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y));
+        } else if (target instanceof Building)
             targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y));
         return targetTile;
     }
 
-    private void attack(Unit attacker, Unit target) {
+    private void attack(Unit attacker, Entity target) {
         int attackStyle = getAttackStyle(attacker.getSubType());
         if (attackStyle == MELEE) {
             if (attacker.getSubType() == -1 || target.getSubType() == -1)
@@ -275,12 +277,16 @@ public class UnitHandler implements Serializable {
             play.getProjectileHandler().newProjectile(attacker, target);
 
         // Auto-retaliate
-        if (target.getSubType() != LABORER && target.getTargetEntity() == null && target.getState() == IDLE)
-            target.setTargetEntity(attacker);
+        if (target instanceof Unit) {
+            if (target.getSubType() != LABORER && ((Unit) target).getTargetEntity() == null && ((Unit) target).getState() == IDLE)
+                ((Unit) target).setTargetEntity(attacker);
+        }
 
         if (target.getHealth() <= 0) {
-            target.setAlive(false);
-            deadUnits.add(target);
+            if (target instanceof Unit)
+                killUnit((Unit) target);
+            else if (target instanceof Building)
+                play.getBuildingHandler().killBuilding((Building) target);
             attacker.setState(IDLE);
             attacker.setTargetEntity(null);
             if (play.getSelectedEntity() == target)
@@ -288,9 +294,14 @@ public class UnitHandler implements Serializable {
         }
     }
 
+    private void killUnit(Unit u) {
+        u.setActive(false);
+        deadUnits.add(u);
+    }
+
     public Unit getUnitAtCoord(int x, int y) {
         for (Unit u : units)
-            if (u.isAlive() && u.getHitbox().contains(x, y))
+            if (u.isActive() && u.getHitbox().contains(x, y))
                 return u;
         return null;
     }
@@ -298,7 +309,7 @@ public class UnitHandler implements Serializable {
     public Unit getUnitAtTile(int tileX, int tileY) {
         Rectangle tileBounds = new Rectangle(toPixelX(tileX), toPixelY(tileY), TILE_SIZE, TILE_SIZE);
         for (Unit u : units)
-            if (u.isAlive() && u.getHitbox().intersects(tileBounds))
+            if (u.isActive() && u.getHitbox().intersects(tileBounds))
                 return u;
         return null;
     }
@@ -310,7 +321,7 @@ public class UnitHandler implements Serializable {
                 continue;
 
             ArrayList<Point> path = unit.getPath();
-            if (unit.isAlive() && path != null && !path.isEmpty())
+            if (unit.isActive() && path != null && !path.isEmpty())
                 if (path.get(0).equals(p))
                     return true;
         }

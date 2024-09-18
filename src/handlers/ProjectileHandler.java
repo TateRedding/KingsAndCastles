@@ -7,6 +7,7 @@ import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import entities.Entity;
 import entities.projectiles.Projectile;
 import entities.units.Unit;
 import gamestates.Play;
@@ -34,7 +35,7 @@ public class ProjectileHandler implements Serializable {
                 p.render(g, mapXOffset, mapYOffset);
     }
 
-    public void newProjectile(Unit u, Unit target) {
+    public void newProjectile(Unit u, Entity target) {
         if (u.getTargetEntity() == null) return;
 
         int projectileType = getProjectileType(u.getSubType());

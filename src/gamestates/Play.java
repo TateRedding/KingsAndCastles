@@ -195,9 +195,6 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private void renderAction(Graphics g, int xOffset, int yOffset) {
-        if (clickAction == CA_ATTACK_RANGED) {
-            int test = 0;
-        }
         if (clickAction != -1) {
             int x = gameX;
             int y = gameY;
@@ -515,7 +512,8 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private boolean canAttackOnClick() {
-        return hoverEntity.getEntityType() == UNIT && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED);
+        int hoverEntityType = hoverEntity.getEntityType();
+        return (hoverEntityType == UNIT || hoverEntityType == BUILDING) && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED);
     }
 
     private boolean canFarmOnClick() {

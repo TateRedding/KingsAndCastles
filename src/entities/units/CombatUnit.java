@@ -35,7 +35,7 @@ public class CombatUnit extends Unit {
 
     public void update() {
         super.update();
-        if (targetEntity != null && targetEntity.getEntityType() == UNIT) {
+        if (targetEntity != null && (targetEntity.getEntityType() == UNIT || targetEntity.getEntityType() == BUILDING)) {
             if (state == IDLE)
                 setState(ATTACKING);
         } else if (state == ATTACKING)

@@ -23,6 +23,8 @@ public abstract class Entity implements Serializable {
     protected int entityType, subType;
     protected int health, maxHealth;
 
+    protected boolean active = true;
+
     public Entity(Player player, int entityType, int subType, float x, float y, int id) {
         this.player = player;
         this.entityType = entityType;
@@ -60,6 +62,14 @@ public abstract class Entity implements Serializable {
 
     public void hurt(int damage) {
         health -= damage;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public int getSubType() {

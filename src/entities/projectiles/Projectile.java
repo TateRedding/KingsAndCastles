@@ -18,7 +18,6 @@ public class Projectile extends Entity {
 
     protected float rotation;
     protected int damage;
-    protected boolean active = true;
 
     protected Entity target;
 
@@ -81,13 +80,5 @@ public class Projectile extends Entity {
         x += xSpeed;
         y += ySpeed;
         updateHitbox();
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 }

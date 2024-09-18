@@ -37,7 +37,14 @@ public abstract class Building extends Entity {
 
     public static int getDefaultMaxHealth(int buildingType) {
         return switch (buildingType) {
+            case THRONE_ROOM -> 500;
+            case CASTLE_WALL -> 200;
+            case CASTLE_TURRET -> 150;
+            case VILLAGE, STORAGE_HUT, REFINERY -> 75;
             case FARM, FARM_ROTATED -> 50;
+            case BARRACKS_TIER_1 -> 100;
+            case BARRACKS_TIER_2 -> 175;
+            case BARRACKS_TIER_3 -> 300;
             default -> 0;
         };
     }
