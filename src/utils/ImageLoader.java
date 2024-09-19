@@ -24,32 +24,36 @@ import static ui.buttons.Button.*;
 public class ImageLoader {
 
     private static final String ACTIONS = "actions.png";
-    private static final String BOTTOM_BAR = "bottom_bar.png";
-    private static final String BRUTE = "brute.png";
+    private static final String ARCHER = "units/archer.png";
+    private static final String BOTTOM_BAR = "ui/bottom_bar.png";
+    private static final String BRUTE = "units/brute.png";
     private static final String BUILD_INDICATORS = "build_indicators.png";
     private static final String BUILDINGS = "buildings.png";
     private static final String CASTLE_ZONE = "castle_zone.png";
-    private static final String DROP_DOWN_ARROW_LARGE = "drop_down_arrow_large.png";
-    private static final String DROP_DOWN_BODY_LARGE = "drop_down_body_large.png";
-    private static final String DROP_DOWN_BAR_LARGE = "drop_down_bar_large.png";
-    private static final String DROP_DOWN_BAR_SMALL = "drop_down_bar_small.png";
-    private static final String ICON_BUTTON = "icon_button.png";
+    private static final String CROSSBOWMAN = "units/crossbowman.png";
+    private static final String DROP_DOWN_ARROW_LARGE = "ui/drop_down_arrow_large.png";
+    private static final String DROP_DOWN_BODY_LARGE = "ui/drop_down_body_large.png";
+    private static final String DROP_DOWN_BAR_LARGE = "ui/drop_down_bar_large.png";
+    private static final String DROP_DOWN_BAR_SMALL = "ui/drop_down_bar_small.png";
+    private static final String FOOT_SOLDIER = "units/foot_soldier.png";
+    private static final String ICON_BUTTON = "buttons/icon_button.png";
     private static final String ICONS = "icons.png";
-    private static final String LABORER = "laborer.png";
+    private static final String KNIGHT = "units/knight.png";
+    private static final String LABORER = "units/laborer.png";
     private static final String ORES = "ores.png";
-    private static final String OVERLAY_BG_LARGE = "overlay_bg_large.png";
-    private static final String OVERLAY_BG_SMALL = "overlay_bg_small.png";
+    private static final String OVERLAY_BG_LARGE = "ui/overlay_bg_large.png";
+    private static final String OVERLAY_BG_SMALL = "ui/overlay_bg_small.png";
     private static final String PROJECTILES = "projectiles.png";
     private static final String ROCKS = "rocks.png";
     private static final String SELECT_INDICATOR = "select_indicator.png";
-    private static final String SPRITE_BUTTON = "sprite_button.png";
-    private static final String STONE_THROWER = "stone_thrower.png";
-    private static final String TEXT_BOX_BG = "text_box_bg.png";
-    private static final String TEXT_BUTTON_LARGE = "text_button_large.png";
-    private static final String TEXT_BUTTON_SMALL_LONG = "text_button_small_long.png";
-    private static final String TEXT_BUTTON_SMALL_SHORT = "text_button_small_short.png";
+    private static final String SPRITE_BUTTON = "buttons/sprite_button.png";
+    private static final String STONE_THROWER = "units/stone_thrower.png";
+    private static final String TEXT_BOX_BG = "ui/text_box_bg.png";
+    private static final String TEXT_BUTTON_LARGE = "buttons/text_button_large.png";
+    private static final String TEXT_BUTTON_SMALL_LONG = "buttons/text_button_small_long.png";
+    private static final String TEXT_BUTTON_SMALL_SHORT = "buttons/text_button_small_short.png";
     private static final String TILE_MAP = "tile_map.png";
-    private static final String TOP_BAR = "top_bar.png";
+    private static final String TOP_BAR = "ui/top_bar.png";
     private static final String TREES = "trees.png";
     private static final int SPRITE_SIZE = 32;
 
@@ -58,7 +62,7 @@ public class ImageLoader {
     public static BufferedImage bottomBar, dropDownBodyLarge, dropDownBarLarge, dropDownBarSmall, overlayBgLarge, overlayBgSmall, topBar;
     public static BufferedImage[] actions, buildIndicators, buildings, dropDownArrowLarge, iconButton, icons, largeTextButton, ores, projectiles, rocks, selectIndicator, smallTextButtonLong, smallTextButtonShort, spriteButton, textBoxBg, trees;
     public static BufferedImage[][] resourceObjects;
-    public static BufferedImage[][][] brute, laborer, stoneThrower;
+    public static BufferedImage[][][] archer, brute, crowssbowman, footSoldier, knight, laborer, stoneThrower;
 
     public static void loadImages() {
         loadBuildingImages();
@@ -103,7 +107,11 @@ public class ImageLoader {
     }
 
     private static void loadUnitImages() {
+        archer = getUnitAnimationArray(ARCHER, 4, 4);
         brute = getUnitAnimationArray(BRUTE, 4, 4);
+        crowssbowman = getUnitAnimationArray(CROSSBOWMAN, 4, 4);
+        footSoldier = getUnitAnimationArray(FOOT_SOLDIER, 4, 4);
+        knight = getUnitAnimationArray(KNIGHT, 4, 4);
         laborer = getUnitAnimationArray(LABORER, 5, 5);
         stoneThrower = getUnitAnimationArray(STONE_THROWER, 4, 4);
 

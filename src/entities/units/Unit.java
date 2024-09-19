@@ -13,12 +13,11 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import static entities.projectiles.Projectile.THROWING_ROCK;
+import static entities.projectiles.Projectile.*;
 import static entities.units.Brute.ATTACKING;
 import static entities.units.Laborer.CHOPPING;
 import static entities.units.Laborer.MINING;
 import static main.Game.*;
-import static pathfinding.AStar.isPointOpen;
 
 public abstract class Unit extends Entity implements Serializable {
 
@@ -28,9 +27,13 @@ public abstract class Unit extends Entity implements Serializable {
     public static final int RANGED = 2;
 
     // Unit SubTypes
-    public static final int LABORER = 0;
+    public static final int ARCHER = 0;
     public static final int BRUTE = 1;
-    public static final int STONE_THROWER = 2;
+    public static final int CROSSBOWMAN = 2;
+    public static final int FOOT_SOLDIER = 3;
+    public static final int KNIGHT = 4;
+    public static final int LABORER = 5;
+    public static final int STONE_THROWER = 6;
 
     // Cardinal Directions
     public static final int UP = 0;
@@ -87,13 +90,19 @@ public abstract class Unit extends Entity implements Serializable {
         return switch (unitType) {
             case LABORER -> 50;
             case BRUTE, STONE_THROWER -> 100;
+            case ARCHER, FOOT_SOLDIER -> 175;
+            case CROSSBOWMAN, KNIGHT -> 250;
             default -> 0;
         };
     }
 
     public static int getDefaultDamage(int unitType) {
         return switch (unitType) {
+            case ARCHER -> 7;
             case BRUTE -> 5;
+            case CROSSBOWMAN -> 11;
+            case FOOT_SOLDIER -> 9;
+            case KNIGHT -> 15;
             case STONE_THROWER -> 4;
             default -> 0;
         };
@@ -102,7 +111,7 @@ public abstract class Unit extends Entity implements Serializable {
     public static int getDefaultActionSpeed(int unitType) {
         return switch (unitType) {
             case LABORER -> Laborer.getMaxAnimationTick(CHOPPING) * Laborer.getNumberOfFrames(CHOPPING);
-            case BRUTE, STONE_THROWER ->
+            case ARCHER, BRUTE, CROSSBOWMAN, FOOT_SOLDIER, KNIGHT, STONE_THROWER ->
                     CombatUnit.getMaxAnimationTick(ATTACKING) * CombatUnit.getNumberOfFrames(ATTACKING);
             default -> 0;
         };
@@ -110,8 +119,11 @@ public abstract class Unit extends Entity implements Serializable {
 
     public static float getDefaultMoveSpeed(int unitType) {
         return switch (unitType) {
-            case LABORER -> 0.8f;
+            case ARCHER -> 1.35f;
             case BRUTE -> 1.0f;
+            case CROSSBOWMAN -> 1.1f;
+            case FOOT_SOLDIER -> 0.9f;
+            case KNIGHT, LABORER -> 0.8f;
             case STONE_THROWER -> 1.2f;
             default -> 0.0f;
         };
@@ -119,24 +131,33 @@ public abstract class Unit extends Entity implements Serializable {
 
     public static int getDefaultActionRange(int unitType) {
         return switch (unitType) {
-            case LABORER, BRUTE -> 1;
-            case STONE_THROWER -> 5;
+            case ARCHER -> 5;
+            case BRUTE, FOOT_SOLDIER, KNIGHT, LABORER -> 1;
+            case CROSSBOWMAN -> 7;
+            case STONE_THROWER -> 3;
             default -> 0;
         };
     }
 
     public static int getDefaultSightRange(int unitType) {
         return switch (unitType) {
+            case ARCHER, FOOT_SOLDIER -> 5;
+            case BRUTE, STONE_THROWER -> 3;
+            case CROSSBOWMAN, KNIGHT -> 7;
             case LABORER -> 2;
-            case BRUTE, STONE_THROWER -> 5;
             default -> 0;
         };
     }
 
     public static BufferedImage getSprite(int unitType, int state, int dir, int frame) {
+
         return switch (unitType) {
-            case LABORER -> ImageLoader.laborer[state][dir][frame];
+            case ARCHER -> ImageLoader.archer[state][dir][frame];
             case BRUTE -> ImageLoader.brute[state][dir][frame];
+            case CROSSBOWMAN -> ImageLoader.crowssbowman[state][dir][frame];
+            case FOOT_SOLDIER -> ImageLoader.footSoldier[state][dir][frame];
+            case KNIGHT -> ImageLoader.knight[state][dir][frame];
+            case LABORER -> ImageLoader.laborer[state][dir][frame];
             case STONE_THROWER -> ImageLoader.stoneThrower[state][dir][frame];
             default -> null;
         };
@@ -144,9 +165,9 @@ public abstract class Unit extends Entity implements Serializable {
 
     public static int getAttackStyle(int unitType) {
         return switch (unitType) {
+            case ARCHER, CROSSBOWMAN, STONE_THROWER -> RANGED;
+            case BRUTE, FOOT_SOLDIER, KNIGHT -> MELEE;
             case LABORER -> NONE;
-            case BRUTE -> MELEE;
-            case STONE_THROWER -> RANGED;
             default -> -1;
         };
     }
@@ -154,30 +175,34 @@ public abstract class Unit extends Entity implements Serializable {
     public static int getActionFrameIndex(int unitType, int state) {
         // Which animation frame should the action be performed on?
         return switch (unitType) {
+            case ARCHER, BRUTE, CROSSBOWMAN, FOOT_SOLDIER, KNIGHT, STONE_THROWER ->
+                    CombatUnit.getActionFrameIndex(state);
             case LABORER -> Laborer.getActionFrameIndex(state);
-            case BRUTE, STONE_THROWER -> CombatUnit.getActionFrameIndex(state);
             default -> 0;
         };
     }
 
     private static int getNumberOfFrames(int unitType, int state) {
         return switch (unitType) {
+            case ARCHER, BRUTE, CROSSBOWMAN, FOOT_SOLDIER, KNIGHT, STONE_THROWER -> CombatUnit.getNumberOfFrames(state);
             case LABORER -> Laborer.getNumberOfFrames(state);
-            case BRUTE, STONE_THROWER -> CombatUnit.getNumberOfFrames(state);
             default -> 0;
         };
     }
 
     private static int getMaxAnimationTick(int unitType, int state) {
         return switch (unitType) {
+            case ARCHER, BRUTE, CROSSBOWMAN, FOOT_SOLDIER, KNIGHT, STONE_THROWER ->
+                    CombatUnit.getMaxAnimationTick(state);
             case LABORER -> Laborer.getMaxAnimationTick(state);
-            case BRUTE, STONE_THROWER -> CombatUnit.getMaxAnimationTick(state);
             default -> 0;
         };
     }
 
     public static int getProjectileType(int unitType) {
         return switch (unitType) {
+            case ARCHER -> ARROW;
+            case CROSSBOWMAN -> BOLT;
             case STONE_THROWER -> THROWING_ROCK;
             default -> 0;
         };
@@ -185,8 +210,12 @@ public abstract class Unit extends Entity implements Serializable {
 
     private static String getUnitName(int unitType) {
         return switch (unitType) {
-            case LABORER -> "Laborer";
+            case ARCHER -> "Archer";
             case BRUTE -> "Brute";
+            case CROSSBOWMAN -> "Crowssbowman";
+            case FOOT_SOLDIER -> "Foot Soldier";
+            case KNIGHT -> "Knight";
+            case LABORER -> "Laborer";
             case STONE_THROWER -> "Stone Thrower";
             default -> "Unknown unit";
         };

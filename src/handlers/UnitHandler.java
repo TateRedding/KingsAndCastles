@@ -2,10 +2,7 @@ package handlers;
 
 import entities.buildings.Building;
 import entities.resources.ResourceObject;
-import entities.units.Brute;
-import entities.units.Laborer;
-import entities.units.StoneThrower;
-import entities.units.Unit;
+import entities.units.*;
 import gamestates.Debug;
 import gamestates.Play;
 import entities.Entity;
@@ -164,8 +161,12 @@ public class UnitHandler implements Serializable {
 
     public void createUnit(Player player, Point spawn, int unitType) {
         switch (unitType) {
-            case LABORER -> units.add(new Laborer(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
+            case ARCHER -> units.add(new Archer(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
             case BRUTE -> units.add(new Brute(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
+            case CROSSBOWMAN -> units.add(new Crossbowman(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
+            case FOOT_SOLDIER -> units.add(new FootSoldier(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
+            case KNIGHT -> units.add(new Knight(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
+            case LABORER -> units.add(new Laborer(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
             case STONE_THROWER -> units.add(new StoneThrower(player, toPixelX(spawn.x), toPixelY(spawn.y), id++, this));
         }
         player.setPopulation(player.getPopulation() + 1);

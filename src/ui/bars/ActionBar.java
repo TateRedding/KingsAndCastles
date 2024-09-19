@@ -364,17 +364,15 @@ public class ActionBar extends BottomBar {
                 if (showCombatUnitSpawnButtons) {
                     if (meleeUnitSpawn.getBounds().contains(x, y) && meleeUnitSpawn.isMousePressed()) {
                         switch (selectedEntity.getSubType()) {
-                            // Contains placeholders
                             case BARRACKS_TIER_1 -> play.spawnUnit(BRUTE);
-                            case BARRACKS_TIER_2 -> play.spawnUnit(BRUTE);
-                            case BARRACKS_TIER_3 -> play.spawnUnit(BRUTE);
+                            case BARRACKS_TIER_2 -> play.spawnUnit(FOOT_SOLDIER);
+                            case BARRACKS_TIER_3 -> play.spawnUnit(KNIGHT);
                         }
                     } else if (rangedUnitSpawn.getBounds().contains(x, y) && rangedUnitSpawn.isMousePressed()) {
                         switch (selectedEntity.getSubType()) {
-                            // Contains placeholders
                             case BARRACKS_TIER_1 -> play.spawnUnit(BRUTE);
-                            case BARRACKS_TIER_2 -> play.spawnUnit(BRUTE);
-                            case BARRACKS_TIER_3 -> play.spawnUnit(BRUTE);
+                            case BARRACKS_TIER_2 -> play.spawnUnit(ARCHER);
+                            case BARRACKS_TIER_3 -> play.spawnUnit(CROSSBOWMAN);
                         }
                     }
                 }
@@ -448,22 +446,17 @@ public class ActionBar extends BottomBar {
                 case BARRACKS_TIER_1:
                     showCombatUnitSpawnButtons = true;
                     meleeUnitSpawn.setDisplayImage(ImageLoader.brute[IDLE][DOWN][0]);
-                    // Placeholder
-                    rangedUnitSpawn.setDisplayImage(ImageLoader.brute[IDLE][DOWN][0]);
+                    rangedUnitSpawn.setDisplayImage(ImageLoader.stoneThrower[IDLE][DOWN][0]);
                     break;
                 case BARRACKS_TIER_2:
                     showCombatUnitSpawnButtons = true;
-                    // Placeholder
-                    meleeUnitSpawn.setDisplayImage(ImageLoader.brute[IDLE][DOWN][0]);
-                    // Placeholder
-                    rangedUnitSpawn.setDisplayImage(ImageLoader.brute[IDLE][DOWN][0]);
+                    meleeUnitSpawn.setDisplayImage(ImageLoader.footSoldier[IDLE][DOWN][0]);
+                    rangedUnitSpawn.setDisplayImage(ImageLoader.archer[IDLE][DOWN][0]);
                     break;
                 case BARRACKS_TIER_3:
                     showCombatUnitSpawnButtons = true;
-                    // Placeholder
-                    meleeUnitSpawn.setDisplayImage(ImageLoader.brute[IDLE][DOWN][0]);
-                    // Placeholder
-                    rangedUnitSpawn.setDisplayImage(ImageLoader.brute[IDLE][DOWN][0]);
+                    meleeUnitSpawn.setDisplayImage(ImageLoader.knight[IDLE][DOWN][0]);
+                    rangedUnitSpawn.setDisplayImage(ImageLoader.crowssbowman[IDLE][DOWN][0]);
                     break;
             }
         }
