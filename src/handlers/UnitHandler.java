@@ -295,7 +295,7 @@ public class UnitHandler implements Serializable {
         }
     }
 
-    private void killUnit(Unit u) {
+    public void killUnit(Unit u) {
         u.setActive(false);
         deadUnits.add(u);
     }

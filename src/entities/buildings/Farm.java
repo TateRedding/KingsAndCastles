@@ -28,13 +28,7 @@ public class Farm extends Building {
             int lastIdx = farmers.size() - 1;
             Laborer l = farmers.get(lastIdx);
             farmers.remove(lastIdx);
-            l.setX(toPixelX(spawn.x));
-            l.setY(toPixelY(spawn.y));
-            l.updateHitbox();
-            l.setTargetEntity(null);
-            l.setState(IDLE);
-            l.setDirection(DOWN);
-            l.setActive(true);
+            l.reactivate(toPixelX(spawn.x), toPixelY(spawn.y));
         }
     }
 

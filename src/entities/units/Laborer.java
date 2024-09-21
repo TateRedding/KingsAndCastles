@@ -230,6 +230,20 @@ public class Laborer extends Unit {
         updateHitbox();
     }
 
+    public void reactivate(int x, int y) {
+        this.x = x;
+        this.y = y;
+        updateHitbox();
+        reactivate();
+    }
+
+    public void reactivate() {
+        targetEntity = null;
+        setState(IDLE);
+        direction = DOWN;
+        active = true;
+    }
+
     public int getCoal() {
         return coal;
     }

@@ -48,6 +48,13 @@ public abstract class BuildingWithInventory extends Building {
         addStone(amount * -1);
     }
 
+    public void emptyInventory() {
+        removeCoal(coal);
+        removeIron(iron);
+        removeLogs(logs);
+        removeStone(stone);
+    }
+
     public int getCoal() {
         return coal;
     }

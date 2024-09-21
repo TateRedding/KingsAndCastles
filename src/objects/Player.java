@@ -29,17 +29,6 @@ public class Player implements Serializable {
         this.isHuman = isHuman;
     }
 
-    public void buildBuilding(int buildingType) {
-        coal -= Building.getCostCoal(buildingType);
-        gold -= Building.getCostGold(buildingType);
-        iron -= Building.getCostIron(buildingType);
-        logs -= Building.getCostLogs(buildingType);
-        stone -= Building.getCostStone(buildingType);
-
-        if (buildingType == VILLAGE)
-            maxPopulation += 4;
-    }
-
     public int getCoal() {
         return coal;
     }

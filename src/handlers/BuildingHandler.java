@@ -126,6 +126,19 @@ public class BuildingHandler implements Serializable {
     }
 
     public void killBuilding(Building b) {
+        switch (b.getSubType()) {
+            case FARM, FARM_ROTATED:
+                for (Laborer l : ((Farm) b).getFarmers())
+                    l.reactivate();
+                break;
+            case VILLAGE:
+                Player p = b.getPlayer();
+                p.setMaxPopulation(p.getMaxPopulation() - POPULATION_PER_VILLAGE);
+                break;
+            case STORAGE_HUT, REFINERY:
+                ((BuildingWithInventory) b).emptyInventory();
+                break;
+        }
         buildings.remove(b);
     }
 
