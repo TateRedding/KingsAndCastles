@@ -1,14 +1,15 @@
 package handlers;
 
-import static entities.projectiles.Projectile.PROJECTILE_SIZE;
-import static entities.units.Unit.getProjectileType;
+import static entities.Projectile.PROJECTILE_SIZE;
+import static entities.units.Unit.*;
 
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 
 import entities.Entity;
-import entities.projectiles.Projectile;
+import entities.Projectile;
+import entities.buildings.CastleTurret;
 import entities.units.Unit;
 import gamestates.Play;
 
@@ -35,11 +36,13 @@ public class ProjectileHandler implements Serializable {
                 p.render(g, mapXOffset, mapYOffset);
     }
 
-    public void newProjectile(Unit u, Entity target) {
-        if (u.getTargetEntity() == null) return;
+    public void newProjectile(Entity attacker, Entity target, int damage) {
+        if (!(attacker instanceof Unit || attacker instanceof CastleTurret)) return;
+        if (attacker instanceof Unit attackingUnit && (attackingUnit.getTargetEntity() == null || getAttackStyle(attackingUnit.getSubType()) != RANGED))
+            return;
 
-        int projectileType = getProjectileType(u.getSubType());
-        Rectangle unitHitbox = u.getHitbox();
+        int projectileType = (attacker instanceof CastleTurret turret ? getProjectileType(turret.getOccupyingUnit().getSubType()) : getProjectileType(attacker.getSubType()));
+        Rectangle unitHitbox = attacker.getHitbox();
         Rectangle targetHitbox = target.getHitbox();
         int unitMidX = unitHitbox.x + unitHitbox.width / 2;
         int unitMidY = unitHitbox.y + unitHitbox.height / 2;
@@ -56,16 +59,14 @@ public class ProjectileHandler implements Serializable {
         float xPos = (float) unitMidX - (float) PROJECTILE_SIZE / 2;
         float yPos = (float) unitMidY - (float) PROJECTILE_SIZE / 2;
 
-        int damage = u.getDamage();
-
         for (Projectile p : projectiles)
             if (!p.isActive())
                 if (p.getSubType() == projectileType) {
-                    p.reuse(xPos, yPos, rotation, damage, u.getTargetEntity());
+                    p.reuse(xPos, yPos, rotation, damage, target);
                     return;
                 }
 
-        projectiles.add(new Projectile(null, id++, xPos, yPos, rotation, damage, u.getTargetEntity(), projectileType));
+        projectiles.add(new Projectile(null, id++, xPos, yPos, rotation, damage, target, projectileType));
 
     }
 

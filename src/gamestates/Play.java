@@ -1,8 +1,8 @@
 package gamestates;
 
 import entities.buildings.Building;
+import entities.buildings.CastleTurret;
 import entities.buildings.Farm;
-import entities.projectiles.Projectile;
 import entities.resources.ResourceObject;
 import entities.units.Laborer;
 import entities.units.Unit;
@@ -51,6 +51,7 @@ public class Play extends MapState implements Savable, Serializable {
     private static final int CA_REPAIR = 6;
     private static final int CA_ATTACK_MELEE = 7;
     private static final int CA_ATTACK_RANGED = 8;
+    private static final int CA_DEFEND = 9;
 
     public static final int FOOD_CYCLE_MS = 30000;
     private long lastFoodCycle = System.currentTimeMillis();
@@ -245,43 +246,43 @@ public class Play extends MapState implements Savable, Serializable {
     public void determineAction() {
         clickAction = -1;
         int sgoType = (selectedEntity != null) ? selectedEntity.getEntityType() : -1;
-        int hoverType = (hoverEntity != null) ? hoverEntity.getEntityType() : -1;
+        int hoverEntityType = (hoverEntity != null) ? hoverEntity.getEntityType() : -1;
 
-        if (sgoType == hoverType && selectedEntity != null && hoverEntity != null && selectedEntity.getId() == hoverEntity.getId())
+        if (sgoType == hoverEntityType && selectedEntity != null && hoverEntity != null && selectedEntity.getId() == hoverEntity.getId())
             return;
 
         if (sgoType == BUILDING || sgoType == -1) {
-            if (hoverType == UNIT || hoverType == BUILDING)
+            if (hoverEntityType == UNIT || hoverEntityType == BUILDING)
                 clickAction = CA_SELECT;
             return;
         }
 
         if (sgoType == UNIT) {
             if (selectedEntity.getPlayer().getPlayerID() != activePlayerID) {
-                if (hoverType == UNIT || hoverType == BUILDING)
+                if (hoverEntityType == UNIT || hoverEntityType == BUILDING)
                     clickAction = CA_SELECT;
             } else
-                determineOwnedUnitAction(hoverType, (Unit) selectedEntity);
+                determineOwnedUnitAction(hoverEntityType, (Unit) selectedEntity);
         }
     }
 
-    private void determineOwnedUnitAction(int hoverType, Unit selectedUnit) {
+    private void determineOwnedUnitAction(int hoverEntityType, Unit selectedUnit) {
         int unitType = selectedUnit.getSubType();
 
-        if (unitType == LABORER && (hoverType == UNIT))
+        if (unitType == LABORER && (hoverEntityType == UNIT))
             clickAction = CA_SELECT;
-        else if (hoverType == -1)
+        else if (hoverEntityType == -1)
             clickAction = CA_MOVE;
         else if (unitType == LABORER)
-            determineLaborerAction(hoverType);
+            determineLaborerAction(hoverEntityType);
         else
-            determineCombatAction(hoverType, selectedUnit);
+            determineCombatAction(hoverEntityType, selectedUnit);
     }
 
-    private void determineLaborerAction(int hoverType) {
-        if (hoverType == RESOURCE)
+    private void determineLaborerAction(int hoverEntityType) {
+        if (hoverEntityType == RESOURCE)
             clickAction = (hoverEntity.getSubType() == TREE) ? CA_CHOP : CA_MINE;
-        else if (hoverType == BUILDING) {
+        else if (hoverEntityType == BUILDING) {
             int buildingType = hoverEntity.getSubType();
             if (hoverEntity.getHealth() < hoverEntity.getMaxHealth())
                 clickAction = CA_REPAIR;
@@ -292,15 +293,26 @@ public class Play extends MapState implements Savable, Serializable {
         }
     }
 
-    private void determineCombatAction(int hoverType, Unit selectedUnit) {
-        if (hoverType == UNIT || hoverType == BUILDING) {
-            Player player = hoverEntity.getPlayer();
-            if (player.getPlayerID() != activePlayerID) {
-                int attackStyle = getAttackStyle(selectedUnit.getSubType());
-                clickAction = (attackStyle == MELEE) ? CA_ATTACK_MELEE : CA_ATTACK_RANGED;
-            }
+    private void determineCombatAction(int hoverEntityType, Unit selectedUnit) {
+        if (hoverEntityType != UNIT && hoverEntityType != BUILDING)
+            return;
+
+        Player player = hoverEntity.getPlayer();
+        int selectedUnitAttackStyle = getAttackStyle(selectedUnit.getSubType());
+
+        if (selectedUnitAttackStyle == RANGED
+                && player.getPlayerID() == activePlayerID
+                && hoverEntityType == BUILDING
+                && hoverEntity.getSubType() == CASTLE_TURRET
+                && ((CastleTurret) hoverEntity).getOccupyingUnit() == null) {
+            clickAction = CA_DEFEND;
+            return;
         }
+
+        if (player.getPlayerID() != activePlayerID)
+            clickAction = (selectedUnitAttackStyle == MELEE) ? CA_ATTACK_MELEE : CA_ATTACK_RANGED;
     }
+
 
     public void saveGame() {
         game.getSaveFileHandler().saveGame(this);
@@ -441,7 +453,9 @@ public class Play extends MapState implements Savable, Serializable {
     }
 
     private void setSelectedUnitTargetToHoverEntity(Unit selectedUnit) {
-        boolean isInRangeAndReachable = selectedUnit.isTargetInRange(hoverEntity, selectedUnit.getActionRange()) && selectedUnit.isLineOfSightOpen(hoverEntity);
+        int actionRange = (hoverEntity instanceof CastleTurret ? 1 : selectedUnit.getActionRange());
+
+        boolean isInRangeAndReachable = selectedUnit.isTargetInRange(hoverEntity, actionRange) && selectedUnit.isLineOfSightOpen(hoverEntity);
         ArrayList<Point> path = null;
         if (!isInRangeAndReachable) {
             path = getUnitPathToNearestAdjacentTile(selectedUnit, tileX, tileY, this);
@@ -494,7 +508,7 @@ public class Play extends MapState implements Savable, Serializable {
                                 selectedUnit.setPath(path);
                                 selectedUnit.setTargetEntity(null);
                             }
-                        } else if (canAttackOnClick() || canFarmOnClick() || canGatherOnClick())
+                        } else if (canAttackOnClick() || canDefendOnClick() || canFarmOnClick() || canGatherOnClick())
                             setSelectedUnitTargetToHoverEntity(selectedUnit);
                         else if (hoverEntity.getEntityType() == BUILDING && clickAction == CA_EMPTY_INVENTORY) {
                             if (((Laborer) selectedUnit).canDepositResources((Building) hoverEntity))
@@ -514,6 +528,10 @@ public class Play extends MapState implements Savable, Serializable {
     private boolean canAttackOnClick() {
         int hoverEntityType = hoverEntity.getEntityType();
         return (hoverEntityType == UNIT || hoverEntityType == BUILDING) && (clickAction == CA_ATTACK_MELEE || clickAction == CA_ATTACK_RANGED);
+    }
+
+    private boolean canDefendOnClick() {
+        return (hoverEntity.getEntityType() == BUILDING && hoverEntity.getSubType() == CASTLE_TURRET && clickAction == CA_DEFEND);
     }
 
     private boolean canFarmOnClick() {

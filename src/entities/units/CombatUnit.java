@@ -1,5 +1,6 @@
 package entities.units;
 
+import entities.buildings.CastleTurret;
 import handlers.UnitHandler;
 import objects.Player;
 
@@ -35,10 +36,34 @@ public class CombatUnit extends Unit {
 
     public void update() {
         super.update();
-        if (targetEntity != null && (targetEntity.getEntityType() == UNIT || targetEntity.getEntityType() == BUILDING)) {
-            if (state == IDLE)
-                setState(ATTACKING);
-        } else if (state == ATTACKING)
+
+        if (targetEntity != null) {
+            int targetType = targetEntity.getEntityType();
+            boolean isSamePlayer = isTargetSamePlayer();
+            if (state == IDLE && (targetType == UNIT || targetType == BUILDING)) {
+                if (isSamePlayer && canOccupyTurret())
+                    occupyTurret();
+                else if (!isSamePlayer)
+                    setState(ATTACKING);
+            }
+        } else if (state == ATTACKING) {
             setState(IDLE);
+        }
+    }
+
+    private boolean canOccupyTurret() {
+        return targetEntity instanceof CastleTurret turret && turret.getOccupyingUnit() == null && attackStyle == RANGED;
+    }
+
+
+    private void occupyTurret() {
+        CastleTurret targetCT = (CastleTurret) targetEntity;
+        active = false;
+        x = targetCT.getX();
+        y = targetCT.getY();
+        targetCT.setOccupyingUnit(this);
+        if (unitHandler.getPlay().getSelectedEntity() == this)
+            unitHandler.getPlay().setSelectedEntity(targetCT);
+        updateHitbox();
     }
 }

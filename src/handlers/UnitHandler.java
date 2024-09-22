@@ -51,12 +51,12 @@ public class UnitHandler implements Serializable {
             Entity target = u.getTargetEntity();
 
             // Check if the target is now inactive
-            if (unitType != LABORER && target != null && target.getEntityType() == UNIT) {
-                if (!target.isActive()) {
-                    u.setTargetEntity(null);
-                    target = null;
-                    resetPathToFirstTile(u);
-                }
+            if (unitType != LABORER && target != null && !target.isActive()) {
+                u.setTargetEntity(null);
+                if (u.getState() == ATTACKING)
+                    u.setState(IDLE);
+                target = null;
+                resetPathToFirstTile(u);
             }
 
             // Check if target has moved out of range
@@ -149,7 +149,7 @@ public class UnitHandler implements Serializable {
                         createUnit(players.get(i), spawn, BRUTE);
                         break;
                     case 2:
-                        createUnit(players.get(i), spawn, STONE_THROWER);
+                        createUnit(players.get(i), spawn, ARCHER);
                         break;
                     default:
                         createUnit(players.get(i), spawn, LABORER);
@@ -273,25 +273,13 @@ public class UnitHandler implements Serializable {
             if (attacker.getSubType() == -1 || target.getSubType() == -1)
                 return;
             target.hurt(attacker.getDamage());
-
         } else if (attackStyle == RANGED)
-            play.getProjectileHandler().newProjectile(attacker, target);
+            play.getProjectileHandler().newProjectile(attacker, target, attacker.getDamage());
 
         // Auto-retaliate
         if (target instanceof Unit) {
             if (target.getSubType() != LABORER && ((Unit) target).getTargetEntity() == null && ((Unit) target).getState() == IDLE)
                 ((Unit) target).setTargetEntity(attacker);
-        }
-
-        if (target.getHealth() <= 0) {
-            if (target instanceof Unit)
-                killUnit((Unit) target);
-            else if (target instanceof Building)
-                play.getBuildingHandler().killBuilding((Building) target);
-            attacker.setState(IDLE);
-            attacker.setTargetEntity(null);
-            if (play.getSelectedEntity() == target)
-                play.setSelectedEntity(null);
         }
     }
 

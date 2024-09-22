@@ -1,6 +1,5 @@
-package entities.projectiles;
+package entities;
 
-import entities.Entity;
 import objects.Player;
 import utils.ImageLoader;
 

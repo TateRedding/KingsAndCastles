@@ -1,5 +1,7 @@
 package entities.units;
 
+import entities.buildings.CastleTurret;
+import entities.buildings.Farm;
 import gamestates.Play;
 import handlers.UnitHandler;
 import entities.Entity;
@@ -8,12 +10,11 @@ import pathfinding.AStar;
 import utils.ImageLoader;
 
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import static entities.projectiles.Projectile.*;
+import static entities.Projectile.*;
 import static entities.units.Brute.ATTACKING;
 import static entities.units.Laborer.CHOPPING;
 import static entities.units.Laborer.MINING;
@@ -59,6 +60,7 @@ public abstract class Unit extends Entity implements Serializable {
 
     protected int unitType;
     protected int damage;
+    protected int attackStyle;
     protected int actionTick = 0;
     protected int actionTickMax;
     protected int actionRange, sightRange;
@@ -79,6 +81,7 @@ public abstract class Unit extends Entity implements Serializable {
         this.maxHealth = getDefaultMaxHealth(unitType);
         this.health = maxHealth;
         this.damage = getDefaultDamage(unitType);
+        this.attackStyle = getAttackStyle(unitType);
         this.actionTickMax = getDefaultActionSpeed(unitType);
         this.actionRange = getDefaultActionRange(unitType);
         this.speed = getDefaultMoveSpeed(unitType);
@@ -246,106 +249,6 @@ public abstract class Unit extends Entity implements Serializable {
         }
     }
 
-    public boolean isTargetInRange(Entity target, int tileRange) {
-        float startX = x - tileRange * TILE_SIZE;
-        float startY = y - tileRange * TILE_SIZE;
-        float size = (tileRange * 2 + 1) * TILE_SIZE;
-        Ellipse2D range = new Ellipse2D.Double(startX, startY, size, size);
-        Rectangle targetBounds = target.getHitbox();
-
-        int numTilesX = targetBounds.width / TILE_SIZE;
-        int numTilesY = targetBounds.height / TILE_SIZE;
-        int halfTileSize = TILE_SIZE / 2;
-
-        for (int tilesX = 0; tilesX < numTilesX; tilesX++)
-            for (int tilesY = 0; tilesY < numTilesY; tilesY++) {
-                int middleX = targetBounds.x + (tilesX * TILE_SIZE) + halfTileSize;
-                int middleY = targetBounds.y + (tilesY * TILE_SIZE) + halfTileSize;
-                if (range.contains(middleX, middleY))
-                    return true;
-            }
-        return false;
-    }
-
-    public boolean isLineOfSightOpen(Entity target) {
-        Point unitTile;
-        Point targetTile;
-        Play play = unitHandler.getPlay();
-
-        if (path != null && !path.isEmpty())
-            unitTile = path.get(0);
-        else
-            unitTile = new Point(toTileX(hitbox.x), toTileY(hitbox.y));
-
-        if (target.getEntityType() == UNIT && ((Unit) target).getPath() != null && !(((Unit) target).getPath().isEmpty()))
-            targetTile = ((Unit) target).getPath().get(0);
-        else
-            targetTile = new Point(toTileX(target.getHitbox().x), toTileY(target.getHitbox().y));
-
-        Point currentTile = unitTile;
-
-        while (!currentTile.equals(targetTile)) {
-            ArrayList<Point> neighbors = getTilesClosestToTarget(currentTile, targetTile, play);
-
-            if (neighbors.isEmpty())
-                return false;
-
-            Point nextTile = null;
-            for (Point neighbor : neighbors) {
-                if (neighbor.equals(targetTile))
-                    return true;
-
-                if (!play.isTileBlockedOrReserved(neighbor.x, neighbor.y, null)) {
-                    nextTile = neighbor;
-                    break;
-                }
-            }
-
-            if (nextTile != null)
-                currentTile = nextTile;
-            else
-                return false;
-        }
-        return true;
-    }
-
-
-    private ArrayList<Point> getTilesClosestToTarget(Point start, Point target, Play play) {
-        double lowestDist = Double.POSITIVE_INFINITY;
-        int gridWidth = play.getMap().getTileData()[0].length;
-        int gridHeight = play.getMap().getTileData().length;
-
-        ArrayList<Point> closestTiles = new ArrayList<>();
-        ArrayList<Point> allCardinalTiles = new ArrayList<>();
-
-        if (start.y > 0)
-            allCardinalTiles.add(new Point(start.x, start.y - 1));
-
-        if (start.x < gridWidth - 1)
-            allCardinalTiles.add(new Point(start.x + 1, start.y));
-
-
-        if (start.y < gridHeight - 1)
-            allCardinalTiles.add(new Point(start.x, start.y + 1));
-
-        if (start.x > 0)
-            allCardinalTiles.add(new Point(start.x - 1, start.y));
-
-        for (Point p : allCardinalTiles) {
-            double dist = AStar.getDistance(p, target);
-            if (dist == lowestDist)
-                closestTiles.add(p);
-            else if (dist < lowestDist) {
-                lowestDist = dist;
-                closestTiles.clear();
-                closestTiles.add(p);
-            }
-        }
-
-        return closestTiles;
-
-    }
-
     protected void turnTowardsTarget() {
         int targetX = toTileX(targetEntity.getX());
         int targetY = toTileY(targetEntity.getY());
@@ -382,7 +285,7 @@ public abstract class Unit extends Entity implements Serializable {
             path.remove(0);
             if (!path.isEmpty()) {
                 // Check if they can reach their target from where they currently are
-                if (targetEntity != null && isTargetInRange(targetEntity, actionRange) && isLineOfSightOpen(targetEntity)) {
+                if (targetEntity != null && isTargetActionable()) {
                     path = null;
                     setState(IDLE);
                     return;
@@ -418,6 +321,15 @@ public abstract class Unit extends Entity implements Serializable {
 
         setDirectionWithPath(path.get(0));
         moveInDirection(direction);
+    }
+
+    private boolean isTargetActionable() {
+        if (isTargetSamePlayer()) {
+            if ((targetEntity instanceof CastleTurret && attackStyle == RANGED) || (targetEntity instanceof Farm && this instanceof Laborer))
+                return isTargetInRange(targetEntity, 1);
+        } else
+            return isTargetInRange(targetEntity, actionRange) && isLineOfSightOpen(targetEntity);
+        return false;
     }
 
     protected void setDirectionWithPath(Point point) {
@@ -485,6 +397,10 @@ public abstract class Unit extends Entity implements Serializable {
         updateHitbox();
     }
 
+    protected boolean isTargetSamePlayer() {
+        return targetEntity != null && targetEntity.getPlayer().getPlayerID() == player.getPlayerID();
+    }
+
     public void eat() {
         cyclesSinceLastFed = 0;
         player.setFood(player.getFood() - 1);
@@ -498,6 +414,20 @@ public abstract class Unit extends Entity implements Serializable {
             if (unitHandler.getPlay().getSelectedEntity() == this)
                 unitHandler.getPlay().setSelectedEntity(null);
         }
+    }
+
+    public void reactivate(int x, int y) {
+        this.x = x;
+        this.y = y;
+        updateHitbox();
+        reactivate();
+    }
+
+    public void reactivate() {
+        targetEntity = null;
+        setState(IDLE);
+        direction = DOWN;
+        active = true;
     }
 
     public int getActionRange() {

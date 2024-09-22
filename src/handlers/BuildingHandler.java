@@ -3,6 +3,7 @@ package handlers;
 import entities.buildings.*;
 import entities.resources.GoldMine;
 import entities.units.Laborer;
+import entities.units.Unit;
 import gamestates.Play;
 import objects.Map;
 import objects.Player;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static entities.buildings.Building.*;
+import static entities.buildings.CastleTurret.TURRET_ATTACK_RANGE_MODIFIER;
 import static entities.buildings.Farm.FOOD_PER_FARMER;
 import static entities.buildings.ThroneRoom.*;
 import static entities.buildings.Village.POPULATION_PER_VILLAGE;
@@ -35,8 +37,8 @@ public class BuildingHandler implements Serializable {
 
 
     public void update(boolean foodCycleThisUpdate) {
-        if (foodCycleThisUpdate)
-            for (Building b : buildings)
+        for (Building b : buildings) {
+            if (foodCycleThisUpdate)
                 if ((b.getSubType() == FARM || b.getSubType() == FARM_ROTATED)) {
                     ArrayList<Laborer> farmers = ((Farm) b).getFarmers();
                     if (!farmers.isEmpty()) {
@@ -44,6 +46,9 @@ public class BuildingHandler implements Serializable {
                         p.setFood(p.getFood() + (FOOD_PER_FARMER * farmers.size()));
                     }
                 }
+            if (b instanceof CastleTurret turret && turret.getOccupyingUnit() != null)
+                turret.findAndAttackTarget();
+        }
     }
 
     public void render(Graphics g, int xOffset, int yOffset) {
@@ -71,7 +76,12 @@ public class BuildingHandler implements Serializable {
     public void createBuilding(Player player, int x, int y, int buildingType) {
         switch (buildingType) {
             case CASTLE_WALL -> buildings.add(new CastleWall(player, id, x, y, this));
-            case CASTLE_TURRET -> buildings.add(new CastleTurret(player, id, x, y, this));
+            case CASTLE_TURRET -> {
+                Building wall = getBuildingAt(x, y);
+                if (wall != null)
+                    buildings.remove(wall);
+                buildings.add(new CastleTurret(player, id, x, y, this));
+            }
             case VILLAGE -> {
                 buildings.add(new Village(player, id, x, y, this));
                 player.setMaxPopulation(player.getMaxPopulation() + POPULATION_PER_VILLAGE);
@@ -139,6 +149,7 @@ public class BuildingHandler implements Serializable {
                 ((BuildingWithInventory) b).emptyInventory();
                 break;
         }
+        b.setActive(false);
         buildings.remove(b);
     }
 
@@ -179,5 +190,9 @@ public class BuildingHandler implements Serializable {
 
     public ArrayList<Building> getBuildings() {
         return buildings;
+    }
+
+    public Play getPlay() {
+        return play;
     }
 }

@@ -1,6 +1,7 @@
 package entities.buildings;
 
 import entities.Entity;
+import entities.units.Unit;
 import handlers.BuildingHandler;
 import objects.Player;
 
@@ -214,6 +215,10 @@ public abstract class Building extends Entity {
             };
             default -> new String[]{"No", "Details"};
         };
+    }
+
+    public BuildingHandler getBuildingHandler() {
+        return buildingHandler;
     }
 
     public boolean hasInventory() {

@@ -224,24 +224,10 @@ public class Laborer extends Unit {
             else if (farmType == FARM_ROTATED)
                 x = farmX + offset;
         }
+        currFarmers.add(this);
         if (unitHandler.getPlay().getSelectedEntity() == this)
             unitHandler.getPlay().setSelectedEntity(targetFarm);
-        currFarmers.add(this);
         updateHitbox();
-    }
-
-    public void reactivate(int x, int y) {
-        this.x = x;
-        this.y = y;
-        updateHitbox();
-        reactivate();
-    }
-
-    public void reactivate() {
-        targetEntity = null;
-        setState(IDLE);
-        direction = DOWN;
-        active = true;
     }
 
     public int getCoal() {
