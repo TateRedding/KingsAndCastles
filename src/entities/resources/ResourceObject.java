@@ -17,12 +17,13 @@ public abstract class ResourceObject extends Entity implements Serializable {
     public static final int IRON = 4;
 
     protected int spriteId;
+    protected int amount, maxAmount;
 
     public ResourceObject(int tileX, int tileY, int id, int resourceType, int spriteId) {
         super(null, RESOURCE, resourceType, toPixelX(tileX), toPixelY(tileY), id);
         this.spriteId = spriteId;
-        this.maxHealth = getStartingTotal(resourceType);
-        this.health = maxHealth;
+        this.maxAmount = getStartingTotal(resourceType);
+        this.amount = maxAmount;
         this.hitbox = new Rectangle(toPixelX(tileX), toPixelY(tileY), TILE_SIZE, TILE_SIZE);
     }
 
@@ -54,6 +55,18 @@ public abstract class ResourceObject extends Entity implements Serializable {
             case IRON -> 24;
             default -> 0;
         };
+    }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
+
+    public int getMaxAmount() {
+        return maxAmount;
     }
 
     public int getSpriteId() {

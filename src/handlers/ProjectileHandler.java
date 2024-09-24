@@ -7,6 +7,7 @@ import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import entities.CombatEntity;
 import entities.Entity;
 import entities.Projectile;
 import entities.buildings.CastleTurret;
@@ -36,7 +37,7 @@ public class ProjectileHandler implements Serializable {
                 p.render(g, mapXOffset, mapYOffset);
     }
 
-    public void newProjectile(Entity attacker, Entity target, int damage) {
+    public void newProjectile(Entity attacker, CombatEntity target, int damage) {
         if (!(attacker instanceof Unit || attacker instanceof CastleTurret)) return;
         if (attacker instanceof Unit attackingUnit && (attackingUnit.getTargetEntity() == null || getAttackStyle(attackingUnit.getSubType()) != RANGED))
             return;

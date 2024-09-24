@@ -274,17 +274,17 @@ public class Play extends MapState implements Savable, Serializable {
         else if (hoverEntityType == -1)
             clickAction = CA_MOVE;
         else if (unitType == LABORER)
-            determineLaborerAction(hoverEntityType);
+            determineLaborerAction();
         else
             determineCombatAction(hoverEntityType, selectedUnit);
     }
 
-    private void determineLaborerAction(int hoverEntityType) {
-        if (hoverEntityType == RESOURCE)
+    private void determineLaborerAction() {
+        if (hoverEntity.getEntityType() == RESOURCE)
             clickAction = (hoverEntity.getSubType() == TREE) ? CA_CHOP : CA_MINE;
-        else if (hoverEntityType == BUILDING) {
+        else if (hoverEntity instanceof Building hoverBuilding) {
             int buildingType = hoverEntity.getSubType();
-            if (hoverEntity.getHealth() < hoverEntity.getMaxHealth())
+            if (hoverBuilding.getHealth() < hoverBuilding.getMaxHealth())
                 clickAction = CA_REPAIR;
             else if (buildingType == FARM)
                 clickAction = CA_FARM;

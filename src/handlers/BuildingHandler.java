@@ -23,15 +23,14 @@ import static main.Game.*;
 import static main.Game.toTileY;
 import static pathfinding.AStar.isPointOpen;
 
-public class BuildingHandler implements Serializable {
+public class BuildingHandler extends CombatEntityHandler implements Serializable {
 
-    private Play play;
     private ArrayList<Building> buildings = new ArrayList<>();
 
     private int id = 0;
 
     public BuildingHandler(Play play) {
-        this.play = play;
+        super(play);
         addThroneRooms();
     }
 
@@ -190,9 +189,5 @@ public class BuildingHandler implements Serializable {
 
     public ArrayList<Building> getBuildings() {
         return buildings;
-    }
-
-    public Play getPlay() {
-        return play;
     }
 }

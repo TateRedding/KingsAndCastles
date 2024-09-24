@@ -1,7 +1,6 @@
 package entities.buildings;
 
-import entities.Entity;
-import entities.units.Unit;
+import entities.CombatEntity;
 import handlers.BuildingHandler;
 import objects.Player;
 
@@ -9,7 +8,7 @@ import java.awt.*;
 
 import static main.Game.TILE_SIZE;
 
-public abstract class Building extends Entity {
+public abstract class Building extends CombatEntity {
 
     // Building SubTypes
     public static final int THRONE_ROOM = 0;
@@ -26,17 +25,15 @@ public abstract class Building extends Entity {
 
     protected boolean hasInventory = false;
 
-    protected BuildingHandler buildingHandler;
-
     public Building(Player player, int id, int x, int y, int buildingType, BuildingHandler buildingHandler) {
-        super(player, BUILDING, buildingType, x, y, id);
-        this.buildingHandler = buildingHandler;
+        super(player, BUILDING, buildingType, x, y, id, buildingHandler);
         this.maxHealth = getDefaultMaxHealth(buildingType);
         this.health = maxHealth;
         this.hitbox = new Rectangle(x, y, getBuildingTileWidth(buildingType) * TILE_SIZE, getBuildingTileHeight(buildingType) * TILE_SIZE);
     }
 
-    public static int getDefaultMaxHealth(int buildingType) {
+    @Override
+    protected int getDefaultMaxHealth(int buildingType) {
         return switch (buildingType) {
             case THRONE_ROOM -> 500;
             case CASTLE_WALL -> 200;
@@ -215,10 +212,6 @@ public abstract class Building extends Entity {
             };
             default -> new String[]{"No", "Details"};
         };
-    }
-
-    public BuildingHandler getBuildingHandler() {
-        return buildingHandler;
     }
 
     public boolean hasInventory() {

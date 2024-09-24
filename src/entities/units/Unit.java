@@ -1,5 +1,6 @@
 package entities.units;
 
+import entities.CombatEntity;
 import entities.buildings.CastleTurret;
 import entities.buildings.Farm;
 import gamestates.Play;
@@ -20,7 +21,7 @@ import static entities.units.Laborer.CHOPPING;
 import static entities.units.Laborer.MINING;
 import static main.Game.*;
 
-public abstract class Unit extends Entity implements Serializable {
+public abstract class Unit extends CombatEntity implements Serializable {
 
     // Attack Styles
     public static final int NONE = 0;
@@ -56,14 +57,9 @@ public abstract class Unit extends Entity implements Serializable {
     private static final int MAX_CYCLES_WITHOUT_FOOD = 2;
 
     protected ArrayList<Point> path;
-    protected UnitHandler unitHandler;
 
     protected int unitType;
-    protected int damage;
     protected int attackStyle;
-    protected int actionTick = 0;
-    protected int actionTickMax;
-    protected int actionRange, sightRange;
     protected int direction = DOWN;
     protected int state = IDLE;
     protected int animationFrame = 0;
@@ -75,9 +71,8 @@ public abstract class Unit extends Entity implements Serializable {
     protected Entity targetEntity;
 
     public Unit(Player player, float x, float y, int unitType, int id, UnitHandler unitHandler) {
-        super(player, UNIT, unitType, x, y, id);
+        super(player, UNIT, unitType, x, y, id, unitHandler);
         this.unitType = unitType;
-        this.unitHandler = unitHandler;
         this.maxHealth = getDefaultMaxHealth(unitType);
         this.health = maxHealth;
         this.damage = getDefaultDamage(unitType);
@@ -89,7 +84,8 @@ public abstract class Unit extends Entity implements Serializable {
         this.hitbox = new Rectangle((int) x, (int) y, TILE_SIZE, TILE_SIZE);
     }
 
-    public static int getDefaultMaxHealth(int unitType) {
+    @Override
+    protected int getDefaultMaxHealth(int unitType) {
         return switch (unitType) {
             case LABORER -> 50;
             case BRUTE, STONE_THROWER -> 100;
@@ -291,7 +287,7 @@ public abstract class Unit extends Entity implements Serializable {
                     return;
                 }
 
-                Play play = unitHandler.getPlay();
+                Play play = combatEntityHandler.getPlay();
                 Point next = path.get(0);
                 Point last = path.get(path.size() - 1);
 
@@ -411,8 +407,8 @@ public abstract class Unit extends Entity implements Serializable {
         if (cyclesSinceLastFed > MAX_CYCLES_WITHOUT_FOOD) {
             System.out.println(getUnitName(unitType) + " ID: " + id + " has starved to death!");
             active = false;
-            if (unitHandler.getPlay().getSelectedEntity() == this)
-                unitHandler.getPlay().setSelectedEntity(null);
+            if (combatEntityHandler.getPlay().getSelectedEntity() == this)
+                combatEntityHandler.getPlay().setSelectedEntity(null);
         }
     }
 
@@ -428,10 +424,6 @@ public abstract class Unit extends Entity implements Serializable {
         setState(IDLE);
         direction = DOWN;
         active = true;
-    }
-
-    public int getActionRange() {
-        return actionRange;
     }
 
     public int getActionTickMax() {
@@ -465,17 +457,10 @@ public abstract class Unit extends Entity implements Serializable {
         this.animationTick = 0;
     }
 
-    public int getDamage() {
-        return damage;
-    }
-
     public int getDirection() {
         return direction;
     }
 
-    public void setDirection(int direction) {
-        this.direction = direction;
-    }
 
     public ArrayList<Point> getPath() {
         return path;
@@ -485,20 +470,12 @@ public abstract class Unit extends Entity implements Serializable {
         this.path = path;
     }
 
-    public int getSightRange() {
-        return sightRange;
-    }
-
     public Entity getTargetEntity() {
         return targetEntity;
     }
 
     public void setTargetEntity(Entity targetEntity) {
         this.targetEntity = targetEntity;
-    }
-
-    public UnitHandler getUnitHandler() {
-        return unitHandler;
     }
 
 }

@@ -18,16 +18,17 @@ public class Projectile extends Entity {
     protected float rotation;
     protected int damage;
 
-    protected Entity target;
+    protected CombatEntity target;
 
-    public Projectile(Player player, int id, float x, float y, float rotation, int damage, Entity target, int projectileType) {
+    public Projectile(Player player, int id, float x, float y, float rotation, int damage, CombatEntity target, int projectileType) {
         super(player, PROJECTILE, projectileType, x, y, id);
         this.rotation = rotation;
+        this.damage = damage;
         this.target = target;
         this.hitbox = new Rectangle((int) x, (int) y, PROJECTILE_SIZE, PROJECTILE_SIZE);
     }
 
-    public void reuse(float x, float y, float rotation, int damage, Entity target) {
+    public void reuse(float x, float y, float rotation, int damage, CombatEntity target) {
         this.x = x;
         this.y = y;
         updateHitbox();

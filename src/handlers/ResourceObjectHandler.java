@@ -45,8 +45,8 @@ public class ResourceObjectHandler implements Serializable {
                 if (currRO != null) {
                     g.drawImage(ImageLoader.resourceObjects[currRO.getSubType()][currRO.getSpriteId()], toPixelX(x) - xOffset,
                             toPixelY(y) - yOffset, null);
-                    if (currRO.getHealth() < currRO.getMaxHealth())
-                        currRO.drawHealthBar(g, currRO.getHealth(), currRO.getMaxHealth(), xOffset, yOffset);
+                    if (currRO.getAmount() < currRO.getMaxAmount())
+                        currRO.drawHealthBar(g, currRO.getAmount(), currRO.getMaxAmount(), xOffset, yOffset);
                 }
             }
     }
@@ -293,7 +293,7 @@ public class ResourceObjectHandler implements Serializable {
         if (ro.getSubType() == -1) return;
 
         int resourceType = ro.getSubType();
-        int currAmt = ro.getHealth();
+        int currAmt = ro.getAmount();
         int gatherAmt = getGatherAmt(laborer, resourceType, currAmt);
 
         updateResourceCounts(player, laborer, resourceType, gatherAmt);
@@ -303,7 +303,7 @@ public class ResourceObjectHandler implements Serializable {
         if (newAmt <= 0)
             handleResourceDepletion(ro, resourceType, laborer);
         else
-            ro.setHealth(newAmt);
+            ro.setAmount(newAmt);
 
         if (laborer.isInventoryFull(resourceType)) {
             laborer.targetClosestDepositBuilding(resourceType);

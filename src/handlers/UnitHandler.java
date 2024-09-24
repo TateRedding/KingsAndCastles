@@ -1,5 +1,6 @@
 package handlers;
 
+import entities.CombatEntity;
 import entities.buildings.Building;
 import entities.resources.ResourceObject;
 import entities.units.*;
@@ -17,19 +18,18 @@ import static entities.units.Unit.*;
 import static main.Game.*;
 import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
 
-public class UnitHandler implements Serializable {
+public class UnitHandler extends CombatEntityHandler implements Serializable {
 
     private static final Font DEBUG_UNIT_ID_FONT = new Font("Monospaced", Font.BOLD, 14);
-    private static final int NUM_MAX_STARTING_UNITS = 3;
+    private static final int NUM_MAX_STARTING_UNITS = 1;
 
-    private Play play;
     private ArrayList<Unit> units = new ArrayList<>();
     private ArrayList<Unit> deadUnits = new ArrayList<>();
 
     private int id = 0;
 
     public UnitHandler(Play play) {
-        this.play = play;
+        super(play);
         createStartingUnits();
     }
 
@@ -79,21 +79,6 @@ public class UnitHandler implements Serializable {
             units.sort(Comparator.comparingInt(Unit::getCyclesSinceLastFed));
     }
 
-    private void resetPathToFirstTile(Unit u) {
-        if (u.getPath() != null && !u.getPath().isEmpty())
-            u.setPath(new ArrayList<>(Arrays.asList(u.getPath().get(0))));
-        else
-            u.setPath(null);
-    }
-
-    private void performUnitAction(Unit u, Entity target) {
-        if (u.getSubType() == LABORER && target instanceof ResourceObject)
-            play.getResourceObjectHandler().gatherResource(u.getPlayer(), (ResourceObject) target, (Laborer) u);
-        else if (target instanceof Unit || target instanceof Building)
-            attack(u, target);
-    }
-
-
     public void render(Graphics g, int xOffset, int yOffset) {
         for (Unit u : units) {
             if (u.isActive()) {
@@ -121,6 +106,20 @@ public class UnitHandler implements Serializable {
         }
         if (!deadUnits.isEmpty())
             cleanupUnitList();
+    }
+
+    private void resetPathToFirstTile(Unit u) {
+        if (u.getPath() != null && !u.getPath().isEmpty())
+            u.setPath(new ArrayList<>(Arrays.asList(u.getPath().get(0))));
+        else
+            u.setPath(null);
+    }
+
+    private void performUnitAction(Unit u, Entity target) {
+        if (u.getSubType() == LABORER && target instanceof ResourceObject)
+            play.getResourceObjectHandler().gatherResource(u.getPlayer(), (ResourceObject) target, (Laborer) u);
+        else if (target instanceof CombatEntity ceTarget)
+            attack(u, ceTarget);
     }
 
     private void cleanupUnitList() {
@@ -152,7 +151,7 @@ public class UnitHandler implements Serializable {
                         createUnit(players.get(i), spawn, ARCHER);
                         break;
                     default:
-                        createUnit(players.get(i), spawn, LABORER);
+                        createUnit(players.get(i), spawn, ARCHER);
                         break;
                 }
             }
@@ -232,16 +231,15 @@ public class UnitHandler implements Serializable {
     }
 
     private void findEnemyToAttack(Unit attacker) {
-        ArrayList<Entity> targets = new ArrayList<>();
+        ArrayList<CombatEntity> targets = new ArrayList<>();
         targets.addAll(units);
         targets.addAll(play.getBuildingHandler().getBuildings());
-        for (Entity target : targets) {
+        for (CombatEntity target : targets) {
             if (target.isActive() && target.getPlayer().getPlayerID() != attacker.getPlayer().getPlayerID() && attacker.isTargetInRange(target, attacker.getSightRange())) {
                 if (attacker.isTargetInRange(target, attacker.getActionRange()) && attacker.isLineOfSightOpen(target)) {
                     attacker.setTargetEntity(target);
                     return;
                 }
-
                 Point targetTile = getTargetTile(target);
                 ArrayList<Point> path = getUnitPathToNearestAdjacentTile(attacker, targetTile.x, targetTile.y, play);
                 if (path != null) {
@@ -267,7 +265,7 @@ public class UnitHandler implements Serializable {
         return targetTile;
     }
 
-    private void attack(Unit attacker, Entity target) {
+    private void attack(Unit attacker, CombatEntity target) {
         int attackStyle = getAttackStyle(attacker.getSubType());
         if (attackStyle == MELEE) {
             if (attacker.getSubType() == -1 || target.getSubType() == -1)
@@ -319,9 +317,5 @@ public class UnitHandler implements Serializable {
 
     public ArrayList<Unit> getUnits() {
         return units;
-    }
-
-    public Play getPlay() {
-        return play;
     }
 }

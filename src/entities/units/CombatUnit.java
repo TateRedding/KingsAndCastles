@@ -5,6 +5,7 @@ import handlers.UnitHandler;
 import objects.Player;
 
 public class CombatUnit extends Unit {
+
     // Combat Unit Specific States
     public static final int ATTACKING = 3;
 
@@ -46,9 +47,8 @@ public class CombatUnit extends Unit {
                 else if (!isSamePlayer)
                     setState(ATTACKING);
             }
-        } else if (state == ATTACKING) {
+        } else if (state == ATTACKING)
             setState(IDLE);
-        }
     }
 
     private boolean canOccupyTurret() {
@@ -62,8 +62,8 @@ public class CombatUnit extends Unit {
         x = targetCT.getX();
         y = targetCT.getY();
         targetCT.setOccupyingUnit(this);
-        if (unitHandler.getPlay().getSelectedEntity() == this)
-            unitHandler.getPlay().setSelectedEntity(targetCT);
+        if (combatEntityHandler.getPlay().getSelectedEntity() == this)
+            combatEntityHandler.getPlay().setSelectedEntity(targetCT);
         updateHitbox();
     }
 }

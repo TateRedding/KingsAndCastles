@@ -21,10 +21,11 @@ public class CastleTurret extends Building {
 
     public CastleTurret(Player player, int id, int x, int y, BuildingHandler buildingHandler) {
         super(player, id, x, y, CASTLE_TURRET, buildingHandler);
+        setDamageAndRanges(null);
     }
 
     public void releaseUnit() {
-        Point spawn = buildingHandler.getSpawnTile(this);
+        Point spawn = ((BuildingHandler) combatEntityHandler).getSpawnTile(this);
         if (spawn != null) {
             occupyingUnit.reactivate(toPixelX(spawn.x), toPixelY(spawn.y));
             occupyingUnit = null;
@@ -32,12 +33,12 @@ public class CastleTurret extends Building {
     }
 
     public void findAndAttackTarget() {
-        Play play = buildingHandler.getPlay();
-        for (Unit u : play.getUnitHandler().getUnits()) {
-            if (u.getPlayer().getPlayerID() == player.getPlayerID() || !u.isActive()) continue;
-            if (isTargetInRange(u, (int) (occupyingUnit.getActionRange() * TURRET_ATTACK_RANGE_MODIFIER)) && isLineOfSightOpen(u)) {
+        Play play = combatEntityHandler.getPlay();
+        for (Unit target : play.getUnitHandler().getUnits()) {
+            if (target.getPlayer().getPlayerID() == player.getPlayerID() || !target.isActive()) continue;
+            if (isTargetInRange(target, actionRange) && isLineOfSightOpen(target)) {
                 if (attackTick >= TURRET_ATTACK_TICK_MAX) {
-                    play.getProjectileHandler().newProjectile(this, u, (int) (occupyingUnit.getDamage() * TURRET_DAMAGE_MODIFIER));
+                    play.getProjectileHandler().newProjectile(this, target, (int) (occupyingUnit.getDamage() * TURRET_DAMAGE_MODIFIER));
                     attackTick = 0;
                 } else
                     attackTick++;
@@ -49,11 +50,22 @@ public class CastleTurret extends Building {
             attackTick++;
     }
 
+    private void setDamageAndRanges(Unit occupyingUnit) {
+        if (occupyingUnit == null)
+            this.damage = this.actionRange = this.sightRange = 0;
+        else {
+            this.damage = (int) (occupyingUnit.getDamage() * TURRET_DAMAGE_MODIFIER);
+            this.actionRange = this.sightRange = (int) (occupyingUnit.getActionRange() * TURRET_ATTACK_RANGE_MODIFIER);
+        }
+    }
+
+
     public Unit getOccupyingUnit() {
         return occupyingUnit;
     }
 
     public void setOccupyingUnit(Unit occupyingUnit) {
         this.occupyingUnit = occupyingUnit;
+        setDamageAndRanges(occupyingUnit);
     }
 }

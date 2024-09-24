@@ -89,9 +89,9 @@ public class Laborer extends Unit {
                     if (subType == STORAGE_HUT || subType == REFINERY) {
                         depositResources();
                         if (previousTargetTile != null && previousTargetType != -1) {
-                            ResourceObject previousTarget = unitHandler.getPlay().getResourceObjectData()[previousTargetTile.y][previousTargetTile.x];
+                            ResourceObject previousTarget = combatEntityHandler.getPlay().getResourceObjectData()[previousTargetTile.y][previousTargetTile.x];
                             if (previousTarget != null) {
-                                path = getUnitPathToNearestAdjacentTile(this, previousTargetTile.x, previousTargetTile.y, unitHandler.getPlay());
+                                path = getUnitPathToNearestAdjacentTile(this, previousTargetTile.x, previousTargetTile.y, combatEntityHandler.getPlay());
                                 if (path != null)
                                     targetEntity = previousTarget;
                             } else
@@ -129,7 +129,7 @@ public class Laborer extends Unit {
         };
 
         if (buildingType != -1) {
-            ArrayList<Building> buildings = unitHandler.getPlay().getBuildingHandler().getBuildings();
+            ArrayList<Building> buildings = combatEntityHandler.getPlay().getBuildingHandler().getBuildings();
             Building closest = null;
             ArrayList<Point> pathToClosest = null;
             for (Building b : buildings) {
@@ -146,7 +146,7 @@ public class Laborer extends Unit {
                         closest = b;
                         break;
                     }
-                    ArrayList<Point> currPath = getUnitPathToNearestAdjacentTile(this, toTileX(b.getX()), toTileY(b.getY()), unitHandler.getPlay());
+                    ArrayList<Point> currPath = getUnitPathToNearestAdjacentTile(this, toTileX(b.getX()), toTileY(b.getY()), combatEntityHandler.getPlay());
                     if (currPath != null && (pathToClosest == null || (currPath.size() < pathToClosest.size()))) {
                         closest = b;
                         pathToClosest = currPath;
@@ -204,7 +204,7 @@ public class Laborer extends Unit {
     }
 
     private void locateAndTargetNearestResource(int resourceType, int tileX, int tileY) {
-        unitHandler.getPlay().getResourceObjectHandler().locateAndTargetNearestResource(this, resourceType, tileX, tileY);
+        combatEntityHandler.getPlay().getResourceObjectHandler().locateAndTargetNearestResource(this, resourceType, tileX, tileY);
     }
 
     private void startFarming() {
@@ -225,8 +225,8 @@ public class Laborer extends Unit {
                 x = farmX + offset;
         }
         currFarmers.add(this);
-        if (unitHandler.getPlay().getSelectedEntity() == this)
-            unitHandler.getPlay().setSelectedEntity(targetFarm);
+        if (combatEntityHandler.getPlay().getSelectedEntity() == this)
+            combatEntityHandler.getPlay().setSelectedEntity(targetFarm);
         updateHitbox();
     }
 

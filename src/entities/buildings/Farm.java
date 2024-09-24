@@ -7,8 +7,6 @@ import objects.Player;
 import java.awt.*;
 import java.util.ArrayList;
 
-import static entities.units.Unit.DOWN;
-import static entities.units.Unit.IDLE;
 import static main.Game.*;
 
 public class Farm extends Building {
@@ -23,7 +21,7 @@ public class Farm extends Building {
     }
 
     public void releaseFarmer() {
-        Point spawn = buildingHandler.getSpawnTile(this);
+        Point spawn = ((BuildingHandler) combatEntityHandler).getSpawnTile(this);
         if (spawn != null) {
             int lastIdx = farmers.size() - 1;
             Laborer l = farmers.get(lastIdx);
