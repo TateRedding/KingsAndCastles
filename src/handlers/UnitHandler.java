@@ -21,7 +21,7 @@ import static pathfinding.AStar.getUnitPathToNearestAdjacentTile;
 public class UnitHandler extends CombatEntityHandler implements Serializable {
 
     private static final Font DEBUG_UNIT_ID_FONT = new Font("Monospaced", Font.BOLD, 14);
-    private static final int NUM_MAX_STARTING_UNITS = 1;
+    private static final int NUM_MAX_STARTING_UNITS = 3;
 
     private ArrayList<Unit> units = new ArrayList<>();
     private ArrayList<Unit> deadUnits = new ArrayList<>();
@@ -148,10 +148,10 @@ public class UnitHandler extends CombatEntityHandler implements Serializable {
                         createUnit(players.get(i), spawn, BRUTE);
                         break;
                     case 2:
-                        createUnit(players.get(i), spawn, ARCHER);
+                        createUnit(players.get(i), spawn, STONE_THROWER);
                         break;
                     default:
-                        createUnit(players.get(i), spawn, ARCHER);
+                        createUnit(players.get(i), spawn, LABORER);
                         break;
                 }
             }
